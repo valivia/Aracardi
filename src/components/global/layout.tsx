@@ -1,17 +1,16 @@
-import { Game } from "@structs/game";
 import { motion } from "framer-motion";
 import Head from "next/head";
 import styles from "./layout.module.scss";
-import LogoComponent from "./logo.module";
+import LogoComponent from "./logo";
 
-function Layout({ title, subtitle, game, children }: Props) {
-  const description = game?.description ?? "Play card games!";
+function Layout({ title, subtitle, description, children }: Props) {
   return (
     <div className={styles.frame}>
       <Head>
         <title>{title}</title>
-        <meta name="description" content={description} />
+        {description && <meta name="description" content={description} />}
       </Head>
+
       {(title || subtitle) &&
         <motion.header
           key={title || subtitle}
@@ -24,6 +23,7 @@ function Layout({ title, subtitle, game, children }: Props) {
         </motion.header>
       }
       {children}
+
       <LogoComponent />
     </div>
   );
@@ -34,6 +34,6 @@ export { Layout };
 interface Props {
   title?: string;
   subtitle?: string;
-  game?: Game;
+  description?: string;
   children: JSX.Element | JSX.Element[];
 }

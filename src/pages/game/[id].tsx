@@ -1,22 +1,22 @@
-import styles from "./index.module.scss";
-import { Layout } from "src/components/global/layout.module";
-import { Game } from "@structs/game";
+import styles from "@styles/setup.module.scss";
+import { Layout } from "src/components/global/layout";
 import { prisma } from "src/server/prisma";
 import { trpc } from "@utils/trpc";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { BsWifi, BsWifiOff } from "react-icons/bs";
-import { Button } from "@components/input/button.module";
-import { Addon } from "@components/setup/addon.module";
+import { Button } from "@components/input/button";
+import { Addon } from "@components/setup/addon";
 import React, { UIEvent, useEffect, useState } from "react";
-import { Tag } from "@components/global/tag.module";
-import { TextInput } from "@components/input/text_input.module";
-import Prisma from "@prisma/client";
+import { Tag } from "@components/global/tag";
+import { TextInput } from "@components/input/text_input";
+import { Game } from "@prisma/client";
+import { RouterOutput } from "@utils/trpc";
 
 const GameSetup: NextPage<Props> = ({ game }) => {
   // TODO proper settings;
   const allowNsfw = true;
   const [query, setQuery] = useState("");
-  const [activeAddons, setActiveAddons] = useState<Map<string, Prisma.Addon>>(new Map());
+  const [activeAddons, setActiveAddons] = useState<Map<string, RouterOutput["addon"]["get"]>>(new Map());
   const [cardSize, setCardSize] = useState({ offline: 0, online: 0 });
 
   // Fetch addons.
@@ -53,6 +53,14 @@ const GameSetup: NextPage<Props> = ({ game }) => {
     e.preventDefault();
   };
 
+  const toggleActive = (addon: RouterOutput["addon"]["get"]) => {
+    setActiveAddons(old => {
+      const newAddons = new Map(old);
+      newAddons.has(addon.id) ? newAddons.delete(addon.id) : newAddons.set(addon.id, addon);
+      return newAddons;
+    });
+  };
+
   return (
     <Layout
       title={game.title}
@@ -67,12 +75,14 @@ const GameSetup: NextPage<Props> = ({ game }) => {
             size="lg"
             variant="secondary"
           >
-            Sort</Button>
+            Sort
+          </Button>
           <Button
             size="lg"
             variant="secondary"
           >
-            Filter</Button>
+            Filter
+          </Button>
           <TextInput
             size="lg"
             type="search"
@@ -95,12 +105,7 @@ const GameSetup: NextPage<Props> = ({ game }) => {
                 key={addon.id}
                 addon={addon}
                 active={activeAddons.has(addon.id)}
-                onClick={() => setActiveAddons(old => {
-                  const newAddons = new Map(old);
-                  newAddons.has(addon.id) ? newAddons.delete(addon.id) : newAddons.set(addon.id, addon);
-                  return newAddons;
-                })
-                }
+                onClick={() => toggleActive(addon)}
               />
             )
           )}
@@ -128,7 +133,7 @@ const GameSetup: NextPage<Props> = ({ game }) => {
 };
 
 interface Props {
-  game: Game
+  game: Game;
 }
 
 export default GameSetup;

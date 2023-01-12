@@ -1,4 +1,6 @@
-const CardDashboard = () => {
+import { NextPage } from "next";
+
+const CardDashboard: NextPage = () => {
   return <></>;
 };
 

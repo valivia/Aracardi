@@ -1,19 +1,19 @@
 import styles from "@styles/dashboard.module.scss";
-import { Layout } from "src/components/global/layout.module";
+import { Layout } from "src/components/global/layout";
 import { Header } from "@components/dashboard/header";
 import { Accordion } from "@components/dashboard/accordion";
 import Prisma, { Role } from "@prisma/client";
 import { trpc } from "@utils/trpc";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { prisma } from "src/server/prisma";
-import { Button } from "@components/input/button.module";
+import { Button } from "@components/input/button";
 import { Toggle } from "@components/input/toggle";
 import { User } from "@components/dashboard/user";
 
-import { useBoolean } from "@components/functions/hooks/useBoolean";
+import { useBoolean } from "@hooks/useBoolean";
 import { Avatar } from "@components/global/avatar";
 import { DashboardItem } from "@components/dashboard/dashboard_item";
-import { Tag } from "@components/global/tag.module";
+import { Tag } from "@components/global/tag";
 import { BsWifi, BsWifiOff } from "react-icons/bs";
 
 const GameDashboard: NextPage<Props> = ({ game }) => {

@@ -1,9 +1,8 @@
-import Prisma, { Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 import React from "react";
 import styles from "./user.module.scss";
 import { BsGear } from "react-icons/bs";
 import { Avatar } from "@components/global/avatar";
-import { HasAtLeast } from "@structs/hasatleast";
 
 const User: React.FC<Props> = ({ user, role, canEdit }) => {
   return (
@@ -20,7 +19,7 @@ const User: React.FC<Props> = ({ user, role, canEdit }) => {
 export { User };
 
 interface Props {
-  user: HasAtLeast<Prisma.User, "name">
+  user: { name: string, avatar_id?: string | null }
   role: Role;
   canEdit?: boolean;
 }

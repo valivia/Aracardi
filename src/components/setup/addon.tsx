@@ -1,11 +1,9 @@
-import { Tag } from "@components/global/tag.module";
+import styles from "./setup_item.module.scss";
+import { Tag } from "@components/global/tag";
 import { faker } from "@faker-js/faker";
-import prisma from "@prisma/client";
 import React, { useMemo } from "react";
 import { BsWifi, BsWifiOff } from "react-icons/bs";
-import styles from "./addon.module.scss";
-
-// TODO display correct card count. keyboard accessibility (keydown and infinite load?)
+import { RouterOutput } from "@utils/trpc";
 
 const Addon: React.FC<Props> = ({ addon, active, onClick }) => {
   const avatar = useMemo(() => faker.image.abstract(640, 640, true), []);
@@ -47,7 +45,7 @@ const Addon: React.FC<Props> = ({ addon, active, onClick }) => {
 export { Addon };
 
 interface Props {
-  addon: prisma.Addon;
+  addon: RouterOutput["addon"]["get"];
   onClick?: () => void | Promise<void>;
   active?: boolean;
 }

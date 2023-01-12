@@ -1,5 +1,5 @@
 import styles from "@styles/dashboard.module.scss";
-import { Layout } from "src/components/global/layout.module";
+import { Layout } from "src/components/global/layout";
 import { Header } from "@components/dashboard/header";
 import { Accordion } from "@components/dashboard/accordion";
 import { User } from "@prisma/client";
@@ -7,7 +7,7 @@ import { trpc } from "@utils/trpc";
 import { Avatar } from "@components/global/avatar";
 import { DashboardItem } from "@components/dashboard/dashboard_item";
 import { BsWifi, BsWifiOff } from "react-icons/bs";
-import { Tag } from "@components/global/tag.module";
+import { Tag } from "@components/global/tag";
 import { NextPage } from "next";
 
 
@@ -20,6 +20,7 @@ const Dashboard: NextPage = () => {
     avatar_id: "marceline",
   };
 
+  // TODO: proper query for user's games.
   const games = trpc.game.all.useQuery({ limit: 5 });
 
   return (

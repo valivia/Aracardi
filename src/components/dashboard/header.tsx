@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import styles from "./header.module.scss";
 
 const Header: React.FC<Props> = ({ title, description, avatar: Avatar }) => {
@@ -17,5 +17,5 @@ export { Header };
 interface Props {
   title?: string;
   description?: string;
-  avatar: any;
+  avatar: ReactNode;
 }

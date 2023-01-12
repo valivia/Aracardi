@@ -99,17 +99,27 @@
 
 .settings {
   justify-self: center;
-  padding: 3px;
+  padding: 0;
+  margin: 0;
 
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
 
   @include large {
-    width: 46px;
-    height: 46px;
+    width: 24px;
+    height: 24px;
   }
 
   display: flex;
   justify-content: center;
   align-items: center;
+
+  background-color: transparent;
+  border: none;
+  color: currentColor;
+
+  &>svg {
+    width: 100%;
+    height: 100%;
+  }
 }

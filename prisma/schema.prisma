@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,7 +8,6 @@ datasource db {
 }
 
 // TODO
-// edit permissions per user on games/addons?
 // improve card stages (how to persist data between stages? how to select which players are affected? etc)
 // Properly work out user to support actual auth etc.
 

@@ -12,10 +12,10 @@
   background: transparent;
   background: linear-gradient(
     0deg,
-    rgba(11, 11, 11, 1) 0%,
-    rgba(11, 11, 11, 1) 30%,
-    rgba(11, 11, 11, 0) 90%,
-    rgba(11, 11, 11, 0) 100%
+    rgba($primary, 1) 0%,
+    rgba($primary, 1) 30%,
+    rgba($primary, 0) 90%,
+    rgba($primary, 0) 100%
   );
 
   & svg {
