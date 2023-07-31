@@ -1,0 +1,26 @@
+@use "styles/abstracts" as *;
+
+:global(*) {
+    font-feature-settings:
+        "pnum" on,
+        "lnum" on;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+
+    font-family: $font;
+}
+
+:global(html, body) {
+    max-width: 100vw;
+    height: 100%;
+
+    overflow-x: hidden;
+    background-color: $primary;
+    color: $text;
+}
+
+:global(a) {
+    color: inherit;
+    text-decoration: none;
+}
