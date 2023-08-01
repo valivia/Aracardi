@@ -1,18 +1,55 @@
-<h1 class="title">Play now!</h1>
+<script>
+    import Button from "components/input/Button.svelte";
+    import Input from "components/input/Input.svelte";
+</script>
 
-<main>
-    <form>
-        <input type="text" placeholder="Join code" />
-        <button type="submit">Submit</button>
-    </form>
+<div class="content">
+    <h1 class="title">Play now!</h1>
+    <div class="divider" />
 
-    <button>Create game</button>
-</main>
+    <main>
+        <form>
+            <Input type="text" placeholder="Join code" />
+            <Button type="submit">Join Game</Button>
+        </form>
+
+        <Button>Create game</Button>
+    </main>
+</div>
 
 <style lang="scss">
+    @use "styles/abstracts" as *;
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-top: 20vh;
+        width: min(40ch, 100%);
+    }
+
     .title {
         font-weight: 200;
         font-size: 2.2em;
         text-transform: capitalize;
+    }
+
+    .divider {
+        width: 100%;
+        height: 1px;
+        margin: 1em 0;
+
+        background-color: $text;
+    }
+
+    form {
+        display: flex;
+    }
+
+    main {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
     }
 </style>

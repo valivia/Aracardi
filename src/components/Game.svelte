@@ -2,11 +2,12 @@
     import { WifiIcon, WifiOffIcon } from "svelte-feather-icons";
     import type { Game } from "@prisma/client";
     import Tag from "./Tag.svelte";
+    import { slide } from "svelte/transition";
     export let game: Game;
     export const active = false;
 </script>
 
-<article class="main" tabIndex={0} class:active>
+<article class="main" tabIndex={0} class:active transition:slide|global>
     <img
         class="avatar"
         src="https://cdn.discordapp.com/attachments/808476183250993183/1135733767957401601/moon.png"

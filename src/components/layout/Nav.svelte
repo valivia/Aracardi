@@ -15,11 +15,13 @@
         padding: 1rem;
         bottom: 0;
 
+        z-index: 10;
+
         display: flex;
         justify-content: center;
     }
 
     .logo {
-        width: min(100%, 180px);
+        width: clamp(120px, 10vw, 180px);
     }
 </style>

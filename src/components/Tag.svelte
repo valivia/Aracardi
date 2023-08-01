@@ -10,9 +10,7 @@
 >
     <slot name="icon" />
     {#if $$slots.default}
-        <span>
-            <slot />
-        </span>
+        <span><slot /></span>
     {/if}
 </div>
 

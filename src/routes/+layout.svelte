@@ -2,11 +2,10 @@
     import Nav from "components/layout/Nav.svelte";
 </script>
 
-<h1>Aracardi</h1>
-<div class="main">
+<div class="wrapper">
+    <h1>Aracardi</h1>
     <slot />
 </div>
-
 <Nav />
 
 <style lang="scss">
@@ -17,9 +16,11 @@
         text-align: center;
     }
 
-    .main {
+    .wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+        padding: 1em;
     }
 </style>

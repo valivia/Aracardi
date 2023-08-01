@@ -17,5 +17,6 @@
         flex-wrap: wrap;
         justify-content: center;
         gap: 1rem;
+        width: min(100%, 80ch);
     }
 </style>
