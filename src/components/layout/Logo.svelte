@@ -8,24 +8,26 @@
     <polygon points="34.86 10.5 .86 70.5 68.86 70.5 34.86 10.5" />
 </svg>
 
-<style>
+<style lang="scss">
+    @use "styles/abstracts" as *;
+
     svg {
         fill: transparent;
         stroke: currentColor;
         stroke-width: 1px;
+        cursor: pointer;
 
         & > * {
             transform-origin: center;
             transform-box: fill-box;
         }
 
-        & .inner {
-            transition: transform 0.2s ease-in-out;
-            transform: scale(1);
-        }
+        transition: transform 0.2s ease-in-out;
+        transform: scale(1);
 
-        &:hover .inner {
-            transform: scale(0.9);
+        &:hover {
+            color: $accent;
+            transform: scale(1.1);
         }
     }
 </style>

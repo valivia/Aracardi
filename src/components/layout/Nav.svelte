@@ -20,6 +20,6 @@
     }
 
     .logo {
-        width: min(100%, 200px);
+        width: min(100%, 180px);
     }
 </style>
