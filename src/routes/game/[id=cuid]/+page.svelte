@@ -6,9 +6,7 @@
 
 <ul>
     {#each data.game.addons as addon (addon.id)}
-        <li>
-            <a href={`game/${addon.id}`}>{addon.title}</a>
-        </li>
+        <li>{addon.title}</li>
     {/each}
 </ul>
 
