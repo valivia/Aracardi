@@ -1,10 +1,10 @@
-enum StageType {
+export enum StageType {
     Text = "text",
     Poll = "poll",
     Input = "input"
 }
 
-interface baseStage {
+type baseStage = {
     id: string;
     title?: string;
     time_limit?: number;
@@ -12,14 +12,14 @@ interface baseStage {
 
 export type Stage = TextStage | PollStage | InputStage;
 
-export interface TextStage extends baseStage {
+export type TextStage = baseStage & {
     type: StageType.Text;
     text: string;
     has_image: boolean;
     turns: number;
 }
 
-export interface PollStage extends baseStage {
+export type PollStage = baseStage & {
     type: StageType.Poll;
     winner_points: number;
     target: string[];
@@ -27,7 +27,7 @@ export interface PollStage extends baseStage {
     options: string[];
 }
 
-export interface InputStage extends baseStage {
+export type InputStage = baseStage & {
     type: StageType.Input;
     target: string[];
 }
