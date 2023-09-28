@@ -1,4 +1,5 @@
 import type { Card as PrismaCard } from "@prisma/client";
+import type { Player } from "./player";
 
 
 // Stage
@@ -15,28 +16,29 @@ export enum SubStageType {
     Empty = "empty"
 }
 
-type baseSubStage = {
+
+type baseSubStage<Processed extends boolean> = {
     id: string;
     title?: string;
-    target?: PlayerSelector;
+    targets?: Processed extends true ? Player[] : PlayerSelector;
 }
 
-export type EmptySubStage = baseSubStage & {
+export type EmptySubStage<T extends boolean> = baseSubStage<T> & {
     type: SubStageType.Empty;
 }
 
-export type TextSubStage = baseSubStage & {
+export type TextSubStage<T extends boolean> = baseSubStage<T> & {
     type: SubStageType.Text;
     text: string;
     has_image: boolean;
 }
 
-export type InputSubStage = baseSubStage & {
+export type InputSubStage<T extends boolean> = baseSubStage<T> & {
     type: SubStageType.Input;
     placeholder: string;
 }
 
-export type PollSubStage = baseSubStage & {
+export type PollSubStage<T extends boolean> = baseSubStage<T> & {
     type: SubStageType.Poll;
     selection_count?: number;
     options: PollOption[];
@@ -49,7 +51,7 @@ export type PollOption = {
     correct: boolean;
 };
 
-export type SubStage = TextSubStage | PollSubStage | InputSubStage | EmptySubStage;
+export type SubStage<T extends boolean = false> = TextSubStage<T> | PollSubStage<T> | InputSubStage<T> | EmptySubStage<T>;
 
 
 type Card = PrismaCard & {
@@ -79,7 +81,7 @@ const Prototype: Card = {
                     text: "This is a text stage",
                     title: "Text Stage",
                     has_image: false,
-                    target: "CURRENT",
+                    targets: "CURRENT",
 
                 },
                 {
@@ -87,7 +89,7 @@ const Prototype: Card = {
                     id: "clljm9y0o001fvdbppf5pv952",
                     title: "Enter your favourite type of bird",
                     placeholder: "e.g. Robin",
-                    target: "FILL.MIN.3",
+                    targets: "FILL.MIN.3",
                 }
             ]
         },
@@ -98,7 +100,7 @@ const Prototype: Card = {
                     type: SubStageType.Poll,
                     id: "clljm9y0o001hvdbpicwuog2c",
                     title: "vote on the best bird",
-                    target: "FILL",
+                    targets: "FILL",
                     options: [
                         {
                             id: "clljm9y0o001jvdbpp1c7h5eq",
@@ -150,4 +152,5 @@ export type PlayerSelector = "HOST"
 
 // what if missing value from previous stage?
 // Data integrity with stored minimium and maximum players
+// multi turn effects??
 // Solution to mixing HOST with other selectors

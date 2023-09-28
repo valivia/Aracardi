@@ -87,7 +87,7 @@ model Game {
 
   // Relationship
   addons        Addon[]
-  session       Session[]
+  sessions       Session[]
   authors       AuthorToGame[]
   favourited_by User[]         @relation("favourited_games")
 }
