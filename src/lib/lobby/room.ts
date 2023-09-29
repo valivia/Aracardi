@@ -1,7 +1,13 @@
 import type { Game, Session, Card } from "@prisma/client";
-import type { Stage, SubStage } from "./stage";
+import { Prototype, StageState, type Stage, type SubStage } from "./stage";
 import type { Player } from "./player";
 
+
+/*
+    NOTES
+    - look into backloglimit for games without recirculation
+
+*/
 
 type Current = {
     player: Player;
@@ -30,6 +36,7 @@ export class GameLobby {
         this.game = session.game;
         this.session = session;
         this.backlogLimit = Math.floor(this.cards.length * this.game.backlog_percentage);
+        this.cards = [Prototype, Prototype, Prototype, Prototype, Prototype, Prototype, Prototype, Prototype, Prototype, Prototype, Prototype];
     }
 
 
@@ -46,11 +53,13 @@ export class GameLobby {
     }
 
 
-    private assignPlayersToStage(stage: Stage): SubStage<true>[] {
+    // Processing cards
+
+    private assignPlayersToStage(stage: Stage): Stage<StageState.inProgress> {
         if (!this.current) throw new Error("No current card");
         const availablePlayers = [...this.players];
 
-        const output: SubStage<true>[] = [];
+        const subStages: SubStage<StageState.inProgress>[] = [];
 
         for (const subStage of stage.sub_stages) {
             const targetString = subStage.targets?.split(".");
@@ -103,15 +112,25 @@ export class GameLobby {
                 if (index !== -1) availablePlayers.splice(index, 1);
             }
 
-            output.push({
+            subStages.push({
                 ...subStage,
                 targets: targetPlayers
             });
         }
 
-        return output;
+        return {
+            ...stage,
+            state: StageState.inProgress,
+            sub_stages: subStages
+        };
     }
 
+    private processSubStage(stage: Stage<StageState.notStarted>) {
+
+    }
+
+
+    // Turn Logic
 
     private nextTurn() {
         if (!this.current) throw new Error("No current card");
@@ -163,48 +182,59 @@ export class GameLobby {
     }
 
     public next() {
-        if (!this.current) return this.start();
-        if (this.current.card.stages.length <= this.current.stage) this.nextStage();
+        if (!this.current) this.start();
+        else if (this.current.stage < this.current.card.stages.length - 1) this.nextStage();
         else this.nextTurn();
+
+        console.log(this.current);
     }
 
 }
 
 
 
-const lobby = new GameLobby({
-    join_code: "TEST",
-    timer_multiplier: 1,
-    turn_multiplier: 1,
-    allow_nsfw: true,
-    game: {
-        title: "Test Game",
-        description: "This is a test game",
-        minimum_players: 2,
-        maximum_players: 10,
-        backlog_percentage: 0.8,
-        allow_hotjoin: true,
-    } as unknown as Game,
-} as unknown as Session & { game: Game }
-);
+export const test = () => {
+    const lobby = new GameLobby({
+        join_code: "TEST",
+        timer_multiplier: 1,
+        turn_multiplier: 1,
+        allow_nsfw: true,
+        game: {
+            title: "Test Game",
+            description: "This is a test game",
+            minimum_players: 2,
+            maximum_players: 10,
+            backlog_percentage: 0.8,
+            allow_hotjoin: true,
+        } as unknown as Game,
+    } as unknown as Session & { game: Game }
+    );
 
-lobby.addPlayer({
-    id: "1",
-    name: "Test",
-    avatar: "",
-    host: true,
-});
+    lobby.addPlayer({
+        id: "1",
+        name: "Test",
+        avatar: "",
+        host: true,
+    });
 
-lobby.addPlayer({
-    id: "2",
-    name: "Test",
-    avatar: "",
-    host: false
-});
+    lobby.addPlayer({
+        id: "2",
+        name: "Test",
+        avatar: "",
+        host: false
+    });
 
-lobby.addPlayer({
-    id: "3",
-    name: "Test",
-    avatar: "",
-    host: false
-});
+    lobby.addPlayer({
+        id: "3",
+        name: "Test",
+        avatar: "",
+        host: false
+    });
+
+    lobby.next();
+    lobby.next();
+    lobby.next();
+    lobby.next();
+    lobby.next();
+    lobby.next();
+};

@@ -3,45 +3,54 @@ import type { Player } from "./player";
 
 
 // Stage
-export type Stage = {
+
+export enum StageState {
+    notStarted = "NOT_STARTED",
+    inProgress = "IN_PROGRESS",
+    completed = "COMPLETED",
+}
+
+export type Stage<State extends StageState = StageState.notStarted> = {
+    state: State;
     time_limit?: number;
-    sub_stages: SubStage[];
+    sub_stages: SubStage<State>[];
 }
 
 // SubStage
 export enum SubStageType {
-    Text = "text",
-    Poll = "poll",
-    Input = "input",
-    Empty = "empty"
+    Text = "TEXT",
+    Poll = "POLL",
+    Input = "INPUT",
+    Empty = "EMPTY"
 }
 
-
-type baseSubStage<Processed extends boolean> = {
+type baseSubStage<State extends StageState = StageState.notStarted> = {
     id: string;
     title?: string;
-    targets?: Processed extends true ? Player[] : PlayerSelector;
+    targets: State extends StageState.notStarted ? PlayerSelector : Player[]
 }
 
-export type EmptySubStage<T extends boolean> = baseSubStage<T> & {
+export interface EmptySubStage<T extends StageState> extends baseSubStage<T> {
     type: SubStageType.Empty;
 }
 
-export type TextSubStage<T extends boolean> = baseSubStage<T> & {
+export interface TextSubStage<T extends StageState> extends baseSubStage<T> {
     type: SubStageType.Text;
     text: string;
     has_image: boolean;
 }
 
-export type InputSubStage<T extends boolean> = baseSubStage<T> & {
+export interface InputSubStage<T extends StageState> extends baseSubStage<T> {
     type: SubStageType.Input;
     placeholder: string;
+    answers?: T extends StageState.completed ? string[] : null;
 }
 
-export type PollSubStage<T extends boolean> = baseSubStage<T> & {
+export interface PollSubStage<T extends StageState> extends baseSubStage<T> {
     type: SubStageType.Poll;
     selection_count?: number;
     options: PollOption[];
+    winner?: T extends StageState.completed ? string[] : null;
 }
 
 export type PollOption = {
@@ -51,13 +60,17 @@ export type PollOption = {
     correct: boolean;
 };
 
-export type SubStage<T extends boolean = false> = TextSubStage<T> | PollSubStage<T> | InputSubStage<T> | EmptySubStage<T>;
+export type SubStage<T extends StageState = StageState.notStarted> =
+    TextSubStage<T> |
+    PollSubStage<T> |
+    InputSubStage<T> |
+    EmptySubStage<T>;
 
 
 type Card = PrismaCard & {
     stages: Stage[];
 }
-const Prototype: Card = {
+export const Prototype: Card = {
     id: "clljm9y0o001pvdbpx8456emi",
     addon_id: "clljm9y0p001rvdbpafjexu3a",
     created_at: new Date(),
@@ -73,6 +86,7 @@ const Prototype: Card = {
     stages: [
         // Stage 1
         {
+            state: StageState.notStarted,
             time_limit: 60,
             sub_stages: [
                 {
@@ -95,6 +109,7 @@ const Prototype: Card = {
         },
         // Stage 2
         {
+            state: StageState.notStarted,
             sub_stages: [
                 {
                     type: SubStageType.Poll,
