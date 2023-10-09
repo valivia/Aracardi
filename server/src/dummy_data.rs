@@ -11,6 +11,8 @@ use crate::validator::validate_card;
 pub fn get_cards() -> Vec<Card> {
     let mut cards = vec![
         Card {
+            is_offline_compatible: false,
+            is_online_compatible: true,
             stages: vec![
                 Stage {
                     state: StageState::NotStarted,
@@ -56,6 +58,8 @@ pub fn get_cards() -> Vec<Card> {
             ],
         },
         Card {
+            is_offline_compatible: false,
+            is_online_compatible: true,
             stages: vec![Stage {
                 state: StageState::NotStarted,
                 time_limit: None,
@@ -88,6 +92,23 @@ pub fn get_cards() -> Vec<Card> {
                         }),
                     },
                 ],
+            }],
+        },
+        Card {
+            is_offline_compatible: true,
+            is_online_compatible: true,
+            stages: vec![Stage {
+                state: StageState::NotStarted,
+                time_limit: None,
+                sub_stages: vec![SubStage {
+                    player_selector: PlayerSelector::Fill(RangeSelector::new(None, None)),
+                    targets: vec![],
+
+                    sub_type: SubStageType::Text(TextSubStage {
+                        title: Some("🦉".to_string()),
+                        text: "Drink if you love birds".to_string(),
+                    }),
+                }],
             }],
         },
     ];
