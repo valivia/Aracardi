@@ -5,30 +5,35 @@ use crate::model::{
     sub_stage::SubStageType,
 };
 
-pub fn validate_card(card: Card) -> Result<(), String> {
-    let mut player_range = RangeSelector::new(None, None);
+pub fn validate_card(card: &Card) -> Result<(), String> {
+    let mut combined_player_range = RangeSelector::new(None, None);
 
-    for stage in card.stages {
-        if card.is_offline_compatible {
-            validate_offline(&stage)?;
+    for stage in &card.stages {
+        if stage.sub_stages.is_empty() {
+            return Err("Substages can not be empty".to_string());
         }
 
-        validate_substage_order(&stage)?;
+        if card.is_offline_compatible {
+            validate_offline_compatibility(stage)?;
+        }
+
+        validate_player_selectors(stage)?;
 
         // Calculate player range
-        let stage_range = calculate_stage_player_count(&stage)?;
-        player_range = player_range.combine_stages(&stage_range);
+        let stage_range = calculate_stage_player_count(stage)?;
+        combined_player_range = combined_player_range.intersect(&stage_range);
     }
 
     println!(
         "card Range ------\nmin: {:?}\nmax: {:?}",
-        player_range.min, player_range.max
+        combined_player_range.min, combined_player_range.max
     );
 
     Ok(())
 }
 
-pub fn validate_offline(stage: &Stage) -> Result<(), String> {
+/// Validate that the stage is offline mode compatible
+pub fn validate_offline_compatibility(stage: &Stage) -> Result<(), String> {
     if stage.sub_stages.len() > 1 {
         return Err("Offline compatible cards can only have one sub stage per stage".to_string());
     }
@@ -37,50 +42,56 @@ pub fn validate_offline(stage: &Stage) -> Result<(), String> {
         .sub_stages
         .iter()
         .any(|sub_stage| !matches!(sub_stage.sub_type, SubStageType::Text(_)));
-
     if has_incompatible_substage {
         return Err("Offline compatible cards can only have text sub stages".to_string());
     }
 
-    match &stage.sub_stages.get(0).unwrap().player_selector {
-        PlayerSelector::Fill(range) | PlayerSelector::Random(range) => {
-            if range.max.is_some() {
-                return Err("Offline cards can not use capped selectors".to_string());
-            }
-            Ok(())
-        }
+    match &stage
+        .sub_stages
+        .first()
+        .expect("Already checked if not empty")
+        .player_selector
+    {
+        PlayerSelector::Fill(_) | PlayerSelector::Random(_) => Ok(()),
         _ => Err("Offline cards can not use mono selectors".to_string()),
     }
 }
 
-/// Validate that the sub stages are in the correct order
-fn validate_substage_order(stage: &Stage) -> Result<(), String> {
+/// Validate that the sub stages are in the correct order with respect to the player selectors
+fn validate_player_selectors(stage: &Stage) -> Result<(), String> {
     for (index, sub_stage) in stage.sub_stages.iter().enumerate() {
         match &sub_stage.player_selector {
             PlayerSelector::Host => {
-                if stage.sub_stages.iter().enumerate().any(|(i, entry)| {
-                    i != index
-                        && matches!(
+                if stage
+                    .sub_stages
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i != index)
+                    .any(|(_, entry)| {
+                        matches!(
                             entry.player_selector,
                             PlayerSelector::Host | PlayerSelector::Offset(_)
                         )
-                }) {
+                    })
+                {
                     return Err("Host can not be used alongside with offset".to_string());
                 }
             }
-            PlayerSelector::Offset(_) => {
-                if stage.sub_stages.iter().enumerate().any(|(i, entry)| {
-                    i != index
-                        && matches!(entry.player_selector, PlayerSelector::Offset(_))
-                        && entry.player_selector == sub_stage.player_selector
-                }) {
-                    return Err(
-                        "Can not have multiple offset selectors with the same number".to_string(),
-                    );
-                }
+            PlayerSelector::Offset(offset) => {
+                (!stage
+                    .sub_stages
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i != index)
+                    .any(|(_, entry)| match &entry.player_selector {
+                        PlayerSelector::Offset(other_offset) => offset == other_offset,
+                        _ => false,
+                    }))
+                .then_some(())
+                .ok_or("Can not have multiple offset selectors with the same number".to_string())?;
             }
             PlayerSelector::Fill(range) | PlayerSelector::Random(range) => {
-                // Make sure uncapped selectors are at the end of the vec.
+                // Make sure uncapped selectors are at the end of the substage list.
                 if range.max.is_none() && index != stage.sub_stages.len() - 1 {
                     return Err(
                         "An uncapped fill/random can only be used at the end of a stage"
@@ -108,8 +119,9 @@ fn validate_substage_order(stage: &Stage) -> Result<(), String> {
     Ok(())
 }
 
-/// Calculate the minimum and maximum number of players required for a stage
+/// Calculate the range of players allowed for a stage
 fn calculate_stage_player_count(stage: &Stage) -> Result<RangeSelector, String> {
+    // the starting point for the combining "maths"
     let mut stage_range = RangeSelector::new(None, Some(1));
 
     for sub_stage in &stage.sub_stages {
@@ -117,8 +129,8 @@ fn calculate_stage_player_count(stage: &Stage) -> Result<RangeSelector, String> 
             PlayerSelector::Host | PlayerSelector::Offset(_) => {
                 RangeSelector::new(Some(1), Some(1))
             }
-            PlayerSelector::Fill(range) => range.clone(),
-            PlayerSelector::Random(range) => range.clone(),
+            PlayerSelector::Fill(range) => *range,
+            PlayerSelector::Random(range) => *range,
         };
 
         stage_range = stage_range.combine_substages(&range);

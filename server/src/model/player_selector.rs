@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PlayerSelector {
     Host,
     Offset(u32),
@@ -21,7 +21,7 @@ impl TryFrom<&str> for PlayerSelector {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RangeSelector {
     pub min: Option<usize>,
     /// _inclusive_ max
@@ -33,6 +33,7 @@ impl RangeSelector {
         Self { min, max }
     }
 
+    /// adds the minima and maxima, assuming max of None is infinity
     pub fn combine_substages(&self, input: &RangeSelector) -> Self {
         let min = match (self.min, input.min) {
             (Some(one), Some(two)) => Some(one + two),
@@ -49,9 +50,10 @@ impl RangeSelector {
         Self { min, max }
     }
 
-    pub fn combine_stages(&self, input: &RangeSelector) -> Self {
+    /// returns the intersection of the two ranges
+    pub fn intersect(&self, input: &RangeSelector) -> Self {
         let min = match (self.min, input.min) {
-            (Some(one), Some(two)) => Some(one.min(two)),
+            (Some(one), Some(two)) => Some(one.max(two)),
             (Some(one), None) => Some(one),
             (None, Some(two)) => Some(two),
             (None, None) => None,

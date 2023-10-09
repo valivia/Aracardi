@@ -114,7 +114,7 @@ pub fn get_cards() -> Vec<Card> {
     ];
 
     for card in cards.clone() {
-        validate_card(card).unwrap();
+        validate_card(&card).unwrap();
     }
 
     for _ in 0..3 {
