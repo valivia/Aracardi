@@ -1,6 +1,4 @@
-use std::ops::RangeBounds;
-
-use super::sub_stage::SubStage;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Player {
@@ -10,4 +8,10 @@ pub struct Player {
     pub avatar: String,
     pub host: bool,
     pub score: i32,
+}
+
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({})", self.name, self.id)
+    }
 }

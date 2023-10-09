@@ -11,7 +11,6 @@ impl Card {
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct ActiveCard {
     pub turns: usize,
