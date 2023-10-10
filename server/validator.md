@@ -1,7 +1,6 @@
-- organize substages so the playerselectors are in the right order
-- prevent host from being paired with current/previous/next
-- love women!
-- calculate the minimum and maximum amount of players a card must have
-- validate value selectors within title/text properties
-- validate if the card's online/offline status works with the stages (only text substages for offline)
-- validate if offline card only has 1 substage per stage
+- [x] organize substages so the playerselectors are in the right order
+- [x] prevent host from being paired with current/previous/next
+- [x] calculate the minimum and maximum amount of players a card must have
+- [ ] validate value selectors within title/text properties
+- [x] validate if the card's online/offline status works with the stages (only text substages for offline)
+- [x] validate if offline card only has 1 substage per stage
