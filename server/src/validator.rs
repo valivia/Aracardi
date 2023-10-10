@@ -20,9 +20,46 @@ pub fn validate_card(card: &Card) -> Result<(), String> {
         validate_player_selectors(stage)?;
 
         // Calculate player range
-        let stage_range = calculate_stage_player_count(stage)?;
+        let stage_range = calculate_stage_range(stage)?;
         combined_player_range = combined_player_range.intersect(&stage_range);
     }
+
+    // Validate that the combined range is within the card range
+    match (card.min_players, combined_player_range.min) {
+        (Some(card), Some(combined)) => {
+            if card < combined {
+                return Err(format!(
+                    "This card requires atleast ({:?}) players to function but the card min is ({:?})",
+                    combined, card
+                ));
+            }
+        }
+        (None, Some(combined)) => {
+            return Err(format!(
+                "This card requires atleast ({:?}) players to function but the card min is not set",
+                combined
+            ));
+        }
+        _ => (),
+    };
+
+    match (card.max_players, combined_player_range.max) {
+        (Some(card), Some(combined)) => {
+            if card > combined {
+                return Err(format!(
+                    "This card requires atmost ({:?}) players to function but the card max is ({:?})",
+                    combined, card
+                ));
+            }
+        }
+        (None, Some(combined)) => {
+            return Err(format!(
+                "This card requires atmost ({:?}) players to function but the card max is not set",
+                combined
+            ));
+        }
+        _ => (),
+    };
 
     println!(
         "card Range ------\nmin: {:?}\nmax: {:?}",
@@ -120,7 +157,7 @@ fn validate_player_selectors(stage: &Stage) -> Result<(), String> {
 }
 
 /// Calculate the range of players allowed for a stage
-fn calculate_stage_player_count(stage: &Stage) -> Result<RangeSelector, String> {
+fn calculate_stage_range(stage: &Stage) -> Result<RangeSelector, String> {
     // the starting point for the combining "maths"
     let mut stage_range = RangeSelector::new(None, Some(1));
 

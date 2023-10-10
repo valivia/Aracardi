@@ -13,6 +13,8 @@ pub fn get_cards() -> Vec<Card> {
         Card {
             is_offline_compatible: false,
             is_online_compatible: true,
+            min_players: Some(2),
+            max_players: Some(4),
             stages: vec![
                 Stage {
                     state: StageState::NotStarted,
@@ -60,6 +62,8 @@ pub fn get_cards() -> Vec<Card> {
         Card {
             is_offline_compatible: false,
             is_online_compatible: true,
+            min_players: Some(4),
+            max_players: Some(10),
             stages: vec![Stage {
                 state: StageState::NotStarted,
                 time_limit: None,
@@ -97,6 +101,8 @@ pub fn get_cards() -> Vec<Card> {
         Card {
             is_offline_compatible: true,
             is_online_compatible: true,
+            min_players: Some(2),
+            max_players: Some(4),
             stages: vec![Stage {
                 state: StageState::NotStarted,
                 time_limit: None,
