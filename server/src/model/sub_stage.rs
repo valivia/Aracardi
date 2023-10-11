@@ -1,9 +1,8 @@
+use std::fmt;
+
 use rand::seq::SliceRandom;
 
-use super::{
-    player::{self, Player},
-    player_selector::PlayerSelector,
-};
+use super::{player::Player, player_selector::PlayerSelector};
 
 #[derive(Debug, Clone)]
 pub struct TextSubStage {
@@ -41,6 +40,37 @@ pub struct SubStage {
     pub sub_type: SubStageType,
 }
 
+// implement print trait
+
+impl fmt::Display for SubStage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self.sub_type {
+            SubStageType::Text(text_sub_stage) => {
+                writeln!(f, "text: {}", text_sub_stage.text)?;
+            }
+            SubStageType::Input(input_sub_stage) => {
+                writeln!(f, "placeholder: {}", input_sub_stage.placeholder)?;
+            }
+            SubStageType::Poll(poll_sub_stage) => {
+                writeln!(f, "title: {}", poll_sub_stage.title)?;
+            }
+            SubStageType::Empty(_) => {
+                writeln!(f, "empty")?;
+            }
+        }
+
+        writeln!(
+            f,
+            "selector: {:?}\ntargets: {:?}",
+            self.player_selector,
+            self.targets
+                .iter()
+                .map(|player| player.name.clone())
+                .collect::<Vec<String>>()
+        )
+    }
+}
+
 impl SubStage {
     pub fn set_targets(&mut self, players: Vec<Player>) {
         self.targets = players;
@@ -58,7 +88,7 @@ impl SubStage {
                 .filter(|player| player.host)
                 .cloned()
                 .collect::<Vec<Player>>(),
-            PlayerSelector::Current => vec![current_player.clone()],
+            PlayerSelector::Offset(0) => vec![current_player.clone()],
             PlayerSelector::Offset(offset) => {
                 let index = players
                     .iter()
@@ -87,7 +117,7 @@ impl SubStage {
             }
         };
 
-        self.targets = players.to_vec();
+        self.targets = target_players.to_vec();
 
         Ok(target_players)
     }

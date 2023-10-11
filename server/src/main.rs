@@ -4,12 +4,14 @@ use model::{
 };
 use rand::Rng;
 
+mod validator;
 mod dummy_data;
 use crate::dummy_data::get_cards;
 
 mod model;
 
 fn main() {
+
     println!("Hello, world!");
     let mut game = OfflineGame::new(
         get_cards(),
@@ -25,6 +27,7 @@ fn main() {
     )
     .unwrap();
 
+    return; 
     for _ in 0..10 {
         game.next();
     }
@@ -42,7 +45,7 @@ struct GameState {
 pub struct OfflineGame {
     state: GameState,
     active_cards: Vec<ActiveCard>,
-    
+
     /// When to start reusing cards. Has to be less than cards.len()
     backlog_limit: usize,
 
@@ -132,15 +135,13 @@ impl OfflineGame {
             self.next_turn();
         }
 
-        dbg!(self.state.card.stages.len(), self.state.stage_index);
-
         self.state.card.stages[self.state.stage_index]
             .assign_players(&self.players, self.state.player.clone())
             .unwrap();
 
-        println!(
-            "cardPointer: {}, stagePointer: {}",
-            self.state.card_index, self.state.stage_index
-        );
+        println!("-----");
+        for sub_stage in &self.state.card.stages[self.state.stage_index].sub_stages {
+            println!("{}", sub_stage);
+        }
     }
 }
