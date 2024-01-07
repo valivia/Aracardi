@@ -21,7 +21,7 @@
     input {
         @include baseComponent;
 
-        color: $text;
+        color: var(--theme-text);;
         background-color: transparent;
 
         border: 1px solid currentColor;
@@ -34,7 +34,7 @@
         &:focus-visible,
         &:hover {
             outline: none;
-            color: $accent;
+            color: var(--theme-accent);;
         }
     }
 </style>

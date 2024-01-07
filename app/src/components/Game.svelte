@@ -2,12 +2,12 @@
     import { WifiIcon, WifiOffIcon } from "svelte-feather-icons";
     import type { Game } from "@prisma/client";
     import Tag from "./Tag.svelte";
-    import { slide } from "svelte/transition";
+
     export let game: Game;
     export const active = false;
 </script>
 
-<article class="main" tabIndex={0} class:active transition:slide|global>
+<a href="/game/{game.id}" class="main" tabIndex={0} class:active>
     <img
         class="avatar"
         src="https://cdn.discordapp.com/attachments/808476183250993183/1135733767957401601/moon.png"
@@ -30,7 +30,7 @@
             {/if}
         </section>
     </section>
-</article>
+</a>
 
 <style lang="scss">
     @use "styles/abstracts" as *;
@@ -39,7 +39,7 @@
 
     .active {
         transform: scale(1.01);
-        color: $accent;
+        color: var(--theme-accent);;
         outline: none;
     }
 
@@ -63,7 +63,7 @@
         @include pointer {
             &:hover {
                 transform: scale(1.01);
-                color: $accent;
+                color: var(--theme-accent);
             }
 
             &:active {

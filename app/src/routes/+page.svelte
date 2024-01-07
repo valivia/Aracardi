@@ -40,7 +40,7 @@
         height: 1px;
         margin: 1em 0;
 
-        background-color: $text;
+        background-color: var(--theme-text);
     }
 
     form {

@@ -26,7 +26,7 @@
         transform: scale(1);
 
         &:hover {
-            color: $accent;
+            color: var(--theme-accent);
             transform: scale(1.1);
         }
     }

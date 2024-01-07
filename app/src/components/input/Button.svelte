@@ -14,7 +14,7 @@
 </button>
 
 <style lang="scss">
-    @use "styles/abstracts" as *;
+    @use "styles/abstracts/component" as *;
 
     button {
         @include baseComponent;
@@ -41,25 +41,25 @@
 
     // Variants
     button[data-variant="primary"] {
-        color: $primary;
-        background-color: $text;
+        color: var(--theme-primary);
+        background-color: var(--theme-text);
 
         &:focus-visible,
         &:hover {
             outline: none;
-            background-color: $accent;
+            background-color: var(--theme-accent);
         }
     }
 
     button[data-variant="secondary"] {
-        color: $text;
+        color: var(--theme-text);
         background-color: transparent;
         border: 1px solid currentColor;
 
         &:focus-visible,
         &:hover {
             outline: none;
-            color: $accent;
+            color: var(--theme-accent);;
         }
     }
 </style>
