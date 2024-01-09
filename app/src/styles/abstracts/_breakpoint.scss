@@ -45,6 +45,12 @@ $screen-xl-min: 1200px;
   }
 }
 
+@mixin reducedMotion() {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
 @mixin pointer() {
   @media (pointer: fine) {
     @content;
