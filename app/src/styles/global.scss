@@ -15,6 +15,7 @@
         // Elements
         --theme-accent: var(--color-gold);
         --theme-primary: var(--color-black);
+        --theme-error: var(--color-red);
     }
 
     @media (prefers-color-scheme: light) {
@@ -26,7 +27,21 @@
         // Elements
         --theme-accent: rgb(141, 63, 11); // TODO: find a pallete that actually works
         --theme-primary: var(--color-white);
+        --theme-error: var(--color-red);
     }
+
+    --border: $border;
+}
+
+:global(.svgStroke) {
+    stroke: currentcolor;
+    stroke-miterlimit: 10;
+    fill: none;
+    stroke-linecap: round;
+}
+
+:global(.svgFill) {
+    fill: currentcolor;
 }
 
 :global(*) {
@@ -41,9 +56,6 @@
 }
 
 :global(html, body) {
-    max-width: 100vw;
-    height: 100%;
-
     overflow-x: hidden;
     background-color: var(--theme-primary);
     color: var(--theme-text);
@@ -58,4 +70,18 @@
     font-weight: 200;
     font-size: clamp(3rem, 5vw, 6rem);
     text-transform: capitalize;
+}
+
+:global(::-webkit-scrollbar) {
+    width: 5px;
+}
+
+:global(::-webkit-scrollbar-thumb) {
+    background: #555;
+    border-radius: 10px;
+}
+
+:global(::-webkit-scrollbar-track) {
+    background: #222;
+    border-radius: 10px;
 }

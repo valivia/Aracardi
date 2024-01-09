@@ -18,6 +18,17 @@ $margin: 0.2em;
   font-weight: 600;
 }
 
+@mixin avatar() {
+  border: $border;
+  border-radius: 100vw;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @mixin componentSizes() {
   font-size: $font-md;
 

@@ -1,5 +1,6 @@
 $borderRadius: 0.5rem;
-$borderWidth: 0.1rem;
+$borderWidth: 2px;
+$border: $borderWidth solid currentColor;
 
 $colors: (
     beige: hsl(39, 48%, 71%),
@@ -9,5 +10,6 @@ $colors: (
     black: hsl(0, 0%, 4%),
     black-light: hsl(0, 0%, 10%),
     black-dark: hsl(0, 0%, 0%),
-    white: hsl(45, 8%, 79%)
+    white: hsl(45, 8%, 79%),
+    red: hsl(0, 57%, 51%),
 );
