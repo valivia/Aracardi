@@ -10,8 +10,8 @@
     @use "styles/abstracts" as *;
 
     button {
-        border: $border;
-        border-radius: $borderRadius;
+        border: var(--border-width) solid currentColor;
+        border-radius: var(--border-radius);
         background-color: transparent;
         color: currentColor;
         padding: 1rem;

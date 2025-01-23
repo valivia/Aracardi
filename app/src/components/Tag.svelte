@@ -17,8 +17,6 @@
 <style lang="scss">
     @use "styles/abstracts" as *;
 
-    $borderWidth: 1px;
-
     .main {
         font-size: clamp(0.75rem, 1.5vw, 1rem);
         display: flex;
@@ -26,7 +24,7 @@
     }
 
     .text {
-        border: $borderWidth solid currentColor;
+        border: var(--border-width) solid currentColor;
         border-radius: 100px;
     }
 
@@ -35,13 +33,13 @@
     }
 
     :global(.main > svg) {
-        border: $borderWidth solid currentColor;
+        border: var(--border-width) solid currentColor;
         border-radius: 100px;
 
         width: 2em;
         height: 2em;
 
         padding: 0.3em;
-        margin: -$borderWidth;
+        margin: -var(--border-width);
     }
 </style>

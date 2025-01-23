@@ -1,7 +1,11 @@
 <script lang="ts">
-    export let name: string | undefined = undefined;
-    export let text: string;
-    export let image: string | undefined = undefined;
+    interface Props {
+        name?: string;
+        text: string;
+        image?: string;
+    }
+
+    const { name, text, image }: Props = $props();
 </script>
 
 <div class="card" style={image ? `--background: url(${image})` : ""}>

@@ -7,7 +7,6 @@
   user-select: none;
 }
 
-@mixin flexCollumn {
-  display: flex;
-  flex-direction: column;
+@mixin boxShadow($color: rgb(6, 6, 6)) {
+  box-shadow: 0 0.2em 0.5em rgba($color, 1);
 }

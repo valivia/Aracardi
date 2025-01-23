@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { WifiIcon, WifiOffIcon } from "svelte-feather-icons";
-    import type { Game } from "@prisma/client";
+    import type { AddonSummary } from "lib/addon";
     import Tag from "./Tag.svelte";
+    import { CardsIcon } from "lib/icons";
 
-    export let game: Game;
-    export const active = false;
+    export let addon: AddonSummary;
+    export let active = false;
 </script>
 
-<a href="/game/{game.id}" class="main" tabIndex={0} class:active>
+<button class="main" class:active on:click>
     <img
         class="avatar"
         src="https://cdn.discordapp.com/attachments/808476183250993183/1135733767957401601/moon.png"
@@ -15,36 +15,27 @@
     />
 
     <section class="info">
-        <h2 class="title">{game.title}</h2>
-        <p class="description">{game.description}</p>
+        <h2 class="title">{addon.title}</h2>
+        <p class="description">{addon.description}</p>
 
         <section class="tags">
-            {#if game.is_available_online}
-                <Tag><WifiIcon size="1rem" slot="icon" /></Tag>
-            {/if}
-            {#if game.is_available_offline}
-                <Tag><WifiOffIcon size="1rem" slot="icon" /></Tag>
-            {/if}
-            {#if game.is_official}
+            <Tag>
+                <CardsIcon />
+                {addon.cardCount}
+            </Tag>
+            {#if addon.isOfficial}
                 <Tag>Official</Tag>
             {/if}
         </section>
     </section>
-</a>
+</button>
 
 <style lang="scss">
     @use "styles/abstracts" as *;
 
-    $borderWidth: 1px;
-
-    .active {
-        transform: scale(1.01);
-        color: var(--theme-accent);;
-        outline: none;
-    }
-
     .main {
-        border: $borderWidth solid currentColor;
+        all: unset;
+        border: var(--border-width) solid currentColor;
         border-radius: 96px;
         width: 100%;
 
@@ -56,26 +47,28 @@
 
         transform: scale(1);
         transition: transform ease-in-out 100ms;
-        cursor: pointer;
+
+        &:focus-within {
+            color: var(--theme-accent);
+        }
+
+        &:hover {
+            color: var(--theme-accent);
+        }
 
         @include noselect;
+    }
 
-        @include pointer {
-            &:hover {
-                transform: scale(1.01);
-                color: var(--theme-accent);
-            }
-
-            &:active {
-                transform: scale(1);
-            }
-        }
+    .active {
+        transform: scale(1.03);
+        color: var(--theme-accent);
+        outline: none;
     }
 
     .avatar {
-        border: $borderWidth solid currentColor;
+        border: var(--border-width) solid currentColor;
         border-radius: 100%;
-        margin-left: -$borderWidth;
+        margin-left: -var(--border-width);
 
         // size
         $size: clamp(64px, 10vw, 128px);
@@ -106,11 +99,6 @@
             font-weight: 400;
             font-size: 0.9rem;
             margin: 0;
-            display: none;
-
-            @include large {
-                display: block;
-            }
         }
 
         & > .tags {

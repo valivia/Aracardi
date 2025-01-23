@@ -1,27 +1,19 @@
 <script>
     import AnchorButton from "components/input/AnchorButton.svelte";
-    import Button from "components/input/Button.svelte";
-    import Input from "components/input/Input.svelte";
 </script>
 
 <div class="content">
     <h1 class="title">Play now!</h1>
-    <div class="divider" />
+    <div class="divider"></div>
 
     <main>
-        <form>
-            <Input label="game code" type="text" placeholder="Join code" />
-            <Button type="submit">Join Game</Button>
-        </form>
-
-        <AnchorButton href="/game">Create game</AnchorButton>
+        <AnchorButton href="/setup">Create game</AnchorButton>
     </main>
 </div>
 
 <style lang="scss">
-    @use "styles/abstracts" as *;
-
     .content {
+        margin-inline: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -42,10 +34,6 @@
         margin: 1em 0;
 
         background-color: var(--theme-text);
-    }
-
-    form {
-        display: flex;
     }
 
     main {

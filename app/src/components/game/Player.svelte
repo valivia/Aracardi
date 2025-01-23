@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Player } from "$lib/lobby/player";
-    import { XIcon, Trash2Icon } from "svelte-feather-icons";
     import Avatar from "components/avatar.svelte";
+    import { DeleteIcon } from "lib/icons";
 
     export let player: Player;
     export let isDeleteable = true;
@@ -10,7 +10,7 @@
 <button class="player" disabled={!isDeleteable}>
     <Avatar name={player.avatar} />
     <div class="delete">
-        <Trash2Icon />
+        <DeleteIcon width="40%" height="40%"/>
     </div>
 
     <span class="name">{player.name}</span>

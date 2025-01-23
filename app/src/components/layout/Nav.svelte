@@ -3,9 +3,9 @@
 </script>
 
 <nav>
-    <div class="logo">
+    <a href="/" class="logo">
         <Logo />
-    </div>
+    </a>
 </nav>
 
 <style lang="scss">

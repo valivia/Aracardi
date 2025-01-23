@@ -1,16 +1,16 @@
 <script lang="ts">
     import { avatars } from "assets/avatars/avatars.svelte";
-    import { PlusIcon, ShuffleIcon } from "svelte-feather-icons";
     import Card from "components/game/Card.svelte";
     import ActiveCard from "components/game/ActiveCard.svelte";
     import Player from "components/game/Player.svelte";
+    import { PlusIcon, ShuffleIcon } from "lib/icons";
 </script>
 
 <div class="layout">
     <aside class="players">
         <div class="playerList">
             <button class="playerButton">
-                <PlusIcon size="50%" strokeWidth={1} />
+                <PlusIcon width="50%" height="50%"/>
             </button>
             {#each avatars as avatar}
                 <Player
@@ -24,7 +24,7 @@
                 />
             {/each}
             <button class="playerButton">
-                <ShuffleIcon />
+                <ShuffleIcon width="50%" height="50%"/>
             </button>
         </div>
     </aside>
@@ -54,21 +54,32 @@
     .layout {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 3fr 1fr;
+        grid-template-rows: 1fr auto 1fr;
         grid-template-areas: "players" "game" "active";
+        align-items: center;
+        justify-items: center;
 
         @include large() {
             grid-template-columns: 1fr 3fr 1fr;
             grid-template-rows: 1fr;
             grid-template-areas: "players game active";
+            align-items: unset;
+            justify-items: unset;
         }
     }
 
     $player-size: clamp(4rem, 5vw, 6rem);
 
+    .players,
+    .active {
+        max-width: 90vw;
+        @include large() {
+            max-width: unset;
+        }
+    }
+
     .players {
         grid-area: players;
-        max-width: 100vw; // TODO: ??
 
         @include large() {
             max-width: unset;
@@ -114,6 +125,7 @@
     .game {
         grid-area: game;
 
+        width: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
