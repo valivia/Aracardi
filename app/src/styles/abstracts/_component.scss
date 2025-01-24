@@ -4,41 +4,49 @@ $font-lg: 1rem;
 
 $paddingBlock: 0.5em;
 $paddingInline: 1.2em;
-$margin: 0.2em;
 
 @mixin baseComponent() {
-  padding-block: $paddingBlock;
-  padding-inline: $paddingInline;
-  margin: $margin;
+    padding-block: $paddingBlock;
+    padding-inline: $paddingInline;
+    margin: 0;
 
-  border-radius: var(--border-radius);
-  line-height: 1;
-  font-weight: 600;
+    border-radius: var(--border-radius);
+    line-height: 1;
+    font-weight: 600;
 }
 
 @mixin avatar() {
-  border: var(--border-width) solid currentColor;
-  border-radius: 100vw;
-  overflow: hidden;
-  aspect-ratio: 1 / 1;
+    border: var(--border-width) solid currentColor;
+    border-radius: 100vw;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:focus-visible {
+        outline: var(--border-width) solid var(--theme-accent);
+        outline-offset: 2px;
+    }
+
+    &:hover {
+        color: var(--theme-accent);
+    }
 }
 
 @mixin componentSizes() {
-  font-size: $font-md;
-
-  &[data-size="sm"] {
-    font-size: $font-sm;
-  }
-
-  &[data-size="md"] {
     font-size: $font-md;
-  }
 
-  &[data-size="lg"] {
-    font-size: $font-lg;
-  }
+    &[data-size="sm"] {
+        font-size: $font-sm;
+    }
+
+    &[data-size="md"] {
+        font-size: $font-md;
+    }
+
+    &[data-size="lg"] {
+        font-size: $font-lg;
+    }
 }

@@ -5,10 +5,6 @@
     let { data } = $props();
 </script>
 
-<svelte:head>
-    <title>Aracardi - Setup</title>
-</svelte:head>
-
 <main>
     <div class="addons">
         {#each data.addons as addon (addon.id)}
@@ -16,7 +12,7 @@
         {/each}
     </div>
     <div>
-        <AnchorButton href="/lobby">Continue</AnchorButton>
+        <AnchorButton href="/setup/players">Continue</AnchorButton>
     </div>
 </main>
 

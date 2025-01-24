@@ -3,14 +3,18 @@
     import Avatar from "components/avatar.svelte";
     import { DeleteIcon } from "lib/icons";
 
-    export let player: Player;
-    export let isDeleteable = true;
+    interface Props {
+        player: Player;
+        onDelete?: (player: Player) => void;
+    }
+
+    let { player, onDelete }: Props = $props();
 </script>
 
-<button class="player" disabled={!isDeleteable}>
+<button class="player" disabled={onDelete != undefined} onclick={() => onDelete && onDelete(player)}>
     <Avatar name={player.avatar} />
     <div class="delete">
-        <DeleteIcon width="40%" height="40%"/>
+        <DeleteIcon width="40%" height="40%" />
     </div>
 
     <span class="name">{player.name}</span>

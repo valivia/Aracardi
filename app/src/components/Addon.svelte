@@ -2,17 +2,30 @@
     import type { AddonSummary } from "lib/addon";
     import Tag from "./Tag.svelte";
     import { CardsIcon } from "lib/icons";
+    import { selectedAddons } from "routes/(game)/state.svelte";
 
-    export let addon: AddonSummary;
-    export let active = false;
+    interface Props {
+        addon: AddonSummary;
+    }
+
+    let { addon }: Props = $props();
+
+    let active = $derived.by(() => selectedAddons.get(addon.id) !== undefined);
+
+    function toggleActive() {
+        if (selectedAddons.get(addon.id)) {
+            selectedAddons.delete(addon.id);
+        } else {
+            selectedAddons.set(addon.id, addon);
+        }
+
+        console.log(selectedAddons);
+    }
 </script>
 
-<button class="main" class:active on:click>
-    <img
-        class="avatar"
-        src="https://cdn.discordapp.com/attachments/808476183250993183/1135733767957401601/moon.png"
-        alt=""
-    />
+<button class="main" class:active onclick={toggleActive}>
+    {console.log({ active })}
+    <picture> </picture>
 
     <section class="info">
         <h2 class="title">{addon.title}</h2>
@@ -61,11 +74,11 @@
 
     .active {
         transform: scale(1.03);
-        color: var(--theme-accent);
+        color: red;
         outline: none;
     }
 
-    .avatar {
+    picture {
         border: var(--border-width) solid currentColor;
         border-radius: 100%;
         margin-left: -var(--border-width);

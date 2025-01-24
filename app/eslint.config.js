@@ -37,6 +37,8 @@ export default ts.config(
             "quotes": ["warn", "double"],
             "semi": ["warn", "always"],
             "camelcase": ["warn", { "properties": "always" }],
+            "no-unused-vars": "off",
+            '@typescript-eslint/no-unused-vars': 'warn',
             "@stylistic/js/object-curly-spacing": ["warn", "always"],
             "@stylistic/js/eol-last": ["warn", "always"],
         }

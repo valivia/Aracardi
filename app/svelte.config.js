@@ -24,6 +24,7 @@ const config = {
             "routes": "./src/routes",
             "components": "./src/components",
             "assets": "./src/assets",
+            "static": "./static",
         }
     }
 };

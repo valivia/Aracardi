@@ -58,6 +58,7 @@
 
 :global(html, body) {
     max-width: 100vw;
+    min-height: 100%;
     color-scheme: dark light;
 
     color: var(--theme-text);

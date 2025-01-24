@@ -11,13 +11,7 @@
     export let href: string;
 </script>
 
-<a
-    class="button"
-    {...$$restProps}
-    {href}
-    data-variant={variant}
-    data-size={size}
->
+<a class="button" {...$$restProps} {href} data-variant={variant} data-size={size}>
     <slot />
 </a>
 

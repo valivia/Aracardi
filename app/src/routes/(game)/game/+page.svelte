@@ -6,25 +6,28 @@
     import { PlusIcon, ShuffleIcon } from "lib/icons";
 </script>
 
+<svelte:head>
+    <title>Aracardi - Lobby</title>
+</svelte:head>
+
 <div class="layout">
     <aside class="players">
         <div class="playerList">
             <button class="playerButton">
-                <PlusIcon width="50%" height="50%"/>
+                <PlusIcon width="50%" height="50%" />
             </button>
             {#each avatars as avatar}
                 <Player
                     player={{
                         name: avatar.name,
                         avatar: avatar.name,
-                        host: false,
                         id: "",
                     }}
-                    isDeleteable={true}
+                    onDelete={() => {}}
                 />
             {/each}
             <button class="playerButton">
-                <ShuffleIcon width="50%" height="50%"/>
+                <ShuffleIcon width="50%" height="50%" />
             </button>
         </div>
     </aside>
