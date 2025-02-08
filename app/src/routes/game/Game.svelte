@@ -3,7 +3,7 @@
     import ActiveCard from "components/game/ActiveCard.svelte";
     import Player from "components/game/Player.svelte";
     import { PlusIcon, ShuffleIcon } from "lib/icons";
-    import type { GameState } from "./state.svelte";
+    import { GameStage, type GameState } from "./state.svelte";
 
     interface Props {
         game: GameState;
@@ -15,7 +15,7 @@
 <div class="layout">
     <aside class="players">
         <div class="playerList">
-            <button class="playerButton">
+            <button class="playerButton" onclick={() => game.setStage(GameStage.playerSetup)}>
                 <PlusIcon width="50%" height="50%" />
             </button>
             {#each game.players as player}
@@ -39,7 +39,7 @@
 
     <aside class="active">
         {#each game.activeCards as card}
-            <ActiveCard card={card} />
+            <ActiveCard {card} />
         {/each}
     </aside>
 </div>

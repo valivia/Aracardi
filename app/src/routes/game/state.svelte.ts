@@ -11,7 +11,11 @@ export enum GameStage {
 }
 
 export class GameState {
-    public stage: GameStage = $state(GameStage.addonSetup);
+    // Stage
+    private stage: GameStage = $state(GameStage.addonSetup);
+    public get currentStage() { return this.stage };
+
+    // Content
     public cards: Card[] = $state([]);
     public players: Player[] = $state([]);
 
@@ -64,7 +68,7 @@ export class GameState {
 
         this.cards = shuffle(cards);
 
-        this.stage = GameStage.playerSetup;
+        this.setStage(GameStage.playerSetup);
     };
 
     // Players
@@ -106,5 +110,9 @@ export class GameState {
         // Card
         this.currentCardIndex = (this.currentCardIndex + 1) % this.cards.length;
         this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+    }
+
+    public setStage(state: GameStage) {
+        this.stage = state;
     }
 }

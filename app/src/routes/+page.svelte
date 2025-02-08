@@ -7,7 +7,7 @@
     <div class="divider"></div>
 
     <main>
-        <AnchorButton href="/setup/addons">Create game</AnchorButton>
+        <AnchorButton href="/game">Create game</AnchorButton>
     </main>
 </div>
 

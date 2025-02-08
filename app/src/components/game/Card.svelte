@@ -18,9 +18,11 @@
             <CardText {card} />
         </p>
 
-        {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
-            <img {src} alt="" />
-        {/await}
+        {#if card.hasImage}
+            {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
+                <img {src} alt="" />
+            {/await}
+        {/if}
     </div>
 {/key}
 
