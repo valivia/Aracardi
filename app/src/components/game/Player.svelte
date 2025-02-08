@@ -1,18 +1,20 @@
 <script lang="ts">
     import type { Player } from "$lib/lobby/player";
-    import Avatar from "components/avatar.svelte";
     import { DeleteIcon } from "lib/icons";
 
     interface Props {
         player: Player;
-        onDelete?: (player: Player) => void;
+        active?: boolean;
+        onDelete?: () => void;
     }
 
-    let { player, onDelete }: Props = $props();
+    let { player, active = false, onDelete }: Props = $props();
 </script>
 
-<button class="player" disabled={onDelete != undefined} onclick={() => onDelete && onDelete(player)}>
-    <Avatar name={player.avatar} />
+<button class="player" id="player_{player.id}" class:active disabled={onDelete == undefined} onclick={onDelete}>
+    <div class="avatar">
+        <player.avatar.element />
+    </div>
     <div class="delete">
         <DeleteIcon width="40%" height="40%" />
     </div>
@@ -27,10 +29,18 @@
         color: currentColor;
         border: none;
         background-color: transparent;
+
+        &.active {
+            color: var(--theme-accent);
+        }
+    }
+
+    .avatar,
+    .delete {
+        @include avatar();
     }
 
     .delete {
-        @include avatar();
         display: none;
     }
 

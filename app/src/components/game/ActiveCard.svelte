@@ -1,9 +1,16 @@
 <script lang="ts">
-    export let text: string;
+    import type { CardController } from "routes/game/card/card.svelte";
+    import CardText from "./CardText.svelte";
+
+    interface Props {
+        card: CardController;
+    }
+
+    let { card }: Props = $props();
 </script>
 
-<button on:click>
-    {text}
+<button>
+    <CardText {card} />
 </button>
 
 <style lang="scss">

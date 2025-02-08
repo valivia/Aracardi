@@ -29,10 +29,6 @@ $paddingInline: 1.2em;
         outline: var(--border-width) solid var(--theme-accent);
         outline-offset: 2px;
     }
-
-    &:hover {
-        color: var(--theme-accent);
-    }
 }
 
 @mixin componentSizes() {

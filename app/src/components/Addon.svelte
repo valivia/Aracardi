@@ -2,29 +2,17 @@
     import type { AddonSummary } from "lib/addon";
     import Tag from "./Tag.svelte";
     import { CardsIcon } from "lib/icons";
-    import { selectedAddons } from "routes/(game)/state.svelte";
 
     interface Props {
         addon: AddonSummary;
+        active: boolean;
+        toggle: (addon: AddonSummary) => void;
     }
 
-    let { addon }: Props = $props();
-
-    let active = $derived.by(() => selectedAddons.get(addon.id) !== undefined);
-
-    function toggleActive() {
-        if (selectedAddons.get(addon.id)) {
-            selectedAddons.delete(addon.id);
-        } else {
-            selectedAddons.set(addon.id, addon);
-        }
-
-        console.log(selectedAddons);
-    }
+    let { addon, active, toggle }: Props = $props();
 </script>
 
-<button class="main" class:active onclick={toggleActive}>
-    {console.log({ active })}
+<button class="main" class:active onclick={() => toggle(addon)}>
     <picture> </picture>
 
     <section class="info">

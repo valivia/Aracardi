@@ -1,28 +1,40 @@
 <script lang="ts">
+    import { type CardController } from "routes/game/card/card.svelte";
+    import CardText from "./CardText.svelte";
+
     interface Props {
-        name?: string;
-        text: string;
-        image?: string;
+        card: CardController;
     }
 
-    const { name, text, image }: Props = $props();
+    const { card }: Props = $props();
 </script>
 
-<div class="card" style={image ? `--background: url(${image})` : ""}>
-    {#if name}
-        <h1 class="title underlined">{name}</h1>
-    {/if}
-    <p class="text">{text}</p>
-</div>
+{#key card.id}
+    <div class="card">
+        {#if card.title}
+            <h1 class="title underlined">{card.title}</h1>
+        {/if}
+        <p class="text">
+            <CardText {card} />
+        </p>
+
+        {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
+            <img {src} alt="" />
+        {/await}
+    </div>
+{/key}
 
 <style lang="scss">
     .card {
+        isolation: isolate;
+
         width: min(100%, 50rem);
         aspect-ratio: 16 / 9;
         padding: 2rem;
         margin: 4rem;
 
         border-radius: 1rem;
+        overflow: hidden;
         box-shadow:
             0 0 0 2px var(--theme-text),
             0 0 0 8px var(--theme-primary),
@@ -40,6 +52,19 @@
         background-size: cover;
         background-repeat: no-repeat;
         background-image: var(--background);
+
+        animation: spin 200ms forwards ease-in-out;
+
+        text-align: center;
+
+        & img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+
+            z-index: -1;
+        }
     }
 
     .underlined {
@@ -64,5 +89,14 @@
         background-color: var(--theme-primary);
         padding: 0.2em 0.5em;
         border-radius: 0.5rem;
+    }
+
+    @keyframes spin {
+        from {
+            transform: scale(0.2) rotate(200deg);
+        }
+        to {
+            transform: scale(1) rotate(0deg);
+        }
     }
 </style>

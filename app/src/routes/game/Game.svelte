@@ -1,14 +1,16 @@
 <script lang="ts">
-    import { avatars } from "assets/avatars/avatars.svelte";
     import Card from "components/game/Card.svelte";
     import ActiveCard from "components/game/ActiveCard.svelte";
     import Player from "components/game/Player.svelte";
     import { PlusIcon, ShuffleIcon } from "lib/icons";
-</script>
+    import type { GameState } from "./state.svelte";
 
-<svelte:head>
-    <title>Aracardi - Lobby</title>
-</svelte:head>
+    interface Props {
+        game: GameState;
+    }
+
+    let { game }: Props = $props();
+</script>
 
 <div class="layout">
     <aside class="players">
@@ -16,38 +18,29 @@
             <button class="playerButton">
                 <PlusIcon width="50%" height="50%" />
             </button>
-            {#each avatars as avatar}
-                <Player
-                    player={{
-                        name: avatar.name,
-                        avatar: avatar.name,
-                        id: "",
-                    }}
-                    onDelete={() => {}}
-                />
+            {#each game.players as player}
+                {@const active = game.currentPlayer.id === player.id}
+                {@const canDelete = game.players.length > 3 && !active}
+                {@const onDelete = canDelete ? () => game.removePlayer(player) : undefined}
+                <Player {player} {active} {onDelete} />
             {/each}
-            <button class="playerButton">
+            <button class="playerButton" onclick={() => game.shufflePlayers()}>
                 <ShuffleIcon width="50%" height="50%" />
             </button>
         </div>
     </aside>
 
     <main class="game">
-        <Card
-            name="Test"
-            text="Test"
-            image="https://cdn.discordapp.com/attachments/798915150445936750/1194336323096559756/20231213_192137.jpg"
-        />
+        {#if game.currentCard}
+            <Card card={game.currentCard} />
+        {/if}
+        <button onclick={() => game.nextTurn()}>Draw Card</button>
     </main>
 
     <aside class="active">
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
-        <ActiveCard text="Test" />
+        {#each game.activeCards as card}
+            <ActiveCard card={card} />
+        {/each}
     </aside>
 </div>
 

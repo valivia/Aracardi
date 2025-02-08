@@ -3,7 +3,13 @@
     import AnchorButton from "components/input/AnchorButton.svelte";
     import Button from "components/input/Button.svelte";
     import type { Player } from "lib/lobby/player";
-    import { players } from "routes/(game)/state.svelte";
+    import { GameStage, type GameState } from "./state.svelte";
+
+    interface Props {
+        game: GameState;
+    }
+
+    let { game }: Props = $props();
 
     type AvatarPlayerLink = Avatar & { playerName?: string };
 
@@ -12,7 +18,7 @@
 
     let avatarPlayerLink: AvatarPlayerLink[] = $derived.by(() => {
         return avatars.map((avatar) => {
-            const playerName = players.find((player) => player.avatar === avatar.name);
+            const playerName = game.players.find((player) => player.avatar.name === avatar.name);
             return { ...avatar, playerName: playerName?.name };
         });
     });
@@ -36,26 +42,13 @@
         selectedAvatar.playerName = name;
         const player: Player = {
             name,
-            avatar: selectedAvatar.name,
+            avatar: selectedAvatar,
             id: Math.random().toString(36).slice(2),
         };
 
-        // Update/add to player array
-        const index = players.findIndex((p) => p.avatar === selectedAvatar.name);
-        if (index !== -1) {
-            players[index] = player;
-        } else {
-            players.push(player);
-        }
+        game.upsertPlayer(player);
 
         setRandomAvatar();
-    }
-
-    function deletePlayer(player: Player) {
-        const index = players.findIndex((p) => p.id === player.id);
-        if (index !== -1) {
-            players.splice(index, 1);
-        }
     }
 
     function selectAvatar(avatar: AvatarPlayerLink) {
@@ -66,8 +59,6 @@
         selectedAvatar = avatar;
         value = avatar.playerName ?? "";
     }
-
-    $inspect(players);
 </script>
 
 <div class="wrap">
@@ -112,9 +103,9 @@
 
         <!-- Controls -->
         <section class="controls">
-            <AnchorButton variant="secondary" href="/setup/addons">Back</AnchorButton>
-            {#if players.length >= 3}
-                <AnchorButton href="/game">Start Game</AnchorButton>
+            <Button variant="secondary" onclick={() => (game.stage = GameStage.addonSetup)}>Back</Button>
+            {#if game.players.length >= 3}
+                <Button onclick={() => (game.stage = GameStage.game)}>Start Game</Button>
             {/if}
         </section>
     </main>
@@ -152,6 +143,7 @@
         color: currentColor;
         background: none;
         border: none;
+        cursor: pointer;
     }
 
     .selector {
@@ -221,7 +213,7 @@
         border-radius: var(--border-radius);
 
         width: 100%;
-        padding: 0.2em;
+        padding: 0.3em;
 
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(1em, 1fr));
