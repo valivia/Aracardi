@@ -25,17 +25,19 @@
             cancel();
         }
     });
+
+    $inspect(game.currentCard);
 </script>
 
 <svelte:head>
     <title>Aracardi - Lobby</title>
 </svelte:head>
 
-{#if game.stage === GameStage.addonSetup}
+{#if game.currentStage === GameStage.addonSetup}
     <AddonStage {game} {addons} />
-{:else if game.stage === GameStage.playerSetup}
+{:else if game.currentStage === GameStage.playerSetup}
     <PlayerStage {game} />
-{:else if game.stage === GameStage.game}
+{:else if game.currentStage === GameStage.game}
     <Game {game} />
 {:else}
     <div>??</div>

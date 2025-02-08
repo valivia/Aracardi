@@ -62,18 +62,19 @@
 
     .active {
         transform: scale(1.03);
-        color: red;
+        color: var(--theme-accent);
         outline: none;
     }
 
     picture {
         border: var(--border-width) solid currentColor;
         border-radius: 100%;
-        margin-left: -var(--border-width);
+        margin-left: calc(-1 * var(--border-width));
 
         // size
         $size: clamp(64px, 10vw, 128px);
-        width: $size;
+
+        aspect-ratio: 1;
         height: $size;
     }
 

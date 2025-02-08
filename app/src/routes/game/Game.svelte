@@ -32,9 +32,8 @@
 
     <main class="game">
         {#if game.currentCard}
-            <Card card={game.currentCard} />
+            <Card card={game.currentCard} onclick={() => game.nextTurn()} />
         {/if}
-        <button onclick={() => game.nextTurn()}>Draw Card</button>
     </main>
 
     <aside class="active">

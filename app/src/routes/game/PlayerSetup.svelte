@@ -1,6 +1,5 @@
 <script lang="ts">
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
-    import AnchorButton from "components/input/AnchorButton.svelte";
     import Button from "components/input/Button.svelte";
     import type { Player } from "lib/lobby/player";
     import { GameStage, type GameState } from "./state.svelte";
@@ -103,9 +102,9 @@
 
         <!-- Controls -->
         <section class="controls">
-            <Button variant="secondary" onclick={() => (game.stage = GameStage.addonSetup)}>Back</Button>
+            <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
             {#if game.players.length >= 3}
-                <Button onclick={() => (game.stage = GameStage.game)}>Start Game</Button>
+                <Button onclick={() => game.setStage(GameStage.game)}>Start Game</Button>
             {/if}
         </section>
     </main>

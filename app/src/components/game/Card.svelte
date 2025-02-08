@@ -4,13 +4,14 @@
 
     interface Props {
         card: CardController;
+        onclick?: () => void;
     }
 
-    const { card }: Props = $props();
+    const { card, onclick }: Props = $props();
 </script>
 
 {#key card.id}
-    <div class="card">
+    <button class="card" {onclick}>
         {#if card.title}
             <h1 class="title underlined">{card.title}</h1>
         {/if}
@@ -23,12 +24,18 @@
                 <img {src} alt="" />
             {/await}
         {/if}
-    </div>
+    </button>
 {/key}
 
 <style lang="scss">
+    @use "styles/abstracts" as *;
+
     .card {
         isolation: isolate;
+
+        cursor: pointer;
+        border: none;
+        background: transparent;
 
         width: min(100%, 50rem);
         aspect-ratio: 16 / 9;
@@ -58,6 +65,10 @@
         animation: spin 200ms forwards ease-in-out;
 
         text-align: center;
+
+        color: var(--theme-text);
+
+        @include noselect;
 
         & img {
             position: absolute;

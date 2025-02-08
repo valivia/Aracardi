@@ -62,8 +62,6 @@ export class GameState {
 
 
         const cards = addons.flatMap(addon => addon.cards);
-
-        console.log({ selectedAddons: this.selectedAddons, addons, cards });
         // TODO: filter out card overrides
 
         this.cards = shuffle(cards);
@@ -113,6 +111,10 @@ export class GameState {
     }
 
     public setStage(state: GameStage) {
+        if (state === GameStage.game && !this.currentCard) {
+            this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+        }
+
         this.stage = state;
     }
 }

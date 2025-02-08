@@ -89,21 +89,18 @@ export class CardController implements Card {
         // Replace placeholders
         replacePlaceholder(/%SELF%/g, () => {
             this.players.add(currentPlayer);
-            console.log({ currentPlayer, players, currentPlayerIndex });
             return currentPlayer.name;
         }, CardPartType.currentPlayer);
 
         replacePlaceholder(/%NEXT_PLAYER%/g, () => {
             const nextPlayer = players[(currentPlayerIndex + 1) % players.length];
             this.players.add(nextPlayer);
-            console.log({ nextPlayer });
             return nextPlayer.name;
         }, CardPartType.player);
 
         replacePlaceholder(/%PREVIOUS_PLAYER%/g, () => {
             const prevPlayer = players[(currentPlayerIndex - 1 + players.length) % players.length];
             this.players.add(prevPlayer);
-            console.log({ prevPlayer });
             return prevPlayer.name;
         }, CardPartType.player);
 
@@ -128,9 +125,6 @@ export class CardController implements Card {
                 replacePlaceholder(new RegExp(placeholder, 'g'), () => player.name, CardPartType.player);
             });
         }
-
-        console.log({ processed_text });
-
 
         return processed_text;
     }

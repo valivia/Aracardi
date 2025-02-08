@@ -23,5 +23,7 @@ export const load = (async () => {
             return addon;
         }));
 
+    addons.sort((a, b) => b.cardCount - a.cardCount);
+
     return { addons };
 }) satisfies PageServerLoad;

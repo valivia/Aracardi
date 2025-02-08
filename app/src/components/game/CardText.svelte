@@ -11,14 +11,10 @@
 {#each card.formattedText as part}
     {#if part.type === CardPartType.text}
         {part.value}
+    {:else if part.type === CardPartType.turns}
+        <var data-type={part.type}>{card.turns}</var> turn{card.turns === 1 ? "" : "s"}
     {:else}
-        <var data-type={part.type}>
-            {#if part.type === CardPartType.turns}
-                {card.turns} turns
-            {:else}
-                {part.value}
-            {/if}
-        </var>
+        <var data-type={part.type}>{part.value}</var>
     {/if}
 {/each}
 
@@ -26,5 +22,10 @@
     var {
         color: var(--theme-accent);
         font-style: normal;
+        font-weight: bold;
+
+        &[data-type="currentPlayer"] {
+            text-decoration: underline;
+        }
     }
 </style>
