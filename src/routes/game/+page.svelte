@@ -18,7 +18,6 @@
         }
     });
 
-    $inspect(game.currentCard);
 </script>
 
 {#if game.currentStage === GameStage.addonSetup}

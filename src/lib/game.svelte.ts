@@ -100,8 +100,13 @@ export class GameController {
     }
 
     // Players
+    public getPlayer(id: string) {
+        return this.players.find(p => p.id === id);
+    }
+
     public upsertPlayer = (player: Player) => {
         const index = this.players.findIndex(p => p.id === player.id);
+
         if (index === -1) {
             this.players.push(player);
         } else {

@@ -2,30 +2,36 @@
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
     import Button from "components/input/Button.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
-    import type { Player } from "lib/player.svelte";
+    import { DeleteIcon } from "lib/icons";
+    import { Player } from "lib/player.svelte";
 
+    // Props
     interface Props {
         game: GameController;
     }
 
     let { game }: Props = $props();
 
-    type AvatarPlayerLink = Avatar & { playerName?: string };
+    // State
+    type AvatarPlayerLink = Avatar & { player?: Player };
+    let selectedAvatarName = $state(avatars[Math.floor(Math.random() * avatars.length)].name);
+    let selectedAvatar: AvatarPlayerLink = $derived.by(() => {
+        return avatarPlayerLink.find((avatar) => avatar.name === selectedAvatarName) ?? avatarPlayerLink[0];
+    });
 
-    let selectedAvatar: AvatarPlayerLink = $state(avatars[0]);
     let value = $state("");
 
     let avatarPlayerLink: AvatarPlayerLink[] = $derived.by(() => {
         return avatars.map((avatar) => {
-            const playerName = game.players.find((player) => player.avatar.name === avatar.name);
-            return { ...avatar, playerName: playerName?.name };
+            const player = game.players.find((player) => player.avatar.name === avatar.name);
+            return { ...avatar, player };
         });
     });
 
     function setRandomAvatar() {
-        const availableAvatars = avatarPlayerLink.filter(
-            (avatar) => avatar.playerName === undefined && avatar !== selectedAvatar,
-        );
+        const availableAvatars = avatarPlayerLink.filter((avatar) => {
+            return avatar.player === undefined && avatar !== selectedAvatar;
+        });
 
         if (availableAvatars.length === 0) {
             return;
@@ -36,27 +42,40 @@
 
     function onSubmit(event: Event) {
         event.preventDefault();
+
         const name = value.trim();
         if (name.length < 3) return;
-        selectedAvatar.playerName = name;
-        const player: Player = {
-            name,
-            avatar: selectedAvatar,
-            id: Math.random().toString(36).slice(2),
-        };
+
+        const avatar = avatars.find((avatar) => avatar.name === selectedAvatar.name);
+        if (!avatar) return;
+
+        let player;
+        if (selectedAvatar.player) {
+            player = selectedAvatar.player;
+            player.name = name;
+        } else {
+            player = new Player(name, avatar);
+        }
 
         game.upsertPlayer(player);
 
         setRandomAvatar();
     }
 
+    function removePlayer() {
+        if (!selectedAvatar.player) return;
+        game.removePlayer(selectedAvatar.player);
+        setRandomAvatar();
+    }
+
     function selectAvatar(avatar: AvatarPlayerLink) {
-        if (selectedAvatar.playerName && selectedAvatar.playerName !== value) {
+        if (selectedAvatar.player && selectedAvatar.player.name !== value) {
             alert("You have unsaved changes!");
             return;
         }
-        selectedAvatar = avatar;
-        value = avatar.playerName ?? "";
+
+        selectedAvatarName = avatar.name;
+        value = avatar.player?.name ?? "";
     }
 </script>
 
@@ -67,7 +86,16 @@
             <!-- Add player -->
             <form onsubmit={onSubmit}>
                 <input type="text" placeholder="Player name" bind:value minlength="3" maxlength="20" required />
-                <Button type="submit">{selectedAvatar.playerName ? "Update" : "Add"}</Button>
+                <section>
+                    <Button type="submit" disabled={selectedAvatar.player?.name === value}>
+                        {selectedAvatar.player ? "Update" : "Add"}
+                    </Button>
+                    {#if selectedAvatar.player !== undefined}
+                        <Button type="button" color="danger" onclick={removePlayer}>
+                            <DeleteIcon />
+                        </Button>
+                    {/if}
+                </section>
             </form>
 
             <!-- Current avatar -->
@@ -90,12 +118,12 @@
         <section class="avatars">
             {#each avatarPlayerLink as avatar}
                 {@const selected = selectedAvatar.name === avatar.name}
-                {@const active = avatar.playerName !== undefined}
+                {@const active = avatar.player !== undefined}
                 <div class="player" class:active class:selected>
                     <button class="avatar" onclick={() => selectAvatar(avatar)}>
                         <avatar.element />
                     </button>
-                    <div class="name">{avatar.playerName}</div>
+                    <div class="name">{avatar.player?.name}</div>
                 </div>
             {/each}
         </section>
@@ -130,9 +158,10 @@
         padding: 1rem;
         padding-top: 10dvh;
 
-        display: flex;
-        flex-direction: column;
         gap: 1rem;
+        display: grid;
+        grid-template-rows: auto auto auto;
+        grid-template-areas: "selector" "avatars" "controls";
     }
 
     .activeAvatar,
@@ -148,6 +177,7 @@
     }
 
     .selector {
+        grid-area: selector;
         display: grid;
         gap: 1rem;
         grid-template-columns: 1fr 1fr;
@@ -174,6 +204,16 @@
                 &:focus-visible {
                     outline: none;
                     border-color: var(--theme-accent);
+                }
+            }
+
+            section {
+                display: flex;
+                gap: 0.5rem;
+                height: 2rem;
+
+                :global(:first-child) {
+                    flex: 1;
                 }
             }
         }
@@ -209,6 +249,7 @@
     }
 
     .avatars {
+        grid-area: avatars;
         font-size: clamp(3.5rem, $clampFactor, 5rem);
         border: var(--border-width) solid var(--theme-text);
         border-radius: var(--border-radius);
@@ -250,6 +291,7 @@
     }
 
     .controls {
+        grid-area: controls;
         display: flex;
         gap: 1rem;
         justify-content: center;

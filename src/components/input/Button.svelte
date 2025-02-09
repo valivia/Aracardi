@@ -1,16 +1,17 @@
 <script lang="ts">
+    import type { Snippet } from "svelte";
     import type { HTMLButtonAttributes } from "svelte/elements";
-    interface $$Props extends HTMLButtonAttributes {
+    interface Props extends HTMLButtonAttributes {
         variant?: "primary" | "secondary";
-        size?: "sm" | "md" | "lg";
+        color?: "danger" | "warning" | "default";
+        children: Snippet;
     }
 
-    export let variant = "primary";
-    export let size = "md";
+    let { variant = "primary", color = "default", children, ...restProps }: Props = $props();
 </script>
 
-<button class="button" {...$$restProps} data-variant={variant} data-size={size}>
-    <slot />
+<button class="button" {...restProps} data-variant={variant} data-color={color}>
+    {@render children()}
 </button>
 
 <style lang="scss">

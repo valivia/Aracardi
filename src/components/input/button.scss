@@ -2,10 +2,13 @@
 
 .button {
     @include baseComponent;
-    @include componentSizes;
+
+    --button-color: var(--theme-text);
 
     border-radius: var(--border-radius);
     border: none;
+
+    cursor: pointer;
 
     background-color: transparent;
     color: currentColor;
@@ -25,29 +28,32 @@
         opacity: 0.5;
     }
 
-    cursor: pointer;
-}
-
-// Variants
-.button[data-variant="primary"] {
-    color: var(--theme-primary);
-    background-color: var(--theme-text);
-
-    &:focus-visible:not(:disabled),
-    &:hover:not(:disabled) {
-        outline: none;
-        background-color: var(--theme-accent);
+    &[data-color="danger"] {
+        --button-color: var(--theme-error);
     }
-}
 
-.button[data-variant="secondary"] {
-    color: var(--theme-text);
-    background-color: transparent;
-    border: 2px solid currentColor;
+    &[data-variant="primary"] {
+        color: var(--theme-primary);
+        background-color: var(--button-color);
 
-    &:focus-visible:not(:disabled),
-    &:hover:not(:disabled) {
-        outline: none;
-        color: var(--theme-accent);
+        &:focus-visible:not(:disabled),
+        &:hover:not(:disabled) {
+            outline: none;
+            background-color: var(--theme-accent);
+            background-color: color-mix(in oklab, var(--button-color) 80%, black);
+        }
+    }
+
+    &[data-variant="secondary"] {
+        color: var(--button-color);
+        background-color: transparent;
+        border: 2px solid currentColor;
+
+        &:focus-visible:not(:disabled),
+        &:hover:not(:disabled) {
+            outline: none;
+            color: var(--theme-accent);
+            color: color-mix(in oklab, var(--button-color) 80%, black);
+        }
     }
 }

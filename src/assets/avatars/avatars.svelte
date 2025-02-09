@@ -90,7 +90,7 @@
       element: catto,
     },
     {
-      name: "froggi",
+      name: "Froggi",
       authors: ["Czicken"],
       element: frogii,
     },
@@ -117,7 +117,7 @@
     // Other
     {
       name: "Duo",
-      authors: ["owl"],
+      authors: ["Owl"],
       element: duo,
     },
     {
