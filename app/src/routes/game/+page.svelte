@@ -21,6 +21,7 @@
     let game = new GameState();
 
     beforeNavigate(({ cancel }) => {
+        if (game.isClean) return;
         if (!confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
             cancel();
         }
@@ -28,10 +29,6 @@
 
     $inspect(game.currentCard);
 </script>
-
-<svelte:head>
-    <title>Aracardi - Lobby</title>
-</svelte:head>
 
 {#if game.currentStage === GameStage.addonSetup}
     <AddonStage {game} {addons} />

@@ -13,21 +13,16 @@
 </script>
 
 <button class="main" class:active onclick={() => toggle(addon)}>
-    <picture> </picture>
+    <h2 class="title">{addon.title}</h2>
+    <p class="description">{addon.description}</p>
 
-    <section class="info">
-        <h2 class="title">{addon.title}</h2>
-        <p class="description">{addon.description}</p>
-
-        <section class="tags">
-            <Tag>
-                <CardsIcon />
-                {addon.cardCount}
-            </Tag>
-            {#if addon.isOfficial}
-                <Tag>Official</Tag>
-            {/if}
-        </section>
+    <section class="tags">
+        <Tag icon={CardsIcon}>
+            {addon.cardCount}
+        </Tag>
+        {#if addon.isOfficial}
+            <Tag>Official</Tag>
+        {/if}
     </section>
 </button>
 
@@ -35,60 +30,51 @@
     @use "styles/abstracts" as *;
 
     .main {
-        all: unset;
         border: var(--border-width) solid currentColor;
-        border-radius: 96px;
-        width: 100%;
+        border-radius: 1.5rem;
+        background-color: transparent;
+        color: var(--theme-text);
 
-        display: grid;
-        grid-template-columns: min-content minmax(20px, 1fr) 30px;
-        grid-template-rows: 100%;
-        align-items: center;
-        gap: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4em;
+
+        cursor: pointer;
+
+        font-size: clamp(0.8rem, 2vw, 1.4rem);
+        padding: 0.8rem 1.2rem;
 
         transform: scale(1);
         transition: transform ease-in-out 100ms;
 
-        &:focus-within {
-            color: var(--theme-accent);
-        }
-
-        &:hover {
-            color: var(--theme-accent);
-        }
-
         @include noselect;
-    }
 
-    .active {
-        transform: scale(1.03);
-        color: var(--theme-accent);
-        outline: none;
-    }
+        &:hover,
+        &:focus-visible {
+            color: var(--theme-accent);
+            transform: scale(1.02);
+        }
 
-    picture {
-        border: var(--border-width) solid currentColor;
-        border-radius: 100%;
-        margin-left: calc(-1 * var(--border-width));
+        &.active {
+            color: var(--theme-accent);
+            outline: none;
 
-        // size
-        $size: clamp(64px, 10vw, 128px);
-
-        aspect-ratio: 1;
-        height: $size;
-    }
-
-    .info {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-
-        padding: 6px 0;
-        font-size: clamp(1rem, 2vw, 1.7rem);
+            &::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: var(--theme-accent);
+                border-radius: 100vw;
+                position: absolute;
+                right: 1em;
+                top: 1em;
+            }
+        }
 
         & > .title {
-            font-weight: 300;
             font-size: 1em;
+            font-weight: 500;
             margin: 0;
 
             text-transform: capitalize;
@@ -99,7 +85,7 @@
 
         & > .description {
             font-weight: 400;
-            font-size: 0.9rem;
+            font-size: 0.6em;
             margin: 0;
         }
 

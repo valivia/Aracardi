@@ -35,6 +35,22 @@ export class GameState {
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
 
+    // Helpers
+    public cardCount = $derived.by(() => {
+        if (this.cards.length > 0) return this.cards.length;
+
+        return this.selectedAddons.reduce((acc, addon) => {
+            return acc + addon.cardCount;
+        }, 0);
+    });
+
+    public isClean = $derived.by(() => {
+        return this.selectedAddons.length === 0;
+    });
+
+    public isOngoing = $derived.by(() => {
+        return this.currentCard !== null;
+    });
 
     constructor() { }
 
@@ -69,6 +85,21 @@ export class GameState {
         this.setStage(GameStage.playerSetup);
     };
 
+    // Active cards
+    public deleteActiveCard = (card: CardController) => {
+        this.activeCards = this.activeCards.filter(c => c !== card);
+    }
+
+    private incrementActiveCards() {
+        for (const card of this.activeCards) {
+            card.nextTurn();
+
+            if (card.turns === 0) {
+                this.deleteActiveCard(card);
+            }
+        }
+    }
+
     // Players
     public upsertPlayer = (player: Player) => {
         const index = this.players.findIndex(p => p.id === player.id);
@@ -77,10 +108,26 @@ export class GameState {
         } else {
             this.players[index] = player;
         }
+
+        this.savePlayers();
     }
 
     public removePlayer = (player: Player) => {
         this.players = this.players.filter(p => p !== player);
+        this.savePlayers();
+
+        this.activeCards = this.activeCards.filter(card => !card.players.has(player));
+    }
+
+    private savePlayers() {
+        localStorage.setItem("players", JSON.stringify(this.players));
+    }
+
+    public loadPlayers() {
+        const players = localStorage.getItem("players");
+        if (players) {
+            this.players = JSON.parse(players);
+        }
     }
 
     public shufflePlayers = () => {
@@ -97,13 +144,7 @@ export class GameState {
             this.activeCards.push(this.currentCard);
         }
 
-        for (const card of this.activeCards) {
-            card.nextTurn();
-
-            if (card.turns === 0) {
-                this.activeCards = this.activeCards.filter(c => c !== card);
-            }
-        }
+        this.incrementActiveCards();
 
         // Card
         this.currentCardIndex = (this.currentCardIndex + 1) % this.cards.length;

@@ -4,12 +4,13 @@
 
     interface Props {
         card: CardController;
+        onclick?: () => void;
     }
 
-    let { card }: Props = $props();
+    let { card, onclick }: Props = $props();
 </script>
 
-<button>
+<button {onclick}>
     <CardText {card} />
 </button>
 
@@ -22,5 +23,6 @@
         background-color: transparent;
         color: currentColor;
         padding: 1rem;
+        cursor: pointer;
     }
 </style>

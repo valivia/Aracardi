@@ -38,7 +38,7 @@
 
     <aside class="active">
         {#each game.activeCards as card}
-            <ActiveCard {card} />
+            <ActiveCard {card} onclick={() => game.deleteActiveCard(card)} />
         {/each}
     </aside>
 </div>

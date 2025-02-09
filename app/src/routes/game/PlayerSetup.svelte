@@ -102,10 +102,12 @@
 
         <!-- Controls -->
         <section class="controls">
-            <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
-            {#if game.players.length >= 3}
-                <Button onclick={() => game.setStage(GameStage.game)}>Start Game</Button>
+            {#if !game.isOngoing}
+                <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
             {/if}
+            <Button onclick={() => game.setStage(GameStage.game)} disabled={game.players.length < 3}>
+                {game.isOngoing ? "Done" : "Start Game"}
+            </Button>
         </section>
     </main>
 </div>
