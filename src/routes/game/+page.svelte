@@ -1,24 +1,15 @@
 <script lang="ts">
     import { beforeNavigate } from "$app/navigation";
-    import AddonStage from "./AddonSetup.svelte";
-    import Game from "./Game.svelte";
-    import PlayerStage from "./PlayerSetup.svelte";
-    import { GameStage, GameState } from "./state.svelte";
-
-    // const currentPlayer = $derived.by(() => {
-    //     const newPlayer = game.players[game.currentPlayerIndex];
-    //     if (currentPlayer && currentPlayer.id !== newPlayer.id) {
-    //         const player = document.getElementById(`player_${game.currentPlayer?.id}`);
-    //         player?.scrollIntoView({ behavior: "smooth", block: "center" });
-    //     }
-    //     return newPlayer;
-    // });
+    import { GameController, GameStage } from "lib/game.svelte";
+    import AddonStage from "./stages/AddonSetup.svelte";
+    import Game from "./stages/Game.svelte";
+    import PlayerSetup from "./stages/PlayerSetup.svelte";
 
     let { data } = $props();
 
     let { addons } = data;
 
-    let game = new GameState();
+    let game = new GameController();
 
     beforeNavigate(({ cancel }) => {
         if (game.isClean) return;
@@ -33,7 +24,7 @@
 {#if game.currentStage === GameStage.addonSetup}
     <AddonStage {game} {addons} />
 {:else if game.currentStage === GameStage.playerSetup}
-    <PlayerStage {game} />
+    <PlayerSetup {game} />
 {:else if game.currentStage === GameStage.game}
     <Game {game} />
 {:else}

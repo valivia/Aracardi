@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Player } from "$lib/lobby/player";
+    import type { Player } from "lib/player.svelte";
     import { DeleteIcon } from "lib/icons";
 
     interface Props {

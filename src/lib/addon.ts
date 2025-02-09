@@ -1,4 +1,4 @@
-import type { Card } from "./card";
+import type { Card } from "./card.svelte";
 
 export interface Addon {
     id: string;

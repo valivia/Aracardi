@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type CardController } from "routes/game/card/card.svelte";
+    import type { CardController } from "lib/card.svelte";
     import CardText from "./CardText.svelte";
 
     interface Props {

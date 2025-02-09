@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { CardPartType, type CardController } from "routes/game/card/card.svelte";
+    import { CardPartType, type CardController } from "lib/card.svelte";
 
     interface Props {
         card: CardController;

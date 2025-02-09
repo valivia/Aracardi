@@ -1,12 +1,6 @@
-import type { Player } from "lib/lobby/player";
-import type { Card } from "lib/card";
+import type { Player } from "lib/player.svelte";
 import { shuffle } from "lib/helpers";
 
-export type PlayerSelector = "HOST"
-    | "CURRENT"
-    | "PREVIOUS"
-    | "NEXT"
-    | `RANDOM.${string}`;
 
 export enum CardPartType {
     text = "text",
@@ -134,4 +128,19 @@ export class CardController implements Card {
         if (this.turns <= 0) return;
         this.turns -= 1;
     }
+}
+
+export interface Card {
+    id: string;
+    title: string;
+    text: string;
+    turns?: number;
+    timeLimit?: number;
+    minimumPlayers?: number;
+    maximumPlayers?: number;
+    // Cards that get removed from the deck when this card is loaded
+    overrides?: string[];
+    hasImage: boolean;
+    hasWheel: boolean;
+    isNsfw: boolean;
 }

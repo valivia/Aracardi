@@ -2,15 +2,15 @@
     import Addon from "components/Addon.svelte";
     import Button from "components/input/Button.svelte";
     import type { AddonSummary } from "lib/addon";
-    import type { GameState } from "./state.svelte";
     import Tag from "components/Tag.svelte";
     import { CardsIcon } from "lib/icons";
     import AnchorButton from "components/input/AnchorButton.svelte";
     import { PUBLIC_MINIMUM_CARD_COUNT } from "$env/static/public";
+    import type { GameController } from "lib/game.svelte";
 
     interface Props {
         addons: AddonSummary[];
-        game: GameState;
+        game: GameController;
     }
 
     let { addons, game }: Props = $props();

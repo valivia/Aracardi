@@ -1,11 +1,11 @@
 <script lang="ts">
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
     import Button from "components/input/Button.svelte";
-    import type { Player } from "lib/lobby/player";
-    import { GameStage, type GameState } from "./state.svelte";
+    import { type GameController, GameStage } from "lib/game.svelte";
+    import type { Player } from "lib/player.svelte";
 
     interface Props {
-        game: GameState;
+        game: GameController;
     }
 
     let { game }: Props = $props();

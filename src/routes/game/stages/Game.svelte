@@ -3,10 +3,10 @@
     import ActiveCard from "components/game/ActiveCard.svelte";
     import Player from "components/game/Player.svelte";
     import { PlusIcon, ShuffleIcon } from "lib/icons";
-    import { GameStage, type GameState } from "./state.svelte";
+    import { GameStage, GameController } from "lib/game.svelte";
 
     interface Props {
-        game: GameState;
+        game: GameController;
     }
 
     let { game }: Props = $props();

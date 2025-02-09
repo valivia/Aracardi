@@ -1,8 +1,7 @@
 import type { Addon, AddonSummary } from "lib/addon";
-import type { Card } from "lib/card";
-import { shuffle } from "lib/helpers";
-import type { Player } from "lib/lobby/player";
-import { CardController } from "./card/card.svelte";
+import { CardController, type Card } from "./card.svelte";
+import { shuffle } from "./helpers";
+import type { Player } from "./player.svelte";
 
 export enum GameStage {
     addonSetup,
@@ -10,7 +9,7 @@ export enum GameStage {
     game,
 }
 
-export class GameState {
+export class GameController {
     // Stage
     private stage: GameStage = $state(GameStage.addonSetup);
     public get currentStage() { return this.stage };

@@ -12,7 +12,6 @@
         "moduleResolution": "bundler",
         "types": [
             "unplugin-icons/types/svelte",
-            "@types/dom-view-transitions"
         ]
     }
     // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
