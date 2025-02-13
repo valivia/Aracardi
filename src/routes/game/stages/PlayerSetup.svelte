@@ -174,6 +174,11 @@
         background: none;
         border: none;
         cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--theme-accent);
+        }
     }
 
     .selector {

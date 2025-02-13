@@ -1,7 +1,7 @@
 import type { Addon, AddonSummary } from "lib/addon";
 import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
-import type { Player } from "./player.svelte";
+import { Player } from "./player.svelte";
 
 export enum GameStage {
     addonSetup,
@@ -124,14 +124,11 @@ export class GameController {
     }
 
     private savePlayers() {
-        localStorage.setItem("players", JSON.stringify(this.players));
+        Player.savePlayers(this.players);
     }
 
     public loadPlayers() {
-        const players = localStorage.getItem("players");
-        if (players) {
-            this.players = JSON.parse(players);
-        }
+        this.players = Player.loadPlayers();
     }
 
     public shufflePlayers = () => {

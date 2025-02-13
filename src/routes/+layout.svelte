@@ -3,7 +3,7 @@
     import type { Snippet } from "svelte";
 
     interface Props {
-        children?: Snippet
+        children?: Snippet;
     }
 
     const { children }: Props = $props();
