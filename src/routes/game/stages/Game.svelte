@@ -10,6 +10,14 @@
     }
 
     let { game }: Props = $props();
+
+    $effect(() => {
+        const player = document.getElementById(game.currentPlayer.htmlId);
+
+        if (player) {
+            player.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    });
 </script>
 
 <div class="layout">
@@ -55,6 +63,7 @@
         justify-items: center;
         gap: 1rem;
         height: 80vh;
+        overflow: hidden auto;
 
         @include large() {
             grid-template-columns: 1fr 3fr 1fr;
@@ -66,8 +75,6 @@
         }
     }
 
-    $player-size: clamp(4rem, 5vw, 6rem);
-
     .players,
     .active {
         max-width: 90vw;
@@ -78,31 +85,42 @@
         }
     }
 
+    // Lists
+    .playerList,
+    .active {
+        overflow: auto hidden;
+        display: grid;
+        grid-auto-flow: column;
+        padding-bottom: 1rem;
+        gap: 1rem;
+
+        @include large() {
+            overflow: hidden auto;
+            grid-auto-flow: row;
+            padding-bottom: 0;
+        }
+    }
+
+    // Player area
+
+    $player-size: clamp(4rem, 5vw, 6rem);
+
     .players {
         grid-area: players;
 
         & .playerList {
             position: relative;
-            padding: 1rem 0;
 
-            display: grid;
             grid-auto-columns: $player-size;
             grid-template-rows: auto;
-            grid-auto-flow: column;
             align-items: start;
-            grid-gap: 1rem;
-            overflow: auto hidden;
 
             @include large() {
-                padding: 0 1rem;
                 grid-template-columns: $player-size;
                 grid-auto-rows: auto;
-                grid-auto-flow: row;
                 max-height: 100%;
+                padding-inline: 1rem;
                 width: min-content;
-                overflow: hidden auto;
-
-                --gradient-orientation: 0deg;
             }
         }
     }
@@ -117,6 +135,7 @@
         }
     }
 
+    // Main area
     .game {
         grid-area: game;
 
@@ -126,24 +145,18 @@
         align-items: center;
     }
 
+    // Active cards area
     .active {
         grid-area: active;
-        display: grid;
-        gap: 1rem;
 
         grid-template-rows: 10rem;
         grid-auto-columns: 14rem;
-        grid-auto-flow: column;
-        overflow: scroll hidden;
-
-        padding-bottom: 1rem;
+        justify-content: right;
 
         @include large() {
-            grid-template-columns: 1fr;
-            grid-auto-rows: max(8rem);
+            grid-template-columns: min(30ch, 100%);
+            grid-auto-rows: min-content;
             grid-template-rows: unset;
-            grid-auto-flow: row;
-            overflow: hidden scroll;
             padding: 0;
             padding-right: 1rem;
         }

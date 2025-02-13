@@ -11,7 +11,7 @@
     let { player, active = false, onDelete }: Props = $props();
 </script>
 
-<button class="player" id="player_{player.id}" class:active disabled={onDelete == undefined} onclick={onDelete}>
+<button class="player" id={player.htmlId} class:active disabled={onDelete == undefined} onclick={onDelete}>
     <div class="avatar">
         <player.avatar.element />
     </div>

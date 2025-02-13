@@ -22,6 +22,11 @@ export class Player {
             : avatar;
     }
 
+    get htmlId() {
+        return `player_${this.id}`;
+    }
+
+    // Storage
     public getSaveable() {
         return {
             id: this.id,
@@ -30,7 +35,6 @@ export class Player {
         };
     }
 
-    // Storage
     public static savePlayers(players: Player[]) {
         const json = JSON.stringify(players.map(p => p.getSaveable()));
         localStorage.setItem("players", json);
