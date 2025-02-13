@@ -18,6 +18,7 @@
         // Elements
         --theme-accent: hsl(39, 68%, 60%);
         --theme-primary: hsl(0, 0%, 4%);
+        --theme-secondary: hsl(0, 0%, 10%);
         --theme-error: hsl(0, 57%, 51%);
     }
 
@@ -28,8 +29,9 @@
         --theme-text-light: hsl(0, 0%, 10%);
 
         // Elements
-        --theme-accent: hsl(244, 96%, 44%);
-        --theme-primary: hsl(32, 41%, 75%);
+        --theme-accent: hsl(1.8deg 58.82% 32.71%);
+        --theme-primary: hsl(32deg 60.53% 82.98%);
+        --theme-secondary: hsl(0, 0%, 95%);
         --theme-error: hsl(0, 53%, 27%);
     }
 }
@@ -91,14 +93,15 @@
 
 :global(::-webkit-scrollbar) {
     width: 5px;
+    height: 5px;
 }
 
 :global(::-webkit-scrollbar-thumb) {
-    background: #555;
+    background: var(--theme-text);
     border-radius: 10px;
 }
 
 :global(::-webkit-scrollbar-track) {
-    background: #222;
+    background: var(--theme-secondary);
     border-radius: 10px;
 }

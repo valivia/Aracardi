@@ -14,13 +14,11 @@
         padding: 1rem;
         margin-top: auto;
 
-        z-index: 10;
-
         display: flex;
         justify-content: center;
     }
 
     .logo {
-        width: clamp(120px, 10vw, 180px);
+        width: clamp(5rem, 10vw, 9rem);
     }
 </style>

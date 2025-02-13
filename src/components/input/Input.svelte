@@ -20,14 +20,12 @@
     @use "styles/abstracts" as *;
 
     .wrapper {
-        @include componentSizes;
         display: flex;
         flex-direction: column;
     }
 
     input {
         @include baseComponent;
-        @include componentSizes;
 
         color: var(--theme-text);
         background-color: transparent;

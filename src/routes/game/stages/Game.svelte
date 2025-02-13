@@ -18,15 +18,15 @@
             <button class="playerButton" onclick={() => game.setStage(GameStage.playerSetup)}>
                 <PlusIcon width="50%" height="50%" />
             </button>
+            <button class="playerButton" onclick={() => game.shufflePlayers()}>
+                <ShuffleIcon width="35%" height="35%" />
+            </button>
             {#each game.players as player}
                 {@const active = game.currentPlayer.id === player.id}
                 {@const canDelete = game.players.length > 3 && !active}
                 {@const onDelete = canDelete ? () => game.removePlayer(player) : undefined}
                 <Player {player} {active} {onDelete} />
             {/each}
-            <button class="playerButton" onclick={() => game.shufflePlayers()}>
-                <ShuffleIcon width="50%" height="50%" />
-            </button>
         </div>
     </aside>
 
@@ -49,10 +49,12 @@
     .layout {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto 1fr;
+        grid-template-rows: min-content auto min-content;
         grid-template-areas: "players" "game" "active";
         align-items: center;
         justify-items: center;
+        gap: 1rem;
+        height: 80vh;
 
         @include large() {
             grid-template-columns: 1fr 3fr 1fr;
@@ -60,6 +62,7 @@
             grid-template-areas: "players game active";
             align-items: unset;
             justify-items: unset;
+            height: unset;
         }
     }
 
@@ -68,22 +71,19 @@
     .players,
     .active {
         max-width: 90vw;
+
         @include large() {
             max-width: unset;
+            max-height: 70dvh;
         }
     }
 
     .players {
         grid-area: players;
 
-        @include large() {
-            max-width: unset;
-            max-height: 60vh;
-        }
-
         & .playerList {
             position: relative;
-            padding: 1rem;
+            padding: 1rem 0;
 
             display: grid;
             grid-auto-columns: $player-size;
@@ -91,16 +91,16 @@
             grid-auto-flow: column;
             align-items: start;
             grid-gap: 1rem;
-            overflow: scroll auto;
+            overflow: auto hidden;
 
             @include large() {
-                padding: 1rem;
+                padding: 0 1rem;
                 grid-template-columns: $player-size;
                 grid-auto-rows: auto;
                 grid-auto-flow: row;
                 max-height: 100%;
                 width: min-content;
-                overflow: hidden scroll;
+                overflow: hidden auto;
 
                 --gradient-orientation: 0deg;
             }
@@ -131,19 +131,21 @@
         display: grid;
         gap: 1rem;
 
-        $activeCardHeight: clamp(4rem, 5vw, 6rem);
-        $activeCardWidth: clamp(6rem, 5vw, 8rem);
-
-        grid-template-rows: $activeCardHeight;
-        grid-auto-columns: $activeCardWidth;
+        grid-template-rows: 10rem;
+        grid-auto-columns: 14rem;
         grid-auto-flow: column;
         overflow: scroll hidden;
 
+        padding-bottom: 1rem;
+
         @include large() {
             grid-template-columns: 1fr;
-            grid-auto-rows: 1fr;
+            grid-auto-rows: max(8rem);
+            grid-template-rows: unset;
             grid-auto-flow: row;
             overflow: hidden scroll;
+            padding: 0;
+            padding-right: 1rem;
         }
     }
 </style>

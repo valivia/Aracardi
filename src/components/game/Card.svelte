@@ -37,10 +37,12 @@
         border: none;
         background: transparent;
 
-        width: min(100%, 50rem);
+        font-size: clamp(0.8rem, 3vw, 1.5rem);
+
+        width: min(100%, 50ch);
         aspect-ratio: 16 / 9;
-        padding: 2rem;
-        margin: 4rem;
+        padding: 2em;
+        margin: 2em;
 
         border-radius: 1rem;
         overflow: hidden;
@@ -55,7 +57,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: 0.5em;
 
         background-position: center;
         background-size: cover;
@@ -88,12 +90,12 @@
     }
 
     .title {
-        font-size: clamp(1.5rem, 5vw, 2rem);
+        font-size: 1.5em;
         font-weight: 700;
     }
 
     .text {
-        font-size: clamp(1rem, 5vw, 1.5rem);
+        font-size: 1em;
         font-weight: 500;
     }
 

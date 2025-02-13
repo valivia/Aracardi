@@ -1,8 +1,10 @@
 <svg viewBox="0 0 145.72 71">
-    <polygon points="110.86 10.5 76.86 70.5 144.86 70.5 110.86 10.5" />
-    <polygon class="inner" points="110.86 20.1 85.46 64.9 136.26 64.9 110.86 20.1" />
-    <polygon points="72.86 60.5 106.86 .5 38.86 .5 72.86 60.5" />
-    <polygon points="34.86 10.5 .86 70.5 68.86 70.5 34.86 10.5" />
+    <!-- Right -->
+    <polygon vector-effect="non-scaling-stroke" points="110.9,10.5 76.9,70.5 144.9,70.5 " />
+    <!-- Middle -->
+    <polygon vector-effect="non-scaling-stroke" points="72.9,60.5 106.9,0.5 38.9,0.5 " class="middle" />
+    <!-- Left -->
+    <polygon vector-effect="non-scaling-stroke" points="34.9,10.5 0.9,70.5 68.9,70.5 " />
 </svg>
 
 <style lang="scss">
@@ -13,18 +15,29 @@
         stroke: currentColor;
         stroke-width: 2px;
         cursor: pointer;
-
-        transition: transform 0.2s ease-in-out;
-        transform: scale(1);
+        overflow: visible;
 
         & > * {
-            transform-origin: center;
+            transform-origin: 50% 70%;
             transform-box: fill-box;
+        }
+
+        & .middle {
+            transition: transform 150ms ease-in-out;
         }
 
         &:hover {
             color: var(--theme-accent);
-            transform: scale(1.1);
+
+            & .middle {
+                transform: translateY(-0.5rem);
+            }
+        }
+
+        &:active {
+            & .middle {
+                transform: translateY(0.4rem);
+            }
         }
     }
 </style>
