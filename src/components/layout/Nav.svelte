@@ -10,10 +10,9 @@
 
 <style lang="scss">
     nav {
-        position: absolute;
         width: 100%;
         padding: 1rem;
-        bottom: 0;
+        margin-top: auto;
 
         z-index: 10;
 
