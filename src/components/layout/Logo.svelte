@@ -40,7 +40,6 @@
         }
 
         &:active {
-
             & .right {
                 transform: translate(0);
             }

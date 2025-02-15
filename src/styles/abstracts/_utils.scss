@@ -1,12 +1,17 @@
 @mixin noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 @mixin boxShadow($color: rgb(6, 6, 6)) {
-  box-shadow: 0 0.2em 0.5em rgba($color, 1);
+    box-shadow: 0 0.2em 0.5em rgba($color, 1);
+}
+
+@mixin focused {
+    outline: var(--border-width) solid var(--theme-accent);
+    outline-offset: 2px;
 }

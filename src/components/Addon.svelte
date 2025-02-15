@@ -56,9 +56,12 @@
             transform: scale(1.02);
         }
 
+        &:focus-visible {
+            @include focused;
+        }
+
         &.active {
             color: var(--theme-accent);
-            outline: none;
 
             &::after {
                 content: "";

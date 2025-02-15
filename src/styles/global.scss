@@ -105,3 +105,12 @@
     background: var(--theme-secondary);
     border-radius: 10px;
 }
+
+:global(input),
+:global(select),
+:global(textarea) {
+    &:focus-visible {
+        outline: var(--border-width) solid var(--theme-accent);
+        outline-offset: 2px;
+    }
+}

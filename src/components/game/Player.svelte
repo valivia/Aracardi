@@ -33,6 +33,13 @@
         &.active {
             color: var(--theme-accent);
         }
+
+        &:focus-visible {
+            outline: none;
+            > .avatar {
+                @include focused;
+            }
+        }
     }
 
     .avatar,

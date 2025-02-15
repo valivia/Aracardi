@@ -28,6 +28,11 @@
         opacity: 0.5;
     }
 
+    &:focus-visible {
+        outline: var(--border-width) solid var(--theme-accent);
+        outline-offset: 2px;
+    }
+
     &[data-color="danger"] {
         --button-color: var(--theme-error);
     }
@@ -38,7 +43,6 @@
 
         &:focus-visible:not(:disabled),
         &:hover:not(:disabled) {
-            outline: none;
             background-color: var(--theme-accent);
             background-color: color-mix(in oklab, var(--button-color) 80%, black);
         }
@@ -51,7 +55,6 @@
 
         &:focus-visible:not(:disabled),
         &:hover:not(:disabled) {
-            outline: none;
             color: var(--theme-accent);
             color: color-mix(in oklab, var(--button-color) 80%, black);
         }

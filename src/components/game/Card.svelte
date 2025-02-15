@@ -19,7 +19,7 @@
             <CardText {card} />
         </p>
 
-        {#if card.hasImage}
+        {#if card.image}
             {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
                 <img {src} alt="" />
             {/await}
@@ -32,6 +32,8 @@
 
     .card {
         isolation: isolate;
+
+        --color: var(--theme-text);
 
         cursor: pointer;
         border: none;
@@ -47,11 +49,11 @@
         border-radius: 1rem;
         overflow: hidden;
         box-shadow:
-            0 0 0 2px var(--theme-text),
+            0 0 0 2px var(--color),
             0 0 0 8px var(--theme-primary),
-            0 0 0 10px var(--theme-text),
+            0 0 0 10px var(--color),
             0 0 0 16px var(--theme-primary),
-            0 0 0 18px var(--theme-text);
+            0 0 0 18px var(--color);
 
         display: flex;
         flex-direction: column;
@@ -64,13 +66,18 @@
         background-repeat: no-repeat;
         background-image: var(--background);
 
-        animation: spin 200ms forwards ease-in-out;
+        animation: spin 1 200ms forwards ease-in-out;
 
         text-align: center;
 
         color: var(--theme-text);
 
         @include noselect;
+
+        &:focus-within,
+        &:hover {
+            outline: var(--border-width) solid var(--theme-accent);
+        }
 
         & img {
             position: absolute;
