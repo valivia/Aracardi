@@ -1,4 +1,5 @@
 import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
+import { nanoid } from 'nanoid'
 
 interface JsonPlayer {
     id: string;
@@ -7,16 +8,12 @@ interface JsonPlayer {
 }
 
 export class Player {
-    public id: string;
-    public name: string;
-    public avatar: Avatar;
+    public id = $state(nanoid(16));
+    public name = $state("");
+    public avatar = $state(avatars[0]);
 
     constructor(name: string, avatar: Avatar | string) {
-
-        this.id = Math.random().toString(36).substring(2, 9);
-
         this.name = name;
-
         this.avatar = typeof avatar === "string"
             ? avatars.find((a) => a.name === avatar) ?? avatars[0]
             : avatar;
@@ -36,6 +33,11 @@ export class Player {
     }
 
     public static savePlayers(players: Player[]) {
+        if (players.length === 0) {
+            localStorage.removeItem("players");
+            return;
+        }
+
         const json = JSON.stringify(players.map(p => p.getSaveable()));
         localStorage.setItem("players", json);
     }

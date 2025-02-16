@@ -59,23 +59,31 @@
 
         game.upsertPlayer(player);
 
-        setRandomAvatar();
+        if (game.players.length < avatarPlayerLink.length) {
+            setRandomAvatar();
+        }
     }
 
     function removePlayer() {
         if (!selectedAvatar.player) return;
         game.removePlayer(selectedAvatar.player);
+        value = "";
         setRandomAvatar();
     }
 
     function selectAvatar(avatar: AvatarPlayerLink) {
-        if (selectedAvatar.player && selectedAvatar.player.name !== value) {
-            alert("You have unsaved changes!");
-            return;
+        if (avatar.player) {
+            value = avatar.player.name;
+        } else if (selectedAvatar.player) {
+            value = "";
         }
 
         selectedAvatarName = avatar.name;
-        value = avatar.player?.name ?? "";
+    }
+
+    function loadPlayers() {
+        game.loadPlayers();
+        value = selectedAvatar.player?.name ?? "";
     }
 </script>
 
@@ -126,6 +134,9 @@
                     <div class="name">{avatar.player?.name}</div>
                 </div>
             {/each}
+            {#if game.hasPreviousPlayers && game.players.length === 0}
+                <button onclick={loadPlayers}>Load previous Players...</button>
+            {/if}
         </section>
 
         <!-- Controls -->
@@ -133,6 +144,7 @@
             {#if !game.isOngoing}
                 <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
             {/if}
+            <Button variant="secondary" onclick={() => null} disabled>Settings</Button>
             <Button onclick={() => game.setStage(GameStage.game)} disabled={game.players.length < 3}>
                 {game.isOngoing ? "Done" : "Start Game"}
             </Button>

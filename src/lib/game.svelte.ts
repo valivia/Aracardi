@@ -34,6 +34,8 @@ export class GameController {
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
 
+    public hasPreviousPlayers = false;
+
     // Helpers
     public cardCount = $derived.by(() => {
         if (this.cards.length > 0) return this.cards.length;
@@ -125,6 +127,7 @@ export class GameController {
 
     private savePlayers() {
         Player.savePlayers(this.players);
+        this.hasPreviousPlayers = this.players.length > 0;
     }
 
     public loadPlayers() {
@@ -155,6 +158,10 @@ export class GameController {
     public setStage(state: GameStage) {
         if (state === GameStage.game && !this.currentCard) {
             this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+        }
+
+        if (state === GameStage.playerSetup) {
+            this.hasPreviousPlayers = localStorage.getItem("players") !== null;
         }
 
         this.stage = state;
