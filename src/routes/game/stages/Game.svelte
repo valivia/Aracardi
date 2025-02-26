@@ -23,10 +23,10 @@
 <div class="layout">
     <aside class="players">
         <div class="playerList">
-            <button class="playerButton" onclick={() => game.setStage(GameStage.playerSetup)}>
+            <button class="playerButton" onclick={() => game.setStage(GameStage.playerSetup)} aria-label="Add player" title="Add player">
                 <PlusIcon width="50%" height="50%" />
             </button>
-            <button class="playerButton" onclick={() => game.shufflePlayers()}>
+            <button class="playerButton" onclick={() => game.shufflePlayers()} aria-label="Shuffle players" title="Shuffle players">
                 <ShuffleIcon width="35%" height="35%" />
             </button>
             {#each game.players as player}

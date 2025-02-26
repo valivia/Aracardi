@@ -99,7 +99,7 @@
                         {selectedAvatar.player ? "Update" : "Add"}
                     </Button>
                     {#if selectedAvatar.player !== undefined}
-                        <Button type="button" color="danger" onclick={removePlayer}>
+                        <Button type="button" color="danger" onclick={removePlayer} aria-label="Remove player">
                             <DeleteIcon />
                         </Button>
                     {/if}
@@ -108,7 +108,7 @@
 
             <!-- Current avatar -->
             {#key selectedAvatar.name}
-                <button class="activeAvatar" onclick={setRandomAvatar}>
+                <button class="activeAvatar" onclick={setRandomAvatar} aria-label="Randomize avatar">
                     <selectedAvatar.element />
                 </button>
             {/key}
@@ -128,7 +128,11 @@
                 {@const selected = selectedAvatar.name === avatar.name}
                 {@const active = avatar.player !== undefined}
                 <div class="player" class:active class:selected>
-                    <button class="avatar" onclick={() => selectAvatar(avatar)}>
+                    <button
+                        class="avatar"
+                        onclick={() => selectAvatar(avatar)}
+                        aria-label="Select {avatar.name} avatar for {active ? 'Editing' : 'Adding'}"
+                    >
                         <avatar.element />
                     </button>
                     <div class="name">{avatar.player?.name}</div>
