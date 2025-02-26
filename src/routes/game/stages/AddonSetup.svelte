@@ -23,7 +23,6 @@
     <section class="info">
         <h2>Card packs</h2>
         <p>Choose which card packs you'd like to play with.</p>
-        <!-- <p>There is a a minimum card count of <var>{PUBLIC_MINIMUM_CARD_COUNT}</var>.</p> -->
     </section>
 
     <!-- Addons -->

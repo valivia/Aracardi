@@ -11,7 +11,14 @@
     let { player, active = false, onDelete }: Props = $props();
 </script>
 
-<button class="player" id={player.htmlId} class:active disabled={onDelete == undefined} onclick={onDelete}>
+<button
+    class="player"
+    id={player.htmlId}
+    class:active
+    disabled={onDelete == undefined}
+    onclick={onDelete}
+    aria-label="Remove player"
+>
     <div class="avatar">
         <player.avatar.element />
     </div>
@@ -51,8 +58,10 @@
         display: none;
     }
 
-    .player:hover:not(:disabled) {
+    .player:hover:not(:disabled),
+    .player:focus-visible:not(:disabled) {
         color: var(--theme-error);
+        cursor: pointer;
 
         :global(> .avatar) {
             display: none;

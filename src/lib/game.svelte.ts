@@ -2,6 +2,7 @@ import type { Addon, AddonSummary } from "lib/addon";
 import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
+import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
 
 export enum GameStage {
     addonSetup,
@@ -158,6 +159,7 @@ export class GameController {
     public setStage(state: GameStage) {
         if (state === GameStage.game && !this.currentCard) {
             this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+            this.logGameStart();
         }
 
         if (state === GameStage.playerSetup) {
@@ -165,5 +167,24 @@ export class GameController {
         }
 
         this.stage = state;
+    }
+
+
+    // Telemetry
+    private async logGameStart() {
+        try {
+            await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi/start`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    addons: this.selectedAddons.map(a => a.title),
+                    players: this.players.map(p => p.name),
+                }),
+            })
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

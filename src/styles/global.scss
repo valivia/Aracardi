@@ -2,7 +2,10 @@
 
 @font-face {
     font-family: "raleway";
-    src: url("/fonts/raleway.ttf");
+    src:
+        local("raleway"),
+        url("/fonts/raleway.ttf") format("truetype");
+    font-display: swap;
 }
 
 :global(:root) {

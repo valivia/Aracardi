@@ -32,7 +32,9 @@
             {#each game.players as player}
                 {@const active = game.currentPlayer.id === player.id}
                 {@const canDelete = game.players.length > 3 && !active}
-                {@const onDelete = canDelete ? () => game.removePlayer(player) : undefined}
+                {@const onDelete = canDelete
+                    ? () => confirm(`Are you sure you want to remove ${player.name}?`) && game.removePlayer(player)
+                    : undefined}
                 <Player {player} {active} {onDelete} />
             {/each}
         </div>

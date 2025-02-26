@@ -3,7 +3,7 @@
 </script>
 
 <nav>
-    <a href="/" class="logo">
+    <a href="/" class="logo" aria-label="Go to home page">
         <Logo />
     </a>
 </nav>

@@ -42,7 +42,7 @@
 
         cursor: pointer;
 
-        font-size: clamp(0.8rem, 2vw, 1.4rem);
+        font-size: clamp(1rem, 2vw, 1.2rem);
         padding: 0.8rem 1.2rem;
 
         transform: scale(1);
@@ -76,7 +76,7 @@
         }
 
         & > .title {
-            font-size: 1em;
+            font-size: 1.2em;
             font-weight: 500;
             margin: 0;
 
@@ -88,7 +88,7 @@
 
         & > .description {
             font-weight: 400;
-            font-size: 0.6em;
+            font-size: 0.8em;
             margin: 0;
         }
 
