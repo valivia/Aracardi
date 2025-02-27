@@ -7,18 +7,23 @@
     }
 
     const { children }: Props = $props();
+
+    const description = `
+        Have an unforgettable drinking night with your friends on Aracardi!
+        Flip the card to reveal fresh, fun, and original prompts every time.
+        With over 300 unique cards across several card packs categories, every round is packed with excitement!`;
 </script>
 
 <svelte:head>
     <title>Aracardi</title>
-    <meta name="description" content="Play a fun drinking game with your friends online!" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
     <meta name="author" content="Owlive" />
     <meta name="theme-color" content="#deae54" />
 
     <meta property="og:title" content="Aracardi - Online Drinking Game" />
-    <meta property="og:description" content="Play a fun and stylish drinking game with your friends!" />
+    <meta property="og:description" content={description} />
     <meta property="og:image" content="/banner.webp?a" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta property="og:image:width" content="1920" />
     <meta property="og:image:height" content="1080" />
     <meta property="og:image:type" content="image/webp" />
