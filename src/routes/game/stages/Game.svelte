@@ -145,6 +145,11 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
+        @include large() {
+            height: 80vh;
+            overflow: hidden;
+        }
     }
 
     // Active cards area
