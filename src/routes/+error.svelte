@@ -9,5 +9,30 @@
 </main>
 
 <style lang="scss">
-    @use "./404/404.scss" as *;
+    main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 70vh;
+        padding: 1em;
+    }
+
+    h1 {
+        font-size: 4em;
+        margin-bottom: 0.2em;
+    }
+
+    p {
+        font-size: 1.2em;
+    }
+
+    button {
+        margin-top: 1em;
+        background-color: transparent;
+        color: currentColor;
+        border: none;
+        cursor: pointer;
+        text-decoration: underline;
+    }
 </style>
