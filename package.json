@@ -4,10 +4,12 @@
     "private": true,
     "scripts": {
         "dev": "vite dev",
-        "build": "vite build",
+        "build": "npm run convert:preserve && vite build",
         "preview": "vite preview",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "convert": "DESTRUCTIVE=true npx tsx src/lib/server/addonManager/index.ts",
+        "convert:preserve": "npx tsx src/lib/server/addonManager/index.ts",
         "lint": "eslint ."
     },
     "prisma": {

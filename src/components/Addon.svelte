@@ -20,7 +20,7 @@
         <Tag icon={CardsIcon}>
             {addon.cardCount}
         </Tag>
-        {#if addon.isOfficial}
+        {#if addon.isDefault}
             <Tag>Official</Tag>
         {/if}
     </section>

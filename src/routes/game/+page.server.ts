@@ -15,7 +15,7 @@ export const load = (async () => {
                 id: fileName,
                 title: importedAddon.title,
                 description: importedAddon.description,
-                isOfficial: importedAddon.isOfficial,
+                isDefault: importedAddon.isDefault,
                 cardCount: importedAddon.cards.length,
                 nsfwCardCount: importedAddon.cards.filter(card => card.isNsfw).length
             };

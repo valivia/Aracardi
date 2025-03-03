@@ -2,6 +2,13 @@ import type { Player } from "lib/player.svelte";
 import { shuffle } from "lib/helpers";
 
 
+export const SelfRegex = /%SELF%/g;
+export const NextPlayerRegex = /%NEXT_PLAYER%/g;
+export const PreviousPlayerRegex = /%PREVIOUS_PLAYER%/g;
+export const RandomPlayerRegex = /%PLAYER(\d+)%/g;
+export const TurnsRegex = /%TURNS%/g;
+export const TimeLimitRegex = /%TIME_LIMIT%/g;
+
 export enum CardPartType {
     text = "text",
     currentPlayer = "currentPlayer",
@@ -15,14 +22,14 @@ export interface CardPart {
 }
 
 export class CardController implements Card {
-    public id: string;
-    public title: string;
-    public text: string;
+    public id;
+    public title;
+    public text;
     public turns = $state<number | undefined>(undefined);
-    public timeLimit?: number;
-    public hasImage: boolean;
-    public hasWheel: boolean;
-    public isNsfw: boolean;
+    public timeLimit;
+    public image;
+    public hasWheel;
+    public isNsfw;
     public players: Set<Player> = new Set();
 
     public formattedText: CardPart[];
@@ -33,7 +40,7 @@ export class CardController implements Card {
         this.text = card.text;
         this.turns = card.turns;
         this.timeLimit = card.timeLimit;
-        this.hasImage = card.hasImage;
+        this.image = card.image;
         this.hasWheel = card.hasWheel;
         this.isNsfw = card.isNsfw;
 
@@ -81,18 +88,18 @@ export class CardController implements Card {
         };
 
         // Replace placeholders
-        replacePlaceholder(/%SELF%/g, () => {
+        replacePlaceholder(SelfRegex, () => {
             this.players.add(currentPlayer);
             return currentPlayer.name;
         }, CardPartType.currentPlayer);
 
-        replacePlaceholder(/%NEXT_PLAYER%/g, () => {
+        replacePlaceholder(NextPlayerRegex, () => {
             const nextPlayer = players[(currentPlayerIndex + 1) % players.length];
             this.players.add(nextPlayer);
             return nextPlayer.name;
         }, CardPartType.player);
 
-        replacePlaceholder(/%PREVIOUS_PLAYER%/g, () => {
+        replacePlaceholder(PreviousPlayerRegex, () => {
             const prevPlayer = players[(currentPlayerIndex - 1 + players.length) % players.length];
             this.players.add(prevPlayer);
             return prevPlayer.name;
@@ -100,15 +107,14 @@ export class CardController implements Card {
 
         // Handle %TURNS% placeholder
         if (this.turns !== undefined) {
-            replacePlaceholder(/%TURNS%/g, () => `${this.turns}`, CardPartType.turns);
+            replacePlaceholder(TurnsRegex, () => `${this.turns}`, CardPartType.turns);
         }
 
         // Filter out used players
         const remainingPlayers = players.filter((player) => !this.players.has(player));
 
         // Random Players
-        const randomPlayerRegex = /%PLAYER(\d+)%/g;
-        const placeholders = [...new Set(this.text.match(randomPlayerRegex))];
+        const placeholders = [...new Set(this.text.match(RandomPlayerRegex))];
 
         if (placeholders.length) {
             const shuffledPlayers = shuffle(remainingPlayers).slice(0, placeholders.length);
@@ -132,15 +138,18 @@ export class CardController implements Card {
 
 export interface Card {
     id: string;
-    title: string;
+    title?: string;
     text: string;
     turns?: number;
     timeLimit?: number;
-    minimumPlayers?: number;
-    maximumPlayers?: number;
     // Cards that get removed from the deck when this card is loaded
     overrides?: string[];
-    hasImage: boolean;
+    image?: boolean;
     hasWheel: boolean;
-    isNsfw: boolean;
+    isNsfw?: boolean;
+}
+
+export interface PrototypeCard extends Omit<Card, "id" | "image"> {
+    id?: string;
+    image: boolean | string | undefined;
 }
