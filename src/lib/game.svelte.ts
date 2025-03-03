@@ -54,7 +54,9 @@ export class GameController {
         return this.currentCard !== null;
     });
 
-    constructor() { }
+    constructor(addons: AddonSummary[]) {
+        this.selectedAddons = addons.filter(a => a.isDefault);
+    }
 
     // Addons
     public toggleAddon = (addon: AddonSummary) => {

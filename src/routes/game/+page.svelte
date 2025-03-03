@@ -9,7 +9,7 @@
 
     let { addons } = data;
 
-    let game = new GameController();
+    let game = new GameController(addons);
 
     beforeNavigate(({ cancel }) => {
         if (game.isClean) return;
