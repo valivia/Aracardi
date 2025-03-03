@@ -60,19 +60,19 @@
 </svg>
 
 <style lang="scss">
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(359deg);
-    }
-  }
+//   @keyframes spin {
+//     0% {
+//       transform: rotate(0deg);
+//     }
+//     100% {
+//       transform: rotate(359deg);
+//     }
+//   }
 
-  .main {
-    animation: spin 4s linear infinite;
-    @media (prefers-reduced-motion: reduce) {
-      animation: none;
-    }
-  }
+//   .main {
+//     animation: spin 4s linear infinite;
+//     @media (prefers-reduced-motion: reduce) {
+//       animation: none;
+//     }
+//   }
 </style>

@@ -25,7 +25,6 @@
   import goose1 from "./goose1.svelte";
   // Pigeon
   import pidge from "./pidge.svelte";
-  import goth from "./goth.svelte";
   import ghost from "./ghost.svelte";
   // Armex
   import pigeon from "./pigeon.svelte";
@@ -124,11 +123,6 @@
       name: "Pidge",
       authors: ["Pigeon"],
       element: pidge,
-    },
-    {
-      name: "Goth",
-      authors: ["Pigeon"],
-      element: goth,
     },
     {
       name: "Ghost",
