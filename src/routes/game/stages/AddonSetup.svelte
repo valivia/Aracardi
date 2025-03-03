@@ -79,6 +79,9 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        overflow-y: auto;
+        max-height: 50vh;
+        padding: 1rem;
     }
 
     .summary {

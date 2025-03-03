@@ -6,9 +6,7 @@
     <h1 class="title">Play now!</h1>
     <div class="divider"></div>
 
-    <main>
-        <AnchorButton href="/game">Create game</AnchorButton>
-    </main>
+    <AnchorButton href="/game">Create game</AnchorButton>
 </div>
 
 <style lang="scss">
@@ -18,8 +16,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding-top: 20vh;
         width: min(40ch, 100%);
+        padding: 1rem;
     }
 
     .title {
@@ -34,11 +32,5 @@
         margin: 1em 0;
 
         background-color: var(--theme-text);
-    }
-
-    main {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
     }
 </style>
