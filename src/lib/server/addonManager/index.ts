@@ -14,12 +14,15 @@ async function main(destructive = false) {
 
     let addons = await AddonManager.getAddons();
 
+    let hasErrors = false;
+
     try {
         for (const [name, addon] of Object.entries(addons)) {
             const transformed = await new AddonManager(addon, name).check(destructive);
 
             if (transformed === null) {
                 console.log(`❌ Addon "${name}" has errors`);
+                hasErrors = true;
                 continue;
             }
 
@@ -31,6 +34,11 @@ async function main(destructive = false) {
         console.log("✅ All addons validated successfully.");
     } catch (error) {
         console.error("❌ Error processing addons:", error);
+        throw error;
+    }
+
+    if (hasErrors) {
+        throw "❌ Some addons have errors";
     }
 
     if (destructive)
@@ -62,4 +70,7 @@ async function main(destructive = false) {
     }
 }
 
-main();
+main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+});

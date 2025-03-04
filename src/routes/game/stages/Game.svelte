@@ -42,7 +42,7 @@
 
     <main class="game">
         {#if game.currentCard}
-            <Card card={game.currentCard} onclick={() => game.nextTurn()} />
+            <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages}/>
         {/if}
     </main>
 

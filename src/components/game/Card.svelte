@@ -4,10 +4,11 @@
 
     interface Props {
         card: CardController;
+        loadImage: boolean;
         onclick?: () => void;
     }
 
-    const { card, onclick }: Props = $props();
+    const { card, loadImage, onclick }: Props = $props();
 </script>
 
 {#key card.id}
@@ -19,7 +20,7 @@
             <CardText {card} />
         </p>
 
-        {#if card.image}
+        {#if card.image && loadImage}
             {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
                 <img {src} alt="" />
             {/await}

@@ -6,10 +6,19 @@
     interface Props {
         addon: AddonSummary;
         active: boolean;
+        allowNsfw: boolean;
         toggle: (addon: AddonSummary) => void;
     }
 
-    let { addon, active, toggle }: Props = $props();
+    let { addon, active, allowNsfw, toggle }: Props = $props();
+
+    let cardCount = $derived.by(() => {
+        let count = addon.cardCount;
+        if (!allowNsfw) {
+            count -= addon.nsfwCardCount;
+        }
+        return count;
+    });
 </script>
 
 <button class="main" class:active onclick={() => toggle(addon)}>
@@ -18,10 +27,10 @@
 
     <section class="tags">
         <Tag icon={CardsIcon}>
-            {addon.cardCount}
+            {cardCount}
         </Tag>
         {#if addon.isDefault}
-            <Tag>Official</Tag>
+            <Tag>Default</Tag>
         {/if}
     </section>
 </button>

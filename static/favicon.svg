@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46.83 54.08">
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <style>
       .cls-1 {
@@ -8,9 +8,14 @@
         stroke-miterlimit: 10;
         stroke-width: 2px;
       }
+
+      .cls-2 {
+        fill: #171717;
+      }
     </style>
   </defs>
-  <polygon class="cls-1" points="46.33 40.27 46.33 13.81 23.42 .58 .5 13.81 .5 40.27 23.42 53.5 46.33 40.27"/>
-  <polygon class="cls-1" points="40.68 37.01 40.68 17.07 23.42 7.1 6.15 17.07 6.15 37.01 23.42 46.97 40.68 37.01"/>
-  <polygon class="cls-1" points="29.58 30.59 29.58 23.48 23.42 19.93 17.26 23.48 17.26 30.59 23.42 34.15 29.58 30.59"/>
+  <polygon class="cls-2" points="64 50.48 64 13.52 32.01 -4.95 0 13.52 0 50.48 32.01 68.95 64 50.48"/>
+  <polygon class="cls-1" points="54.92 45.23 54.92 18.77 32 5.54 9.08 18.77 9.08 45.23 32 58.46 54.92 45.23"/>
+  <polygon class="cls-1" points="49.26 41.97 49.26 22.03 32 12.06 14.73 22.03 14.73 41.97 32 51.93 49.26 41.97"/>
+  <polygon class="cls-1" points="38.16 35.55 38.16 28.44 32 24.89 25.84 28.44 25.84 35.55 32 39.11 38.16 35.55"/>
 </svg>

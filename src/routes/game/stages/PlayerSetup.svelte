@@ -1,5 +1,7 @@
 <script lang="ts">
+    import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
+    import Header from "components/Header.svelte";
     import Button from "components/input/Button.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
     import { DeleteIcon } from "lib/icons";
@@ -87,7 +89,9 @@
     }
 </script>
 
-<div class="wrap">
+<div class="layout">
+    <Header title="Players" subtitle="Add atleast {PUBLIC_MINIMUM_PLAYER_COUNT} players to begin!" />
+
     <main>
         <!-- Selector -->
         <section class="selector">
@@ -142,42 +146,35 @@
                 <button onclick={loadPlayers}>Load previous Players...</button>
             {/if}
         </section>
-
-        <!-- Controls -->
-        <section class="controls">
-            {#if !game.isOngoing}
-                <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
-            {/if}
-            <Button variant="secondary" onclick={() => null} disabled>Settings</Button>
-            <Button onclick={() => game.setStage(GameStage.game)} disabled={game.players.length < 3}>
-                {game.isOngoing ? "Done" : "Start Game"}
-            </Button>
-        </section>
     </main>
+
+    <!-- Controls -->
+    <nav>
+        {#if !game.isOngoing}
+            <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
+        {/if}
+        <Button
+            onclick={() => game.setStage(GameStage.game)}
+            disabled={game.players.length < Number(PUBLIC_MINIMUM_PLAYER_COUNT)}
+        >
+            {game.isOngoing ? "Done" : "Start Game"}
+        </Button>
+    </nav>
 </div>
 
 <style lang="scss">
     @use "styles/abstracts" as *;
+    @use "./layout.scss" as *;
 
     $clampFactor: 10vw;
 
-    .wrap {
-        display: grid;
-        place-items: center;
-        min-height: 100%;
-    }
-
     main {
-        margin-inline: auto;
-        width: min(100%, 80ch);
-
-        padding: 1rem;
-        padding-top: 10dvh;
-
         gap: 1rem;
+        width: min(100%, 80ch);
         display: grid;
         grid-template-rows: auto auto auto;
         grid-template-areas: "selector" "avatars" "controls";
+        height: min-content;
     }
 
     .activeAvatar,
@@ -309,12 +306,5 @@
                 height: 1lh;
             }
         }
-    }
-
-    .controls {
-        grid-area: controls;
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
     }
 </style>

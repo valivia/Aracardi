@@ -7,6 +7,7 @@ export class CardManager implements PrototypeCard {
     public id: PrototypeCard["id"];
     public title: PrototypeCard["title"];
     public text: PrototypeCard["text"];
+    public overrides: PrototypeCard["overrides"];
     public turns: PrototypeCard["turns"];
     public isNsfw: PrototypeCard["isNsfw"];
     public timeLimit: PrototypeCard["timeLimit"];
@@ -16,6 +17,7 @@ export class CardManager implements PrototypeCard {
     constructor(card: PrototypeCard) {
         this.title = card.title;
         this.text = card.text;
+        this.overrides = card.overrides
         this.turns = card.turns;
         this.isNsfw = card.isNsfw;
         this.timeLimit = card.timeLimit;
@@ -36,7 +38,7 @@ export class CardManager implements PrototypeCard {
         this.id = this.id || nanoid(16);
 
         // Title
-        if (this.title !== undefined && typeof this.title !== "string") {
+        if ((this.title !== undefined && typeof this.title !== "string") || this.title?.length === 0) {
             console.error("- Card title must be a string or undefined");
             return null;
         }
@@ -71,26 +73,50 @@ export class CardManager implements PrototypeCard {
             return null;
         }
 
+        // Overrides
+        if (this.overrides !== undefined && !Array.isArray(this.overrides)) {
+            console.error("- Card overrides must be an array or undefined");
+            return null;
+        }
+
+        for (const override of this.overrides || []) {
+            if (typeof override !== "string" || override.length === 0) {
+                console.error("- Card override must be a string");
+                return null;
+            }
+        }
+
+        // NSFW
+        if (this.isNsfw !== undefined && this.isNsfw !== true) {
+            console.error("- Card isNsfw must be true or undefined");
+            return null;
+        }
+
         if (transform) {
             // Image
             if (typeof this.image === "string") {
-                await ImageService.saveImage(this.id, this.image);
-                this.image = true;
+                if (this.image.length === 0) {
+                    console.error("- Empty image path");
+                    return null;
+                } else {
+                    await ImageService.saveImage(this.id, this.image);
+                    this.image = true;
+                }
             }
 
-        } else {
+        }
 
-            // Image
-            if (this.image !== true && this.image !== undefined) {
-                console.error("- Card image is required");
-                return null;
-            }
+        // Image
+        if (this.image !== true && this.image !== undefined) {
+            console.error("- Card image must be true or undefined");
+            return null;
         }
 
         return {
             id: this.id,
             title: this.title,
             text: this.text,
+            overrides: this.overrides,
             turns: this.turns,
             isNsfw: this.isNsfw,
             timeLimit: this.timeLimit,

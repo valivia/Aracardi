@@ -19,6 +19,8 @@
     transform: scale(1);
     transition: transform 100ms ease-in-out;
 
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+
     &:active:not(:disabled) {
         transform: scale(0.95);
     }

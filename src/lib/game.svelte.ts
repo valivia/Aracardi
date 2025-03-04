@@ -10,9 +10,25 @@ export enum GameStage {
     game,
 }
 
+export interface Settings {
+    allowNsfw: boolean;
+    allowDuplicates: boolean;
+    loadImages: boolean;
+}
+
+const defaultSettings: Settings = {
+    allowNsfw: true,
+    allowDuplicates: false,
+    loadImages: true,
+};
+
 export class GameController {
+    // Settings
+    public settings: Settings = $state(defaultSettings);
+
     // Stage
     private stage: GameStage = $state(GameStage.addonSetup);
+    public settingsOpen = $state(false);
     public get currentStage() { return this.stage };
 
     // Content
@@ -42,7 +58,7 @@ export class GameController {
         if (this.cards.length > 0) return this.cards.length;
 
         return this.selectedAddons.reduce((acc, addon) => {
-            return acc + addon.cardCount;
+            return acc + addon.cardCount - (this.settings.allowNsfw ? 0 : addon.nsfwCardCount);
         }, 0);
     });
 
@@ -81,8 +97,15 @@ export class GameController {
         }));
 
 
-        const cards = addons.flatMap(addon => addon.cards);
-        // TODO: filter out card overrides
+        let cards = addons.flatMap(addon => addon.cards);
+
+        // Remove overridden cards
+        const overrideIds = new Set(cards.flatMap(card => card.overrides || []));
+        cards = cards.filter(card => {
+            if (!this.settings.allowDuplicates && overrideIds.has(card.id)) return false;
+            if (!this.settings.allowNsfw && card.isNsfw) return false;
+            return true;
+        });
 
         this.cards = shuffle(cards);
 
@@ -182,7 +205,7 @@ export class GameController {
                 },
                 body: JSON.stringify({
                     addons: this.selectedAddons.map(a => a.title),
-                    players: this.players.map(p => p.name),
+                    players: this.players.map(p => `${p.name} (${p.avatar.name})`),
                 }),
             })
         } catch (e) {

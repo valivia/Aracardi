@@ -144,12 +144,12 @@ export interface Card {
     timeLimit?: number;
     // Cards that get removed from the deck when this card is loaded
     overrides?: string[];
-    image?: boolean;
-    hasWheel: boolean;
-    isNsfw?: boolean;
+    image: true | undefined;
+    hasWheel: true | undefined;
+    isNsfw: true | undefined;
 }
 
 export interface PrototypeCard extends Omit<Card, "id" | "image"> {
     id?: string;
-    image: boolean | string | undefined;
+    image: true | string | undefined;
 }

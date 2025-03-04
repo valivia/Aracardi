@@ -1,0 +1,34 @@
+.layout {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 1fr;
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+    max-height: 100%;
+    max-width: 100vw;
+    padding-block: 1.5rem;
+
+    nav,
+    main {
+        padding-inline: 1rem;
+    }
+
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+
+        :global(button),
+        :global(a) {
+            width: 15ch;
+        }
+    }
+
+    main {
+        overflow: auto hidden;
+        margin-inline: auto;
+    }
+}

@@ -58,7 +58,7 @@ export class AddonManager implements PrototypeAddon {
             try {
                 const card = await new CardManager(this.cards[i]).check(transform);
                 if (!card) {
-                    console.log(`❌ Card "${this.cards[i].id || this.cards[i].title}" has errors`);
+                    console.log(`❌ Card "${this.cards[i].id || this.cards[i].title || this.cards[i].text.slice(0, 12)}" has errors`);
                     hasErrors = true;
                     continue;
                 }
@@ -70,8 +70,8 @@ export class AddonManager implements PrototypeAddon {
         }
 
         if (hasErrors) {
-            console.log(`❌ Addon "${this.title}" has errors`);
             return null;
+
         } else {
             console.log(`✅ Addon "${this.title}" is valid`);
         }
