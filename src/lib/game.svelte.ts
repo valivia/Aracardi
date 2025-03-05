@@ -63,7 +63,7 @@ export class GameController {
     });
 
     public isClean = $derived.by(() => {
-        return this.selectedAddons.length === 0;
+        return this.selectedAddons.filter(a => !a.isDefault).length === 0 && this.players.length === 0;
     });
 
     public isOngoing = $derived.by(() => {
@@ -184,7 +184,7 @@ export class GameController {
     public setStage(state: GameStage) {
         if (state === GameStage.game && !this.currentCard) {
             this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
-            this.logGameStart();
+            this.logGame();
         }
 
         if (state === GameStage.playerSetup) {
@@ -196,7 +196,7 @@ export class GameController {
 
 
     // Telemetry
-    private async logGameStart() {
+    public async logGame(action = "start") {
         try {
             await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi/start`, {
                 method: "POST",
@@ -204,6 +204,7 @@ export class GameController {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    action,
                     addons: this.selectedAddons.map(a => a.title),
                     players: this.players.map(p => `${p.name} (${p.avatar.name})`),
                 }),

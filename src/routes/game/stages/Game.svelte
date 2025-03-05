@@ -64,7 +64,7 @@
         align-items: center;
         justify-items: center;
         gap: 1rem;
-        height: 80vh;
+        height: 100%;
         overflow: hidden auto;
 
         @include large() {
@@ -147,7 +147,7 @@
         align-items: center;
 
         @include large() {
-            height: 80vh;
+            height: 100%;
             overflow: hidden;
         }
     }
