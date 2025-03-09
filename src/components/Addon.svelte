@@ -29,6 +29,9 @@
         <Tag icon={CardsIcon}>
             {cardCount}
         </Tag>
+        {#if addon.isOfficial}
+            <Tag>Official</Tag>
+        {/if}
         {#if addon.isDefault}
             <Tag>Default</Tag>
         {/if}
@@ -61,7 +64,6 @@
 
         &:hover,
         &:focus-visible {
-            color: var(--theme-accent);
             transform: scale(1.02);
         }
 

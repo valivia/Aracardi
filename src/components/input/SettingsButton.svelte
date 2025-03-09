@@ -17,6 +17,8 @@
         color: currentColor;
         top: 1rem;
         right: 1rem;
+        width: 2rem;
+        height: 2rem;
         z-index: 1000;
         background-color: transparent;
         cursor: pointer;
@@ -37,8 +39,8 @@
         }
 
         :global(svg) {
-            width: 2rem;
-            height: 2rem;
+            width: 100%;
+            height: 100%;
         }
     }
 </style>

@@ -2,28 +2,42 @@ import type { Addon, AddonSummary } from "lib/addon";
 import { readdir } from "fs/promises";
 import type { PageServerLoad } from "./$types";
 
-export const load = (async () => {
+export const load: PageServerLoad = async () => {
     const addonFiles = await readdir("./src/assets/addons", { withFileTypes: true });
 
     const addons: AddonSummary[] = await Promise.all(addonFiles
         .filter(file => file.isFile() && file.name.endsWith(".json"))
-        .map(async file => {
+        .map(async (file) => {
             const fileName = file.name.replace(".json", "");
-            const json = await import(`assets/addons/${fileName}.json`)
-            const importedAddon = json.default as Addon;
-            const addon: AddonSummary = {
+            const { default: importedAddon } = await import(`assets/addons/${fileName}.json`);
+
+            const addon = importedAddon as Addon;
+
+            const addonSummary: AddonSummary = {
                 id: fileName,
-                title: importedAddon.title,
-                description: importedAddon.description,
-                isDefault: importedAddon.isDefault,
-                cardCount: importedAddon.cards.length,
-                nsfwCardCount: importedAddon.cards.filter(card => card.isNsfw).length
+                title: addon.title,
+                description: addon.description,
+                isDefault: addon.isDefault,
+                isOfficial: addon.isOfficial,
+                cardCount: addon.cards.length,
+                nsfwCardCount: addon.cards.filter(card => card.isNsfw).length,
             };
 
-            return addon;
-        }));
+            return addonSummary;
+        })
+    );
 
-    addons.sort((a, b) => b.cardCount - a.cardCount);
+    addons.sort((a, b) => {
+        if (b.isDefault !== a.isDefault) {
+            return b.isDefault ? 1 : -1;
+        }
+
+        if (b.isOfficial !== a.isOfficial) {
+            return b.isOfficial ? 1 : -1;
+        }
+
+        return b.cardCount - a.cardCount;
+    });
 
     return { addons };
-}) satisfies PageServerLoad;
+};

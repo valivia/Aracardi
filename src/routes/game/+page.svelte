@@ -34,7 +34,24 @@
             cancel();
         }
     });
+
+    const title = $derived.by(() => {
+        switch (game.currentStage) {
+            case GameStage.addonSetup:
+                return " - Addons";
+            case GameStage.playerSetup:
+                return " - Players";
+            case GameStage.game:
+                return "";
+            default:
+                return " ??";
+        }
+    });
 </script>
+
+<svelte:head>
+    <title>Aracardi{title}</title>
+</svelte:head>
 
 {#if game.settingsOpen}
     <Settings bind:game />

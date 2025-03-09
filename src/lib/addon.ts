@@ -5,6 +5,7 @@ export interface Addon {
     title: string;
     description: string;
     isDefault: boolean;
+    isOfficial: boolean;
     cards: Card[];
 }
 

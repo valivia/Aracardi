@@ -70,14 +70,12 @@
 
 :global(html) {
     height: 100%;
-    overflow-y: auto;
 }
 
 :global(body) {
     display: grid;
     grid-template-rows: min-content 1fr min-content;
     height: 100vh;
-    overflow: hidden;
 }
 
 :global(html) {

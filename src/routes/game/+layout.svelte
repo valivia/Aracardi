@@ -3,7 +3,6 @@
 </script>
 
 <svelte:head>
-    <title>Aracardi - setup</title>
     <meta name="robots" content="noindex" />
 </svelte:head>
 

@@ -55,8 +55,6 @@ export class GameController {
 
     // Helpers
     public cardCount = $derived.by(() => {
-        if (this.cards.length > 0) return this.cards.length;
-
         return this.selectedAddons.reduce((acc, addon) => {
             return acc + addon.cardCount - (this.settings.allowNsfw ? 0 : addon.nsfwCardCount);
         }, 0);

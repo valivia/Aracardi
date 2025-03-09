@@ -12,6 +12,7 @@ export class AddonManager implements PrototypeAddon {
     public title: PrototypeAddon["title"];
     public description: PrototypeAddon["description"];
     public isDefault: PrototypeAddon["isDefault"];
+    public isOfficial: PrototypeAddon["isOfficial"];
     public cards: PrototypeAddon["cards"];
 
     constructor(addon: PrototypeAddon, fileName: string) {
@@ -20,6 +21,7 @@ export class AddonManager implements PrototypeAddon {
         this.title = addon.title;
         this.description = addon.description;
         this.isDefault = addon.isDefault;
+        this.isOfficial = addon.isOfficial
         this.cards = addon.cards;
     }
 
@@ -45,6 +47,11 @@ export class AddonManager implements PrototypeAddon {
 
         if (typeof this.isDefault !== "boolean") {
             console.error("❌ Addon isDefault must be a boolean");
+            hasErrors = true;
+        }
+
+        if (typeof this.isOfficial !== "boolean") {
+            console.error("❌ Addon isOfficial must be a boolean");
             hasErrors = true;
         }
 
