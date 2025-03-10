@@ -84,7 +84,7 @@
     }
 
     function loadPlayers() {
-        game.loadPlayers();
+        game.restorePlayers();
         value = selectedAvatar.player?.name ?? "";
     }
 </script>

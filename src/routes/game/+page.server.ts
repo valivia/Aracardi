@@ -14,7 +14,8 @@ export const load: PageServerLoad = async () => {
             const addon = importedAddon as Addon;
 
             const addonSummary: AddonSummary = {
-                id: fileName,
+                fileName,
+                id: addon.id,
                 title: addon.title,
                 description: addon.description,
                 isDefault: addon.isDefault,

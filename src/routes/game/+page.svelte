@@ -15,11 +15,8 @@
     let game: GameController = $state(new GameController(addons));
 
     onMount(() => {
-        let settings = localStorage.getItem("settings");
-        if (settings) {
-            console.log("- Settings loaded");
-            game.settings = JSON.parse(settings);
-        }
+        game.restoreSettings();
+        game.restoreAddons(addons);
     });
 
     $effect(() => {
@@ -65,6 +62,4 @@
     <div>??</div>
 {/if}
 
-{#if game.currentStage !== GameStage.game}
-    <SettingsButton {game} />
-{/if}
+<SettingsButton {game} />

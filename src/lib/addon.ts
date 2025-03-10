@@ -15,6 +15,7 @@ export interface PrototypeAddon extends Omit<Addon, "cards" | "id"> {
 }
 
 export interface AddonSummary extends Omit<Addon, "cards"> {
+    fileName: string;
     cardCount: number;
     nsfwCardCount: number;
 }

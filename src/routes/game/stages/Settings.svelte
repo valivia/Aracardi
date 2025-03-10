@@ -20,8 +20,10 @@
             <span>Theme</span>
             <ThemeSelect />
         </label>
-        <Toggle bind:checked={game.settings.allowNsfw}>Allow NSFW</Toggle>
-        <Toggle bind:checked={game.settings.allowDuplicates}>Allow duplicates</Toggle>
+        {#if !game.isOngoing}
+            <Toggle bind:checked={game.settings.allowNsfw}>Allow NSFW</Toggle>
+            <Toggle bind:checked={game.settings.allowDuplicates}>Allow duplicates</Toggle>
+        {/if}
         <Toggle bind:checked={game.settings.loadImages}>Load images</Toggle>
     </main>
 

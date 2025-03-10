@@ -80,16 +80,33 @@ export class GameController {
         } else {
             this.selectedAddons.splice(index, 1);
         }
+
+        this.saveAddons();
     }
 
     public hasAddon = (addon: AddonSummary) => {
         return this.selectedAddons.some(a => a.id === addon.id);
     }
 
+    private saveAddons() {
+        const savedAddons = this.selectedAddons.map(a => a.id);
+        localStorage.setItem("addons", JSON.stringify(savedAddons));
+    }
+
+    public restoreAddons(availableAddons: AddonSummary[]) {
+        const json = localStorage.getItem("addons");
+        if (json) {
+            const savedAddons = JSON.parse(json) as string[];
+            console.info(`- Addons loaded (${savedAddons.length})`);
+            const selectedAddons = availableAddons.filter(addon => savedAddons.some(id => id === addon.id));
+            this.selectedAddons = selectedAddons;
+        }
+    }
+
     // Cards
     public loadCards = async () => {
         const addons = await Promise.all(this.selectedAddons.map(async addonInfo => {
-            const json = await import(`assets/addons/${addonInfo.id}.json`)
+            const json = await import(`assets/addons/${addonInfo.fileName}.json`)
             const addon = json.default as Addon;
             return addon;
         }));
@@ -154,7 +171,7 @@ export class GameController {
         this.hasPreviousPlayers = this.players.length > 0;
     }
 
-    public loadPlayers() {
+    public restorePlayers() {
         this.players = Player.loadPlayers();
     }
 
@@ -168,11 +185,11 @@ export class GameController {
     public nextTurn = () => {
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
 
+        this.incrementActiveCards();
+
         if (this.currentCard?.turns) {
             this.activeCards.push(this.currentCard);
         }
-
-        this.incrementActiveCards();
 
         // Card
         this.currentCardIndex = (this.currentCardIndex + 1) % this.cards.length;
@@ -190,6 +207,15 @@ export class GameController {
         }
 
         this.stage = state;
+    }
+
+    // Settings
+    public restoreSettings() {
+        const settings = localStorage.getItem("settings");
+        if (settings) {
+            console.info("- Settings loaded");
+            this.settings = JSON.parse(settings);
+        }
     }
 
 
