@@ -14,9 +14,15 @@ export class Player {
 
     constructor(name: string, avatar: Avatar | string) {
         this.name = name;
-        this.avatar = typeof avatar === "string"
-            ? avatars.find((a) => a.name === avatar) ?? avatars[0]
-            : avatar;
+
+        if (typeof avatar === "string") {
+            const found = avatars.find(a => a.name === avatar);
+            if (!found) throw new Error(`Avatar ${avatar} not found`);
+            avatar = found;
+        }
+
+        this.avatar = avatar;
+
     }
 
     get htmlId() {
@@ -44,11 +50,27 @@ export class Player {
 
     public static loadPlayers() {
         const json = localStorage.getItem("players");
-        if (json) {
-            const players = JSON.parse(json);
-            return players.map((p: JsonPlayer) => new Player(p.name, p.avatar));
+        if (!json) return [];
+
+        const input = JSON.parse(json) as JsonPlayer[];
+        const players: Player[] = [];
+
+        for (const item of input) {
+            try {
+                const player = new Player(item.name, item.avatar)
+
+                if (players.find(p => p.avatar.name === player.avatar.name)) {
+                    throw new Error(`Duplicate avatar ${player.avatar.name}`);
+                }
+
+                players.push(player);
+            } catch (e) {
+                console.warn("Failed to serialize player", e);
+            }
         }
-        return [];
+
+        this.savePlayers(players);
+        return players;
     }
 
     public static getSavedPlayerCount() {
