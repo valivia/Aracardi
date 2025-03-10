@@ -1,9 +1,6 @@
-$paddingBlock: 0.5em;
-$paddingInline: 1.2em;
-
 @mixin baseComponent() {
-    padding-block: $paddingBlock;
-    padding-inline: $paddingInline;
+    padding-block: 0.8em;
+    padding-inline: 1.2em;
     margin: 0;
 
     border-radius: var(--border-radius);

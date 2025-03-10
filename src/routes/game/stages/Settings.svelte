@@ -2,6 +2,7 @@
     import Header from "components/Header.svelte";
     import Button from "components/input/Button.svelte";
     import Toggle from "components/input/Toggle.svelte";
+    import ThemeSelect from "components/ThemeSelect.svelte";
     import { type GameController } from "lib/game.svelte";
 
     interface Props {
@@ -15,6 +16,10 @@
     <Header title="Settings" />
 
     <main>
+        <label>
+            <span>Theme</span>
+            <ThemeSelect />
+        </label>
         <Toggle bind:checked={game.settings.allowNsfw}>Allow NSFW</Toggle>
         <Toggle bind:checked={game.settings.allowDuplicates}>Allow duplicates</Toggle>
         <Toggle bind:checked={game.settings.loadImages}>Load images</Toggle>
@@ -34,5 +39,11 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 </style>

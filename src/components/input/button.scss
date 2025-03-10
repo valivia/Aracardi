@@ -35,6 +35,14 @@
         outline-offset: 2px;
     }
 
+    &:hover:not(:disabled) {
+        transform: scale(1.05);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
     &[data-color="danger"] {
         --button-color: var(--theme-error);
     }
@@ -46,7 +54,7 @@
         &:focus-visible:not(:disabled),
         &:hover:not(:disabled) {
             background-color: var(--theme-accent);
-            background-color: color-mix(in oklab, var(--button-color) 80%, black);
+            background-color: color-mix(in oklab, var(--button-color) 80%, var(--theme-primary));
         }
     }
 
@@ -58,7 +66,7 @@
         &:focus-visible:not(:disabled),
         &:hover:not(:disabled) {
             color: var(--theme-accent);
-            color: color-mix(in oklab, var(--button-color) 80%, black);
+            color: color-mix(in oklab, var(--button-color) 80%, var(--theme-primary));
         }
     }
 }

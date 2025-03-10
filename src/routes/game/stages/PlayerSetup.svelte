@@ -135,7 +135,7 @@
                     <button
                         class="avatar"
                         onclick={() => selectAvatar(avatar)}
-                        aria-label="Select {avatar.name} avatar for {active ? 'Editing' : 'Adding'}"
+                        aria-label="Select {avatar.name} avatar for {active ? "Editing" : "Adding"}"
                     >
                         <avatar.element />
                     </button>
@@ -228,7 +228,10 @@
             section {
                 display: flex;
                 gap: 0.5rem;
-                height: 2rem;
+
+                :global(button) {
+                    font-size: 0.8rem;
+                }
 
                 :global(:first-child) {
                     flex: 1;

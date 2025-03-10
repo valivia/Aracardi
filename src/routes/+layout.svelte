@@ -1,6 +1,7 @@
 <script lang="ts">
     import Nav from "components/layout/Nav.svelte";
-    import type { Snippet } from "svelte";
+    import { syncTheme } from "components/ThemeSelect.svelte";
+    import { type Snippet } from "svelte";
 
     interface Props {
         children?: Snippet;
@@ -11,6 +12,8 @@
     const title = "Aracardi - Online Drinking Game";
     const description =
         "Have an unforgettable drinking night with your friends on Aracardi! With over 300 unique cards every round brings fresh and original prompts to enjoy!";
+
+    if (typeof window !== "undefined") syncTheme();
 </script>
 
 <svelte:head>

@@ -87,16 +87,28 @@ export class ImageService {
                 }
             }
 
-            await sharp(fileBuffer, { pages: -1 })
+            const output = await sharp(fileBuffer, { pages: -1 })
                 .rotate()
                 .resize(resizeOptions)
                 .webp({ quality: 80 })
                 .toFile(outputPath);
 
-            console.log(`💾 Image for card ${id} saved successfully.`);
+            console.log(`💾 Image for card ${id} saved successfully. (${this.formatBytes(output.size)})`);
         } catch (error) {
             console.error(`❌ Error saving image for card ${id}:`, error);
             throw error;
         }
+    }
+
+    private static formatBytes(bytes: number, decimals = 2) {
+        if (!+bytes) return '0 Bytes'
+
+        const k = 1024
+        const dm = decimals < 0 ? 0 : decimals
+        const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
     }
 }

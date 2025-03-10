@@ -1,0 +1,51 @@
+// ########
+@mixin darkTheme {
+    --theme-text: hsl(39, 48%, 71%);
+    --theme-accent: hsl(39, 68%, 60%);
+    --theme-primary: hsl(0, 0%, 4%);
+    --theme-secondary: hsl(0, 0%, 10%);
+    --theme-error: hsl(0, 57%, 51%);
+}
+
+:global(.themeDark) {
+    @include darkTheme;
+}
+
+// ########
+@mixin lightTheme {
+    --theme-text: hsl(0, 0%, 4%);
+    --theme-accent: hsl(31.43deg 100% 35.73%);
+    --theme-primary: hsl(32deg 60.53% 82.98%);
+    --theme-secondary: hsl(0, 0%, 95%);
+    --theme-error: hsl(0deg 100% 61.71%);
+}
+
+:global(.themeLight) {
+    @include lightTheme;
+}
+
+// ########
+@mixin purpleTheme {
+    --theme-text: hsl(272.19deg 100% 12.34%);
+    --theme-accent: hsl(275.1deg 100% 50%);
+    --theme-primary: hsl(283.44deg 100% 87.67%);
+    --theme-secondary: hsl(0, 0%, 95%);
+    --theme-error: hsl(0, 64%, 59%);
+}
+
+:global(.themePurple) {
+    @include purpleTheme;
+}
+
+// ########
+@mixin artDecoTheme {
+    --theme-text: hsl(39deg 78.34% 62.75%);
+    --theme-accent: hsl(33, 90%, 54%);
+    --theme-primary: hsl(171.9deg 94.23% 12.82%);
+    --theme-secondary: hsl(0, 0%, 95%);
+    --theme-error: hsl(6, 74%, 59%);
+}
+
+:global(.themeArtDeco) {
+    @include artDecoTheme;
+}
