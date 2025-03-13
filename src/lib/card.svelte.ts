@@ -14,6 +14,7 @@ export enum CardPartType {
     currentPlayer = "currentPlayer",
     player = "player",
     turns = "turns",
+    timeLimit = "timeLimit",
 }
 
 export interface CardPart {
@@ -87,23 +88,31 @@ export class CardController implements Card {
             });
         };
 
-        // Replace placeholders
+        // Current player
         replacePlaceholder(SelfRegex, () => {
             this.players.add(currentPlayer);
             return currentPlayer.name;
         }, CardPartType.currentPlayer);
 
+        // Next player
         replacePlaceholder(NextPlayerRegex, () => {
             const nextPlayer = players[(currentPlayerIndex + 1) % players.length];
             this.players.add(nextPlayer);
             return nextPlayer.name;
         }, CardPartType.player);
 
+        // Previous player
         replacePlaceholder(PreviousPlayerRegex, () => {
             const prevPlayer = players[(currentPlayerIndex - 1 + players.length) % players.length];
             this.players.add(prevPlayer);
             return prevPlayer.name;
         }, CardPartType.player);
+
+        // Time limit
+        if (this.timeLimit !== undefined) {
+            console.log("Time limit", this.timeLimit);
+            replacePlaceholder(TimeLimitRegex, () => `${this.timeLimit}`, CardPartType.timeLimit);
+        }
 
         // Handle %TURNS% placeholder
         if (this.turns !== undefined) {
