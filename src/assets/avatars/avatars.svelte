@@ -28,6 +28,7 @@
   import ghost from "./ghost.svelte";
   // Armex
   import pigeon from "./pigeon.svelte";
+  import hare from "./hare.svelte";
   import les from "./les.svelte";
 
   export const avatars = [
@@ -128,6 +129,11 @@
       name: "Ghost",
       authors: ["Pigeon"],
       element: ghost,
+    },
+    {
+      name: "March Hare",
+      authors: ["Armex"],
+      element: hare,
     },
     {
       name: "Les",
