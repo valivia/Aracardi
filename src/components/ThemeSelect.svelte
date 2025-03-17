@@ -20,6 +20,10 @@
             class: "themeArtDeco",
             displayName: "Art Deco",
         },
+        pain: {
+            class: "themePain",
+            displayName: "Pain",
+        }
     };
 
     export function setTheme(themeKey: keyof typeof themes) {

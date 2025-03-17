@@ -41,11 +41,25 @@
 @mixin artDecoTheme {
     --theme-text: hsl(39deg 78.34% 62.75%);
     --theme-accent: hsl(33, 90%, 54%);
-    --theme-primary: hsl(171.9deg 94.23% 12.82%);
-    --theme-secondary: hsl(0, 0%, 95%);
+    --theme-primary: hsl(171.9deg 52.59% 10.12%);
+    --theme-secondary: hsl(172deg 83.93% 3.99%);
     --theme-error: hsl(6, 74%, 59%);
 }
 
 :global(.themeArtDeco) {
     @include artDecoTheme;
+}
+
+
+// ########
+@mixin painTheme {
+    --theme-text: hsl(130.18deg 66.89% 83.14%);
+    --theme-accent: hsl(105.39deg 100% 50%);
+    --theme-primary: hsl(271.98deg 100% 50%);
+    --theme-secondary: hsl(261.04deg 25.36% 48.3%);
+    --theme-error: hsl(0, 57%, 51%);
+}
+
+:global(.themePain) {
+    @include painTheme;
 }
