@@ -110,7 +110,6 @@ export class CardController implements Card {
 
         // Time limit
         if (this.timeLimit !== undefined) {
-            console.log("Time limit", this.timeLimit);
             replacePlaceholder(TimeLimitRegex, () => `${this.timeLimit}`, CardPartType.timeLimit);
         }
 

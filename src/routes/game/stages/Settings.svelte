@@ -8,9 +8,10 @@
 
     interface Props {
         game: GameController;
+        onchange: () => void;
     }
 
-    let { game = $bindable() }: Props = $props();
+    let { game = $bindable(), onchange }: Props = $props();
 </script>
 
 <div class="layout">
@@ -21,12 +22,23 @@
             <span>Theme</span>
             <ThemeSelect />
         </label>
-        {#if !game.isOngoing}
-            <Toggle bind:checked={game.settings.allowNsfw}>Allow NSFW</Toggle>
-            <Toggle bind:checked={game.settings.allowDuplicates}>Allow duplicates</Toggle>
-        {/if}
+        <Toggle bind:checked={game.settings.allowNsfw} {onchange}>Allow NSFW</Toggle>
+        <Toggle bind:checked={game.settings.allowDuplicates} {onchange}>Allow duplicates</Toggle>
         <Toggle bind:checked={game.settings.loadImages}>Load images</Toggle>
-
+        {#if game.isOngoing}
+            <dl>
+                <dt>Cards</dt>
+                <dd
+                    class="animatedNumber"
+                    style="--animatedNumber: {game.cards.length}"
+                    aria-label="Card count: {game.cards.length}"
+                >
+                    /{game.cards.length + game.disabledCards.length}
+                </dd>
+                <dt>Players</dt>
+                <dd>{game.players.length}</dd>
+            </dl>
+        {/if}
         <Donation />
     </main>
 
@@ -37,6 +49,7 @@
 
 <style lang="scss">
     @use "./layout.scss" as *;
+    @use "/src/styles/abstracts" as *;
 
     main {
         position: relative;
@@ -53,5 +66,19 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+    }
+
+    dl {
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        gap: 0.5rem;
+
+        dt {
+            font-weight: bold;
+        }
+    }
+
+    .animatedNumber {
+        @include animatedNumber;
     }
 </style>

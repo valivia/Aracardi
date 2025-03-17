@@ -4,12 +4,15 @@
     import Player from "components/game/Player.svelte";
     import { PlusIcon, ShuffleIcon } from "lib/icons";
     import { GameStage, GameController } from "lib/game.svelte";
+    import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
 
     interface Props {
         game: GameController;
     }
 
     let { game }: Props = $props();
+
+    const minPlayers = Number(PUBLIC_MINIMUM_PLAYER_COUNT);
 
     $effect(() => {
         const player = document.getElementById(game.currentPlayer.htmlId);
@@ -23,15 +26,25 @@
 <div class="layout">
     <aside class="players">
         <div class="playerList">
-            <button class="playerButton" onclick={() => game.setStage(GameStage.playerSetup)} aria-label="Add player" title="Add player">
+            <button
+                class="playerButton"
+                onclick={() => game.setStage(GameStage.playerSetup)}
+                aria-label="Add player"
+                title="Add player"
+            >
                 <PlusIcon width="50%" height="50%" />
             </button>
-            <button class="playerButton" onclick={() => game.shufflePlayers()} aria-label="Shuffle players" title="Shuffle players">
+            <button
+                class="playerButton"
+                onclick={() => game.shufflePlayers()}
+                aria-label="Shuffle players"
+                title="Shuffle players"
+            >
                 <ShuffleIcon width="35%" height="35%" />
             </button>
             {#each game.players as player}
                 {@const active = game.currentPlayer.id === player.id}
-                {@const canDelete = game.players.length > 3 && !active}
+                {@const canDelete = game.players.length > minPlayers && !active}
                 {@const onDelete = canDelete
                     ? () => confirm(`Are you sure you want to remove ${player.name}?`) && game.removePlayer(player)
                     : undefined}
@@ -42,7 +55,7 @@
 
     <main class="game">
         {#if game.currentCard}
-            <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages}/>
+            <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages} />
         {/if}
     </main>
 

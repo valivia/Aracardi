@@ -51,7 +51,7 @@
 </svelte:head>
 
 {#if game.settingsOpen}
-    <Settings bind:game />
+    <Settings bind:game onchange={() => game.filterCards()} />
 {:else if game.currentStage === GameStage.addonSetup}
     <AddonStage {game} {addons} />
 {:else if game.currentStage === GameStage.playerSetup}

@@ -27,12 +27,13 @@ export class GameController {
     public settings: Settings = $state(defaultSettings);
 
     // Stage
-    private stage: GameStage = $state(GameStage.addonSetup);
+    private stage: GameStage = $state(GameStage.playerSetup);
     public settingsOpen = $state(false);
     public get currentStage() { return this.stage };
 
     // Content
     public cards: Card[] = $state([]);
+    public disabledCards: Card[] = $state([]);
     public players: Player[] = $state([]);
 
     // Current player
@@ -54,7 +55,7 @@ export class GameController {
     public hasPreviousPlayers = false;
 
     // Helpers
-    public cardCount = $derived.by(() => {
+    public projectedCardCount = $derived.by(() => {
         return this.selectedAddons.reduce((acc, addon) => {
             return acc + addon.cardCount - (this.settings.allowNsfw ? 0 : addon.nsfwCardCount);
         }, 0);
@@ -70,6 +71,10 @@ export class GameController {
 
     constructor(addons: AddonSummary[]) {
         this.selectedAddons = addons.filter(a => a.isDefault);
+
+        // Check if client side
+        if (typeof window !== "undefined")
+            this.hasPreviousPlayers = localStorage.getItem("players") !== null;
     }
 
     // Addons
@@ -111,20 +116,49 @@ export class GameController {
             return addon;
         }));
 
+        this.cards = shuffle(addons.flatMap(addon => addon.cards));
+        this.filterCards();
+    };
 
-        let cards = addons.flatMap(addon => addon.cards);
+    public filterCards = () => {
 
-        // Remove overridden cards
-        const overrideIds = new Set(cards.flatMap(card => card.overrides || []));
-        cards = cards.filter(card => {
-            if (!this.settings.allowDuplicates && overrideIds.has(card.id)) return false;
-            if (!this.settings.allowNsfw && card.isNsfw) return false;
-            return true;
-        });
+        const allCards = [...this.cards, ...this.disabledCards];
 
-        this.cards = shuffle(cards);
+        type SeparatedCards = {
+            validCards: Card[],
+            invalidCards: Card[]
+        }
 
-        this.setStage(GameStage.playerSetup);
+        const overrideIds: Set<string> = new Set(allCards.flatMap(card => card.overrides || []));
+
+        // Filter min and max players
+        const { validCards, invalidCards } = allCards.reduce<SeparatedCards>((acc, card) => {
+            let isInvalid = false;
+
+            // Game settings
+            isInvalid = isInvalid ||
+                (card.isNsfw === true && !this.settings.allowNsfw) ||
+                (!this.settings.allowDuplicates && overrideIds.has(card.id));
+
+            // Players
+            isInvalid = isInvalid ||
+                (card.minPlayers !== undefined && this.players.length < card.minPlayers) ||
+                (card.maxPlayers !== undefined && this.players.length > card.maxPlayers);
+
+            // Push to correct array
+            if (isInvalid) {
+                acc.invalidCards.push(card);
+            } else {
+                acc.validCards.push(card);
+            }
+
+            return acc;
+        }, { validCards: [], invalidCards: [] });
+
+        console.log(`- Filtered cards: ${validCards.length} valid, ${invalidCards.length} invalid`);
+
+        this.cards = validCards;
+        this.disabledCards = invalidCards;
     };
 
     // Active cards
@@ -152,6 +186,7 @@ export class GameController {
 
         if (index === -1) {
             this.players.push(player);
+            this.filterCards();
         } else {
             this.players[index] = player;
         }
@@ -162,6 +197,7 @@ export class GameController {
     public removePlayer = (player: Player) => {
         this.players = this.players.filter(p => p !== player);
         this.savePlayers();
+        this.filterCards();
 
         this.activeCards = this.activeCards.filter(card => !card.players.has(player));
     }
@@ -196,14 +232,15 @@ export class GameController {
         this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
     }
 
-    public setStage(state: GameStage) {
+    public async setStage(state: GameStage) {
         if (state === GameStage.game && !this.currentCard) {
+            await this.loadCards();
+            if (this.cards.length < 10) {
+                alert("Not enough cards");
+                return;
+            }
             this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
             this.logGame();
-        }
-
-        if (state === GameStage.playerSetup) {
-            this.hasPreviousPlayers = localStorage.getItem("players") !== null;
         }
 
         this.stage = state;
@@ -221,6 +258,7 @@ export class GameController {
 
     // Telemetry
     public async logGame(action = "start") {
+        return;
         try {
             await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi/start`, {
                 method: "POST",

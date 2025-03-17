@@ -3,15 +3,16 @@
 
     interface Props {
         checked: boolean;
+        onchange?: () => void;
         children: Snippet;
     }
 
-    let { checked = $bindable(), children }: Props = $props();
+    let { checked = $bindable(), onchange, children }: Props = $props();
 </script>
 
 <label>
     <div class="toggle">
-        <input type="checkbox" bind:checked aria-checked={checked} />
+        <input type="checkbox" bind:checked aria-checked={checked} {onchange} />
         <div class="thumb"></div>
     </div>
     <span>{@render children()}</span>

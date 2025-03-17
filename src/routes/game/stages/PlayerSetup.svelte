@@ -2,6 +2,7 @@
     import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
     import Header from "components/Header.svelte";
+    import AnchorButton from "components/input/AnchorButton.svelte";
     import Button from "components/input/Button.svelte";
     import Tag from "components/Tag.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
@@ -15,21 +16,22 @@
 
     let { game }: Props = $props();
 
-    // State
+    // Avatar Player Link
     type AvatarPlayerLink = Avatar & { player?: Player };
-    let selectedAvatarName = $state(avatars[Math.floor(Math.random() * avatars.length)].name);
-    let selectedAvatar: AvatarPlayerLink = $derived.by(() => {
-        return avatarPlayerLink.find((avatar) => avatar.name === selectedAvatarName) ?? avatarPlayerLink[0];
-    });
-
-    let value = $state("");
-
     let avatarPlayerLink: AvatarPlayerLink[] = $derived.by(() => {
         return avatars.map((avatar) => {
             const player = game.players.find((player) => player.avatar.name === avatar.name);
             return { ...avatar, player };
         });
     });
+
+    // Selected
+    let selectedAvatarName = $state(avatars[Math.floor(Math.random() * avatars.length)].name);
+    let selectedAvatar: AvatarPlayerLink = $derived.by(() => {
+        return avatarPlayerLink.find((avatar) => avatar.name === selectedAvatarName) ?? avatarPlayerLink[0];
+    });
+
+    let value = $state("");
 
     function setRandomAvatar() {
         const availableAvatars = avatarPlayerLink.filter((avatar) => {
@@ -158,10 +160,13 @@
             >
         </section>
         {#if !game.isOngoing}
-            <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
+            <AnchorButton variant="secondary" href="/">Back</AnchorButton>
         {/if}
-        <Button onclick={() => game.setStage(GameStage.game)} disabled={!hasEnoughPlayers}>
-            {game.isOngoing ? "Done" : "Start Game"}
+        <Button
+            onclick={() => game.setStage(game.isOngoing ? GameStage.game : GameStage.addonSetup)}
+            disabled={!hasEnoughPlayers}
+        >
+            Done
         </Button>
     </nav>
 </div>

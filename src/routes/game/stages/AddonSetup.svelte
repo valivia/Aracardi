@@ -4,9 +4,8 @@
     import type { AddonSummary } from "lib/addon";
     import Tag from "components/Tag.svelte";
     import { CardsIcon } from "lib/icons";
-    import AnchorButton from "components/input/AnchorButton.svelte";
     import { PUBLIC_MINIMUM_CARD_COUNT } from "$env/static/public";
-    import { type GameController } from "lib/game.svelte";
+    import { GameStage, type GameController } from "lib/game.svelte";
     import Header from "components/Header.svelte";
 
     interface Props {
@@ -16,7 +15,7 @@
 
     let { addons, game }: Props = $props();
 
-    let hasEnoughCards = $derived(game.cardCount >= Number(PUBLIC_MINIMUM_CARD_COUNT));
+    let hasEnoughCards = $derived(game.projectedCardCount >= Number(PUBLIC_MINIMUM_CARD_COUNT));
 </script>
 
 <div class="layout">
@@ -39,15 +38,24 @@
     <!-- Actions -->
     <nav>
         <section class="summary">
-            <Tag icon={CardsIcon}>{game.cardCount}{hasEnoughCards ? "" : ` / ${PUBLIC_MINIMUM_CARD_COUNT}`}</Tag>
+            <Tag icon={CardsIcon}>
+                <span
+                    class="count"
+                    style="--animatedNumber: {game.projectedCardCount}"
+                    aria-label="Card count: {game.projectedCardCount}"
+                ></span>{hasEnoughCards ? "" : ` / ${PUBLIC_MINIMUM_CARD_COUNT}`}
+            </Tag>
         </section>
-        <AnchorButton variant="secondary" href="/">Back</AnchorButton>
-        <Button onclick={() => game.loadCards()} disabled={!hasEnoughCards}>Continue</Button>
+        <Button variant="secondary" onclick={() => game.setStage(GameStage.playerSetup)}>Back</Button>
+        <Button onclick={() => game.setStage(GameStage.game)} disabled={!hasEnoughCards}>
+            {game.isOngoing ? "Done" : "Start Game"}
+        </Button>
     </nav>
 </div>
 
 <style lang="scss">
     @use "./layout.scss" as *;
+    @use "/src/styles/abstracts" as *;
 
     main {
         display: grid;
@@ -72,5 +80,9 @@
         align-items: center;
         justify-content: center;
         width: 100%;
+    }
+
+    .count {
+        @include animatedNumber;
     }
 </style>

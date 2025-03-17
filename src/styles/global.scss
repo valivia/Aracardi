@@ -9,6 +9,12 @@
     font-display: swap;
 }
 
+@property --animatedNumber {
+    syntax: "<integer>";
+    initial-value: 0;
+    inherits: false;
+}
+
 :global(:root) {
     --border-width: 2px;
     --border-radius: 0.5rem;
