@@ -1,4 +1,4 @@
-import { TimeLimitRegex, TurnsRegex, type PrototypeCard } from "lib/card.svelte";
+import { NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex, SelfRegex, TimeLimitRegex, TurnsRegex, type PrototypeCard } from "lib/card.svelte";
 import { nanoid } from "nanoid";
 import { ImageService } from "./image";
 
@@ -9,8 +9,10 @@ export class CardManager implements PrototypeCard {
     public text: PrototypeCard["text"];
     public overrides: PrototypeCard["overrides"];
     public turns: PrototypeCard["turns"];
-    public isNsfw: PrototypeCard["isNsfw"];
+    public minPlayers: PrototypeCard["minPlayers"];
+    public maxPlayers: PrototypeCard["maxPlayers"];
     public timeLimit: PrototypeCard["timeLimit"];
+    public isNsfw: PrototypeCard["isNsfw"];
     public hasWheel: PrototypeCard["hasWheel"];
     public image: PrototypeCard["image"];
 
@@ -48,6 +50,45 @@ export class CardManager implements PrototypeCard {
             console.error("- Card text is required");
             return null;
         }
+
+        // Minimum players
+        const calculatedMinPlayers = this.calculateMinimumPlayers();
+
+        if (this.minPlayers !== undefined) {
+            if (this.minPlayers <= 2) {
+                console.error("- Card minPlayers must be greater than 2");
+                return null;
+            }
+
+            if (calculatedMinPlayers > this.minPlayers) {
+                console.error("- Card minPlayers must be greater than or equal to the calculated minimum players");
+                return null;
+            }
+        }
+
+        // override minPlayers
+        if (calculatedMinPlayers > 2 && (this.minPlayers === undefined || this.minPlayers < calculatedMinPlayers)) {
+            this.minPlayers = calculatedMinPlayers;
+        }
+
+        // Maximum players
+        if (this.maxPlayers !== undefined) {
+            if (typeof this.maxPlayers !== "number") {
+                console.error("- Card maxPlayers must be a number or undefined");
+                return null;
+            }
+
+            if (this.minPlayers !== undefined && this.maxPlayers < this.minPlayers) {
+                console.error("- Card maxPlayers must be greater than or equal to minPlayers");
+                return null;
+            }
+
+            if (this.maxPlayers <= 2) {
+                console.error("- Card maxPlayers must be greater or equal to 2");
+                return null;
+            }
+        }
+
 
         // Turns
         if (this.turns !== undefined && (this.turns < -1 || this.turns === 0)) {
@@ -118,10 +159,32 @@ export class CardManager implements PrototypeCard {
             text: this.text,
             overrides: this.overrides,
             turns: this.turns,
-            isNsfw: this.isNsfw,
+            minPlayers: this.minPlayers,
+            maxPlayers: this.maxPlayers,
             timeLimit: this.timeLimit,
             hasWheel: this.hasWheel,
+            isNsfw: this.isNsfw,
             image: this.image,
         }
+    }
+
+    private calculateMinimumPlayers(): number {
+        let selectorCount = 0;
+
+        if (this.text.match(SelfRegex)) {
+            selectorCount++;
+        }
+
+        if (this.text.match(PreviousPlayerRegex)) {
+            selectorCount++;
+        }
+
+        if (this.text.match(NextPlayerRegex)) {
+            selectorCount++;
+        }
+
+        selectorCount += new Set(this.text.match(RandomPlayerRegex)).size
+
+        return selectorCount;
     }
 }

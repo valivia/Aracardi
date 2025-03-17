@@ -150,6 +150,8 @@ export interface Card {
     title?: string;
     text: string;
     turns?: number;
+    minPlayers?: number;
+    maxPlayers?: number;
     timeLimit?: number;
     // Cards that get removed from the deck when this card is loaded
     overrides?: string[];
