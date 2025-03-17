@@ -60,6 +60,7 @@
     grid-template-rows: min-content 1fr min-content;
     background-color: var(--theme-primary);
     height: 100vh;
+    height: 100dvh;
 }
 
 :global(a) {

@@ -3,8 +3,9 @@
     import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
     import Header from "components/Header.svelte";
     import Button from "components/input/Button.svelte";
+    import Tag from "components/Tag.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
-    import { DeleteIcon } from "lib/icons";
+    import { DeleteIcon, UserIcon } from "lib/icons";
     import { Player } from "lib/player.svelte";
 
     // Props
@@ -87,10 +88,12 @@
         game.restorePlayers();
         value = selectedAvatar.player?.name ?? "";
     }
+
+    const hasEnoughPlayers = $derived.by(() => game.players.length >= Number(PUBLIC_MINIMUM_PLAYER_COUNT));
 </script>
 
 <div class="layout">
-    <Header title="Players" subtitle="Add atleast {PUBLIC_MINIMUM_PLAYER_COUNT} players to begin!" />
+    <Header title="Players" subtitle="Add at least {PUBLIC_MINIMUM_PLAYER_COUNT} players to begin!" />
 
     <main>
         <!-- Selector -->
@@ -150,13 +153,14 @@
 
     <!-- Controls -->
     <nav>
+        <section class="summary">
+            <Tag icon={UserIcon}>{game.players.length}{hasEnoughPlayers ? "" : ` / ${PUBLIC_MINIMUM_PLAYER_COUNT}`}</Tag
+            >
+        </section>
         {#if !game.isOngoing}
             <Button variant="secondary" onclick={() => game.setStage(GameStage.addonSetup)}>Back</Button>
         {/if}
-        <Button
-            onclick={() => game.setStage(GameStage.game)}
-            disabled={game.players.length < Number(PUBLIC_MINIMUM_PLAYER_COUNT)}
-        >
+        <Button onclick={() => game.setStage(GameStage.game)} disabled={!hasEnoughPlayers}>
             {game.isOngoing ? "Done" : "Start Game"}
         </Button>
     </nav>
@@ -271,7 +275,7 @@
 
     .avatars {
         grid-area: avatars;
-        font-size: clamp(3.5rem, $clampFactor, 5rem);
+        font-size: clamp(3rem, $clampFactor, 5rem);
         border: var(--border-width) solid var(--theme-text);
         border-radius: var(--border-radius);
 
@@ -288,6 +292,7 @@
         .player {
             text-align: center;
             transition: transform 200ms ease-in-out;
+            transform: translate();
 
             &.active {
                 color: var(--theme-text);
@@ -295,7 +300,7 @@
 
             &.selected {
                 color: var(--theme-accent);
-                transform: scale(1.1);
+                transform: translateY(-0.1em);
             }
 
             .avatar {
@@ -309,5 +314,12 @@
                 height: 1lh;
             }
         }
+    }
+
+    .summary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
     }
 </style>

@@ -61,7 +61,7 @@ export class GameController {
     });
 
     public isClean = $derived.by(() => {
-        return this.selectedAddons.filter(a => !a.isDefault).length === 0 && this.players.length === 0;
+        return this.players.length === 0;
     });
 
     public isOngoing = $derived.by(() => {
