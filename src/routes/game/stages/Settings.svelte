@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Donation from "components/Donation.svelte";
     import Header from "components/Header.svelte";
     import Button from "components/input/Button.svelte";
     import Toggle from "components/input/Toggle.svelte";
@@ -25,6 +26,8 @@
             <Toggle bind:checked={game.settings.allowDuplicates}>Allow duplicates</Toggle>
         {/if}
         <Toggle bind:checked={game.settings.loadImages}>Load images</Toggle>
+
+        <Donation />
     </main>
 
     <nav>
@@ -36,10 +39,13 @@
     @use "./layout.scss" as *;
 
     main {
+        position: relative;
         padding: 1rem;
+        height: 100%;
 
         display: flex;
         flex-direction: column;
+        justify-content: center;
         gap: 1.5rem;
     }
 

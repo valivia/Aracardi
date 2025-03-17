@@ -1,16 +1,18 @@
 <script>
+    import Donation from "components/Donation.svelte";
     import AnchorButton from "components/input/AnchorButton.svelte";
 </script>
 
-<div class="content">
-    <h1 class="title">Play now!</h1>
+<main>
+    <p>Have an unforgettable drinking night with your friends on Aracardi!</p>
     <div class="divider"></div>
-
-    <AnchorButton href="/game">Create game</AnchorButton>
-</div>
+    <AnchorButton href="/game">Play</AnchorButton>
+    <Donation />
+</main>
 
 <style lang="scss">
-    .content {
+    main {
+        position: relative;
         margin-inline: auto;
         display: flex;
         flex-direction: column;
@@ -18,12 +20,16 @@
         justify-content: center;
         width: min(40ch, 100%);
         padding: 1rem;
+
+        & > :global(:last-child) {
+            position: absolute;
+            bottom: 1em;
+        }
     }
 
-    .title {
-        font-weight: 200;
-        font-size: 2.2em;
-        text-transform: capitalize;
+    p {
+        text-align: center;
+        font-size: 1.2em;
     }
 
     .divider {
