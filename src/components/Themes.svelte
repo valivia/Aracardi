@@ -18,6 +18,9 @@
         paper: {
             displayName: "Paper",
         },
+        red: {
+            displayName: "Red",
+        },
         pain: {
             displayName: "Pain",
         },
@@ -60,6 +63,18 @@
 
         :global(#currentCard img) {
             filter: grayscale(1) brightness(0.8);
+        }
+    }
+
+    :global(body[data-theme="red"]) {
+        --theme-text: hsl(0deg 100% 60.6%);
+        --theme-accent: hsl(0deg 88.14% 67.99%);
+        --theme-primary: hsl(0deg 0% 4.3%);
+        --theme-secondary: hsl(0, 0%, 10%);
+        --theme-error: hsl(0deg 100% 60.6%);
+
+        :global(#currentCard img) {
+            filter: sepia(100%) saturate(200%) brightness(70%) hue-rotate(330deg);
         }
     }
 
