@@ -148,7 +148,7 @@
                 </div>
             {/each}
             {#if game.hasPreviousPlayers && game.players.length === 0}
-                <button onclick={loadPlayers}>Load previous Players...</button>
+                <button class="previousPlayers" onclick={loadPlayers}>Load previous Players...</button>
             {/if}
         </section>
     </main>
@@ -189,6 +189,12 @@
     .activeAvatar,
     .avatar {
         @include avatar();
+
+        &:hover,
+        &:focus-visible {
+            outline: var(--outline-focus);
+            outline-offset: var(--outline-focus-offset);
+        }
     }
 
     button {
@@ -210,6 +216,7 @@
         grid-template-columns: 1fr 1fr;
         align-items: end;
         justify-items: center;
+        padding-top: 1rem;
 
         @include large() {
             grid-template-columns: 1fr 7rem 1fr;
@@ -306,6 +313,9 @@
             &.selected {
                 color: var(--theme-accent);
                 transform: translateY(-0.1em);
+                .name {
+                    text-decoration: underline;
+                }
             }
 
             .avatar {
@@ -318,6 +328,12 @@
                 font-size: clamp(0.8rem, 2vw, 1rem);
                 height: 1lh;
             }
+        }
+
+        .previousPlayers:focus-visible,
+        .previousPlayers:hover {
+            outline: none;
+            text-decoration: underline;
         }
     }
 

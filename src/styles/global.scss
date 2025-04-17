@@ -19,6 +19,9 @@
     --border-width: 2px;
     --border-radius: 0.5rem;
 
+    --outline-focus: var(--border-width) solid currentColor;
+    --outline-focus-offset: 3px;
+
     @media (prefers-color-scheme: dark) {
         @include darkTheme;
     }
@@ -95,11 +98,15 @@
     border-radius: 10px;
 }
 
-:global(input),
+:global(button:not(:disabled)) {
+    cursor: pointer;
+}
+
 :global(select),
 :global(textarea) {
-    &:focus-visible {
-        outline: var(--border-width) solid var(--theme-accent);
-        outline-offset: 3px;
+    &:focus-visible,
+    &:hover {
+        outline: var(--outline-focus);
+        outline-offset: var(--outline-focus-offset);
     }
 }

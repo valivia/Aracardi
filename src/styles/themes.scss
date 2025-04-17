@@ -7,10 +7,6 @@
     --theme-error: hsl(0, 57%, 51%);
 }
 
-:global(.themeDark) {
-    @include darkTheme;
-}
-
 // ########
 @mixin lightTheme {
     --theme-text: hsl(0, 0%, 4%);
@@ -18,48 +14,4 @@
     --theme-primary: hsl(32deg 60.53% 82.98%);
     --theme-secondary: hsl(0, 0%, 95%);
     --theme-error: hsl(0deg 100% 61.71%);
-}
-
-:global(.themeLight) {
-    @include lightTheme;
-}
-
-// ########
-@mixin purpleTheme {
-    --theme-text: hsl(272.19deg 100% 12.34%);
-    --theme-accent: hsl(275.1deg 100% 50%);
-    --theme-primary: hsl(283.44deg 100% 87.67%);
-    --theme-secondary: hsl(0, 0%, 95%);
-    --theme-error: hsl(0, 64%, 59%);
-}
-
-:global(.themePurple) {
-    @include purpleTheme;
-}
-
-// ########
-@mixin artDecoTheme {
-    --theme-text: hsl(39deg 78.34% 62.75%);
-    --theme-accent: hsl(33, 90%, 54%);
-    --theme-primary: hsl(171.9deg 52.59% 10.12%);
-    --theme-secondary: hsl(172deg 83.93% 3.99%);
-    --theme-error: hsl(6, 74%, 59%);
-}
-
-:global(.themeArtDeco) {
-    @include artDecoTheme;
-}
-
-
-// ########
-@mixin painTheme {
-    --theme-text: hsl(130.18deg 66.89% 83.14%);
-    --theme-accent: hsl(105.39deg 100% 50%);
-    --theme-primary: hsl(271.98deg 100% 50%);
-    --theme-secondary: hsl(261.04deg 25.36% 48.3%);
-    --theme-error: hsl(0, 57%, 51%);
-}
-
-:global(.themePain) {
-    @include painTheme;
 }

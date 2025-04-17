@@ -1,5 +1,6 @@
 <script lang="ts">
     import Nav from "components/layout/Nav.svelte";
+    import Themes from "components/Themes.svelte";
     import { syncTheme } from "components/ThemeSelect.svelte";
     import { type Snippet } from "svelte";
 
@@ -38,6 +39,8 @@
 <h1>Aracardi</h1>
 {@render children?.()}
 <Nav />
+
+<Themes />
 
 <style lang="scss">
     @use "styles/global.scss" as *;

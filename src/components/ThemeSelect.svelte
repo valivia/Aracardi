@@ -1,47 +1,16 @@
 <script lang="ts" module>
-    export const themes = {
-        system: {
-            class: undefined,
-            displayName: "System",
-        },
-        light: {
-            class: "themeLight",
-            displayName: "Light",
-        },
-        dark: {
-            class: "themeDark",
-            displayName: "Dark",
-        },
-        purple: {
-            class: "themePurple",
-            displayName: "Purple",
-        },
-        artDeco: {
-            class: "themeArtDeco",
-            displayName: "Art Deco",
-        },
-        pain: {
-            class: "themePain",
-            displayName: "Pain",
-        }
-    };
+    import { themes } from "./Themes.svelte";
 
     export function setTheme(themeKey: keyof typeof themes) {
-        const allClasses = Object.values(themes)
-            .map((theme) => theme.class)
-            .filter((theme) => typeof theme === "string");
-
-        document.body.classList.remove(...allClasses);
-
         const theme = themes[themeKey];
-        if (!theme) return;
-
-        if (theme.class === undefined) {
+        if (!theme || themeKey === "system") {
+            document.body.removeAttribute("data-theme");
             localStorage.removeItem("theme");
-        } else {
-            localStorage.setItem("theme", themeKey);
-            document.body.classList.add(theme.class);
+            return;
         }
+
+        document.body.setAttribute("data-theme", themeKey);
+        localStorage.setItem("theme", themeKey);
     }
 
     export function getTheme() {
@@ -75,7 +44,9 @@
         color: currentColor;
         background-color: var(--theme-primary);
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
+            outline-color: var(--theme-accent);
             border-color: var(--theme-accent);
         }
     }

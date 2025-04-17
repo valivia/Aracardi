@@ -12,7 +12,7 @@
 </script>
 
 {#key card.id}
-    <button class="card" {onclick}>
+    <button class="card" id="currentCard" {onclick}>
         {#if card.title}
             <h1 class="title underlined">{card.title}</h1>
         {/if}
@@ -75,9 +75,10 @@
 
         @include noselect;
 
-        &:focus-within,
+        &:focus-visible,
         &:hover {
             outline: var(--border-width) solid var(--theme-accent);
+            outline-offset: 24px;
         }
 
         & img {

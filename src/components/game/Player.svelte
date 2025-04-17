@@ -37,15 +37,20 @@
         border: none;
         background-color: transparent;
 
+        display: flex;
+        flex-direction: column;
+
         &.active {
             color: var(--theme-accent);
+            .avatar {
+                outline: var(--outline-focus);
+                outline-offset: var(--outline-focus-offset);
+            }
         }
 
         &:focus-visible {
+            color: var(--theme-accent);
             outline: none;
-            > .avatar {
-                @include focused;
-            }
         }
     }
 
@@ -75,5 +80,6 @@
     .name {
         font-weight: 500;
         font-size: 0.9rem;
+        padding-top: 0.3rem;
     }
 </style>

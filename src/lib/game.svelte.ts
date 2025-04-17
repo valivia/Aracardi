@@ -3,6 +3,7 @@ import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
+import { dev } from "$app/environment";
 
 export enum GameStage {
     addonSetup,
@@ -258,7 +259,7 @@ export class GameController {
 
     // Telemetry
     public async logGame(action = "start") {
-        return;
+        if (dev) return;
         try {
             await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi/start`, {
                 method: "POST",

@@ -11,7 +11,7 @@
 </script>
 
 <label>
-    <div class="toggle">
+    <div class="toggle" role="switch" aria-checked={checked}>
         <input type="checkbox" bind:checked aria-checked={checked} {onchange} />
         <div class="thumb"></div>
     </div>
@@ -35,7 +35,8 @@
         transition: background-color 0.2s;
         cursor: pointer;
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
             color: var(--theme-accent);
         }
 

@@ -50,6 +50,8 @@
     <title>Aracardi{title}</title>
 </svelte:head>
 
+<SettingsButton {game} />
+
 {#if game.settingsOpen}
     <Settings bind:game onchange={() => game.filterCards()} />
 {:else if game.currentStage === GameStage.addonSetup}
@@ -61,5 +63,3 @@
 {:else}
     <div>??</div>
 {/if}
-
-<SettingsButton {game} />

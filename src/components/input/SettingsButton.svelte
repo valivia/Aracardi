@@ -9,7 +9,10 @@
     let { game }: Props = $props();
 </script>
 
-<button onclick={() => (game.settingsOpen = !game.settingsOpen)}><SettingsIcon /></button>
+<button
+    onclick={() => (game.settingsOpen = !game.settingsOpen)}
+    aria-label={`${game.settingsOpen ? "Close" : "Open"} settings menu`}><SettingsIcon /></button
+>
 
 <style lang="scss">
     button {
@@ -24,14 +27,22 @@
         cursor: pointer;
         border: none;
 
+        border-radius: 100vw;
+
         // tranisition color and transform
         transition-property: color, transform;
         transition-duration: 0.2s;
         transition-timing-function: ease-in-out;
 
-        &:hover {
-            color: var(--color-accent);
+        &:hover,
+        &:focus-visible {
+            color: var(--theme-accent);
             transform: rotate(-60deg);
+        }
+
+        &:focus-visible {
+            outline: var(--outline-focus);
+            outline-offset: var(--outline-focus-offset);
         }
 
         &:active {

@@ -65,14 +65,20 @@
         &:hover,
         &:focus-visible {
             transform: scale(1.02);
+            outline: none;
         }
 
         &:focus-visible {
-            @include focused;
+            outline: var(--outline-focus);
+            outline-offset: var(--outline-focus-offset);
         }
 
         &.active {
             color: var(--theme-accent);
+
+            .title {
+                text-decoration: underline;
+            }
 
             &::after {
                 content: "";

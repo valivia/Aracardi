@@ -106,13 +106,13 @@
         overflow: auto hidden;
         display: grid;
         grid-auto-flow: column;
-        padding-bottom: 1rem;
+        padding: 0.5rem;
         gap: 1rem;
 
         @include large() {
             overflow: hidden auto;
             grid-auto-flow: row;
-            padding-bottom: 0;
+            padding-block: 0.5rem;
         }
     }
 
@@ -145,8 +145,11 @@
         background-color: transparent;
         color: currentColor;
 
+        &:focus-visible,
         &:hover {
             color: var(--theme-accent);
+            outline: var(--border-width) solid currentColor;
+            outline-offset: 2px;
         }
     }
 
