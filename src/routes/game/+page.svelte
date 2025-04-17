@@ -25,8 +25,8 @@
     });
 
     beforeNavigate(({ cancel }) => {
-        if (game.isClean) return;
-        if (game.currentStage === GameStage.game) game.logGame("End");
+        if (game.currentStage !== GameStage.game) return;
+        game.logGame("End");
         if (!confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
             cancel();
         }

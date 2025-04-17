@@ -103,7 +103,7 @@
             <!-- Add player -->
             <form onsubmit={onSubmit}>
                 <input type="text" placeholder="Player name" bind:value minlength="3" maxlength="20" required />
-                <section>
+                <section class="selectorControls">
                     <Button type="submit" disabled={selectedAvatar.player?.name === value}>
                         {selectedAvatar.player ? "Update" : "Add"}
                     </Button>
@@ -244,6 +244,7 @@
             section {
                 display: flex;
                 gap: 0.5rem;
+                height: 2.2rem;
 
                 :global(button) {
                     font-size: 0.8rem;

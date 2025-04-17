@@ -62,10 +62,6 @@ export class GameController {
         }, 0);
     });
 
-    public isClean = $derived.by(() => {
-        return this.players.length === 0;
-    });
-
     public isOngoing = $derived.by(() => {
         return this.currentCard !== null;
     });
