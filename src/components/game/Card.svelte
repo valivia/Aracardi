@@ -21,9 +21,14 @@
         </p>
 
         {#if card.image && loadImage}
-            {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
-                <img {src} alt="" />
-            {/await}
+            <img
+                src="/cards/{card.id}.webp"
+                alt=""
+                onerror={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target) target.style.display = "none";
+                }}
+            />
         {/if}
     </button>
 {/key}

@@ -3,6 +3,8 @@ import { AddonManager } from "./addon";
 import { ImageService } from "./image";
 
 export const BASE_PATH = path.resolve("./src/assets");
+export const ASSET_PATH = path.resolve("./static/cards");
+
 
 async function main(destructive = false) {
 

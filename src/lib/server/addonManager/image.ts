@@ -1,10 +1,10 @@
 import { Dirent, readdirSync } from "fs";
 import path from "path";
-import { BASE_PATH } from ".";
 import { readFile, unlink } from "fs/promises";
 import type { PrototypeAddon } from "lib/addon";
 import type { PrototypeCard } from "lib/card.svelte";
 import sharp from "sharp";
+import { ASSET_PATH } from ".";
 
 export class ImageService {
     private images: Dirent[];
@@ -12,7 +12,7 @@ export class ImageService {
 
     constructor(addons: PrototypeAddon[]) {
         this.cards = addons.flatMap(addon => addon.cards);
-        this.images = readdirSync(path.join(BASE_PATH, "cards"), { withFileTypes: true });
+        this.images = readdirSync(ASSET_PATH, { withFileTypes: true });
     }
 
     public findRedundantImages(): Dirent[] {
@@ -38,7 +38,7 @@ export class ImageService {
 
     public static async deleteImage(id: string | Dirent): Promise<void> {
         const fileName = typeof id === "string" ? `${id}.webp` : id.name;
-        const filePath = path.join(BASE_PATH, "cards", fileName);
+        const filePath = path.join(ASSET_PATH, fileName);
 
         try {
             await unlink(filePath);
@@ -52,7 +52,7 @@ export class ImageService {
     public static async saveImage(id: string, fileName: string): Promise<void> {
         try {
             const sourcePath = path.join("import", fileName);
-            const outputPath = path.join(BASE_PATH, "cards", `${id}.webp`);
+            const outputPath = path.join(ASSET_PATH, `${id}.webp`);
 
             // Read file safely
             let fileBuffer: Buffer;
