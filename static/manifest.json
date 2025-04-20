@@ -1,0 +1,83 @@
+{
+    "name": "Aracardi - Have an unforgettable drinking night!",
+    "short_name": "Aracardi",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "favicon.svg",
+            "type": "image/svg+xml",
+            "sizes": "150x150"
+        },
+        {
+            "src": "branding/logo-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "background_color": "#0a0a0a",
+    "display": "standalone",
+    "scope": "/",
+    "description": "Have an unforgettable drinking night with your friends on Aracardi! With over 300 unique cards every round brings fresh and original prompts to enjoy!",
+    "screenshots": [
+        {
+            "src": "/branding/screenshots/desktop_players.webp",
+            "type": "image/webp",
+            "sizes": "1280x720",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/branding/screenshots/desktop_addons.webp",
+            "type": "image/webp",
+            "sizes": "1280x720",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/branding/screenshots/desktop_game.webp",
+            "type": "image/webp",
+            "sizes": "1280x720",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/branding/screenshots/desktop_paper.webp",
+            "type": "image/webp",
+            "sizes": "1280x720",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/branding/screenshots/desktop_red.webp",
+            "type": "image/webp",
+            "sizes": "1280x720",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/branding/screenshots/mobile_players.webp",
+            "type": "image/webp",
+            "sizes": "720x1598",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/branding/screenshots/mobile_addons.webp",
+            "type": "image/webp",
+            "sizes": "720x1598",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/branding/screenshots/mobile_game.webp",
+            "type": "image/webp",
+            "sizes": "720x1598",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/branding/screenshots/mobile_paper.webp",
+            "type": "image/webp",
+            "sizes": "720x1598",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/branding/screenshots/mobile_red.webp",
+            "type": "image/webp",
+            "sizes": "720x1598",
+            "form_factor": "narrow"
+        }
+    ]
+}

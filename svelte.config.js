@@ -15,6 +15,9 @@ const config = {
                 if (file.startsWith("cards/")) {
                     return false;
                 }
+                if (file.startsWith("branding/")) {
+                    return false;
+                }
 
                 return true;
             },
