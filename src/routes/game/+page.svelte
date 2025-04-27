@@ -28,7 +28,9 @@
         game.restoreAddons(addons);
         await updated.check();
 
-        console.info(`Version: ${version}`);
+        let versionDate = new Date(Number(version));
+
+        console.info(`Version: ${versionDate.toLocaleDateString()} ${versionDate.toLocaleTimeString()} (${version})`);
         console.info(`has update: ${updated.current}`);
 
         if (updated.current) {
@@ -46,7 +48,7 @@
 
     beforeNavigate(({ cancel }) => {
         if (game.currentStage !== GameStage.game) return;
-        game.logGame("End");
+        game.endGame();
         if (!confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
             cancel();
         }
