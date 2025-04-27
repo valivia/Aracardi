@@ -50,6 +50,9 @@ export class GameController {
     // Active cards
     public activeCards: CardController[] = $state([]);
 
+    // Telemetry
+    private cardsPlayed: number = 0;
+
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
 
@@ -227,6 +230,7 @@ export class GameController {
         // Card
         this.currentCardIndex = (this.currentCardIndex + 1) % this.cards.length;
         this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+        this.cardsPlayed++;
     }
 
     public async setStage(state: GameStage) {
@@ -237,10 +241,22 @@ export class GameController {
                 return;
             }
             this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
-            this.logGame();
+            this.logGame(LogAction.start, {
+                addons: this.selectedAddons.map(a => a.title),
+                players: this.players.map(p => `${p.name} (${p.avatar.name})`),
+                theme: localStorage.getItem("theme") || "default",
+            });
         }
 
         this.stage = state;
+    }
+
+    public async endGame() {
+        this.logGame(LogAction.end, {
+            cardsPlayed: this.cardsPlayed,
+            players: this.players.map(p => `${p.name} (${p.avatar.name})`),
+            theme: localStorage.getItem("theme") || "default",
+        });
     }
 
     // Settings
@@ -252,24 +268,24 @@ export class GameController {
         }
     }
 
-
     // Telemetry
-    public async logGame(action = "start") {
+    public async logGame(action: LogAction, data: Record<string, unknown> = {}) {
         if (dev) return;
         try {
-            await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi/start`, {
+            await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    action,
-                    addons: this.selectedAddons.map(a => a.title),
-                    players: this.players.map(p => `${p.name} (${p.avatar.name})`),
-                }),
+                body: JSON.stringify({ action, ...data }),
             })
         } catch (e) {
             console.error(e);
         }
     }
+}
+
+enum LogAction {
+    start = "start",
+    end = "end",
 }
