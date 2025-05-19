@@ -1,5 +1,18 @@
 <script lang="ts">
+    import { CopyIcon } from "components/icons";
+
     const { data } = $props();
+
+    function CopyToClipboard(text: string) {
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                console.log("Text copied to clipboard");
+            })
+            .catch((err) => {
+                console.error("Failed to copy text: ", err);
+            });
+    }
 </script>
 
 <svelte:head>
@@ -11,20 +24,29 @@
         {#each data.addons as addon}
             <li>
                 <h2>{addon.title}</h2>
-                <section class="cards">
+                <ul class="cards">
                     {#each addon.cards as card}
-                        <button onclick={() => alert(JSON.stringify(card, null, 2))}>
+                        <li class="card">
                             <h3>{card.title}</h3>
                             <span>{card.text}</span>
 
+                            <button onclick={() => CopyToClipboard(card.id)}>
+                                <CopyIcon width="1em" height="1em" />
+                            </button>
+
                             {#if card.image}
-                                {#await import(`assets/cards/${card.id}.webp`) then { default: src }}
-                                    <img {src} alt="" loading="lazy" />
-                                {/await}
+                                <img
+                                    src="/cards/{card.id}.webp"
+                                    alt=""
+                                    onerror={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        if (target) target.style.display = "none";
+                                    }}
+                                />
                             {/if}
-                        </button>
+                        </li>
                     {/each}
-                </section>
+                </ul>
             </li>
         {/each}
     </ul>
@@ -56,35 +78,49 @@
         align-items: center;
         justify-content: center;
         gap: 1rem;
+    }
+
+    .card {
+        isolation: isolate;
+        position: relative;
+        overflow: hidden;
+
+        background: transparent;
+        color: currentColor;
+
+        width: 40ch;
+        height: 14rem;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-radius: 1rem;
+
+        border: 2px solid var(--theme-text);
 
         & button {
-            isolation: isolate;
-            position: relative;
-            overflow: hidden;
-
-            background: transparent;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--theme-primary);
+            padding: 0.4rem;
+            border: none;
+            border-radius: 0.5rem;
             color: currentColor;
-            cursor: pointer;
 
-            width: 40ch;
-            height: 14rem;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem;
-            border-radius: 1rem;
-
-            border: 2px solid var(--theme-text);
-
-            & h3,
-            & span {
-                background-color: var(--theme-primary);
-                border-radius: 6px;
-                padding: 0.5rem;
+            &:hover {
+                color: var(--theme-accent);
             }
+        }
+
+        & h3,
+        & span {
+            background-color: var(--theme-primary);
+            border-radius: 6px;
+            padding: 0.5rem;
         }
     }
 

@@ -5,6 +5,7 @@ import DeleteIcon from "virtual:icons/carbon/TrashCan";
 import SettingsIcon from "virtual:icons/carbon/Settings";
 import UserIcon from "virtual:icons/carbon/User";
 import CoffeeIcon from "virtual:icons/carbon/cafe";
+import CopyIcon from "virtual:icons/carbon/Copy";
 
 
-export { CardsIcon, PlusIcon, ShuffleIcon, DeleteIcon, SettingsIcon, UserIcon, CoffeeIcon };
+export { CardsIcon, PlusIcon, ShuffleIcon, DeleteIcon, SettingsIcon, UserIcon, CoffeeIcon, CopyIcon };
