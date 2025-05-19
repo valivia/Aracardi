@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { GameController } from "lib/game.svelte";
-    import { SettingsIcon } from "lib/icons";
+    import { SettingsIcon } from "components/icons";
 
     interface Props {
         game: GameController;

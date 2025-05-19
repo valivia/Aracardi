@@ -1,7 +1,7 @@
 <script lang="ts">
     import { CardController } from "lib/card.svelte";
     import CardText from "./CardText.svelte";
-    import { DeleteIcon } from "lib/icons";
+    import { DeleteIcon } from "components/icons";
 
     interface Props {
         card: CardController;

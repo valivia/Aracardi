@@ -6,7 +6,7 @@
     import Button from "components/input/Button.svelte";
     import Tag from "components/Tag.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
-    import { DeleteIcon, UserIcon } from "lib/icons";
+    import { DeleteIcon, UserIcon } from "components/icons";
     import { Player } from "lib/player.svelte";
 
     // Props

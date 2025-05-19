@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Donation from "components/Donation.svelte";
+    import Links from "components/Links.svelte";
     import Header from "components/Header.svelte";
     import Button from "components/input/Button.svelte";
     import Toggle from "components/input/Toggle.svelte";
@@ -39,7 +39,7 @@
                 <dd>{game.players.length}</dd>
             </dl>
         {/if}
-        <Donation />
+        <Links />
     </main>
 
     <nav>

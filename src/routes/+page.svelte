@@ -1,5 +1,5 @@
 <script>
-    import Donation from "components/Donation.svelte";
+    import Links from "components/Links.svelte";
     import AnchorButton from "components/input/AnchorButton.svelte";
 </script>
 
@@ -7,7 +7,7 @@
     <p>Have an unforgettable drinking night with your friends on Aracardi!</p>
     <div class="divider"></div>
     <AnchorButton href="/game">Play</AnchorButton>
-    <Donation />
+    <Links />
 </main>
 
 <style lang="scss">

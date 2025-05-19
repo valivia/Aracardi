@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { AddonSummary } from "lib/addon";
     import Tag from "./Tag.svelte";
-    import { CardsIcon } from "lib/icons";
+    import { CardsIcon } from "components/icons";
 
     interface Props {
         addon: AddonSummary;

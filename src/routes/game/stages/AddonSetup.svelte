@@ -3,7 +3,7 @@
     import Button from "components/input/Button.svelte";
     import type { AddonSummary } from "lib/addon";
     import Tag from "components/Tag.svelte";
-    import { CardsIcon } from "lib/icons";
+    import { CardsIcon } from "components/icons";
     import { PUBLIC_MINIMUM_CARD_COUNT } from "$env/static/public";
     import { GameStage, type GameController } from "lib/game.svelte";
     import Header from "components/Header.svelte";

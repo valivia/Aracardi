@@ -2,7 +2,7 @@
     import Card from "components/game/Card.svelte";
     import ActiveCard from "components/game/ActiveCard.svelte";
     import Player from "components/game/Player.svelte";
-    import { PlusIcon, ShuffleIcon } from "lib/icons";
+    import { PlusIcon, ShuffleIcon } from "components/icons";
     import { GameStage, GameController } from "lib/game.svelte";
     import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
 
