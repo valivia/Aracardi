@@ -15,7 +15,7 @@
     inherits: false;
 }
 
-:global(:root) {
+:root {
     --border-width: 2px;
     --border-radius: 0.5rem;
 
@@ -31,18 +31,18 @@
     }
 }
 
-:global(.svgStroke) {
+.svgStroke {
     stroke: currentcolor;
     stroke-miterlimit: 10;
     fill: none;
     stroke-linecap: round;
 }
 
-:global(.svgFill) {
+.svgFill {
     fill: currentcolor;
 }
 
-:global(*) {
+* {
     font-feature-settings:
         "pnum" on,
         "lnum" on;
@@ -53,18 +53,19 @@
     font-family: "raleway", Helvetica, sans-serif;
 }
 
-:global(html, body) {
+html,
+body {
     max-width: 100vw;
     color-scheme: dark light;
 
     color: var(--theme-text);
 }
 
-:global(html) {
+html {
     height: 100%;
 }
 
-:global(body) {
+body {
     display: grid;
     grid-template-rows: min-content 1fr min-content;
     background-color: var(--theme-primary);
@@ -72,38 +73,38 @@
     height: 100dvh;
 }
 
-:global(a) {
+a {
     color: inherit;
     text-decoration: none;
 }
 
-:global(h1) {
+h1 {
     font-weight: 200;
     font-size: clamp(3rem, 5vw, 6rem);
     text-transform: capitalize;
 }
 
-:global(::-webkit-scrollbar) {
+::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-:global(::-webkit-scrollbar-thumb) {
+::-webkit-scrollbar-thumb {
     background: var(--theme-text);
     border-radius: 10px;
 }
 
-:global(::-webkit-scrollbar-track) {
+::-webkit-scrollbar-track {
     background: var(--theme-secondary);
     border-radius: 10px;
 }
 
-:global(button:not(:disabled)) {
+button:not(:disabled) {
     cursor: pointer;
 }
 
-:global(select),
-:global(textarea) {
+select,
+textarea {
     &:focus-visible,
     &:hover {
         outline: var(--outline-focus);

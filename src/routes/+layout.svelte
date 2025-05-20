@@ -1,8 +1,9 @@
 <script lang="ts">
     import Nav from "components/layout/Nav.svelte";
-    import Themes from "components/Themes.svelte";
     import { syncTheme } from "components/ThemeSelect.svelte";
     import { type Snippet } from "svelte";
+    import "styles/themes.scss";
+    import "styles/global.scss";
 
     interface Props {
         children?: Snippet;
@@ -40,11 +41,7 @@
 {@render children?.()}
 <Nav />
 
-<Themes />
-
 <style lang="scss">
-    @use "styles/global.scss" as *;
-
     h1 {
         padding: 0.2em;
         text-align: center;

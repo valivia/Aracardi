@@ -1,5 +1,5 @@
 <script lang="ts" module>
-    import { themes } from "./Themes.svelte";
+    import { themes } from "../lib/themes";
 
     export function setTheme(themeKey: keyof typeof themes) {
         const theme = themes[themeKey];
