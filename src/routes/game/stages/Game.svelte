@@ -5,6 +5,7 @@
     import { PlusIcon, ShuffleIcon } from "components/icons";
     import { GameStage, GameController } from "lib/game.svelte";
     import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
+    import Button from "components/input/Button.svelte";
 
     interface Props {
         game: GameController;
@@ -57,6 +58,9 @@
         {#if game.currentCard}
             <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages} />
         {/if}
+        <section>
+            <Button onclick={() => game.nextTurn()}>Next card</Button>
+        </section>
     </main>
 
     <aside class="active">
@@ -156,15 +160,23 @@
     // Main area
     .game {
         grid-area: game;
+        padding-inline: 2rem;
 
         width: 100%;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
 
         @include large() {
             height: 100%;
             overflow: hidden;
+        }
+
+        section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
     }
 
