@@ -23,10 +23,14 @@ export interface CardPart {
 }
 
 export class CardController implements Card {
+    public readonly createdAt: Date = new Date();
+
     public id;
     public title;
     public text;
-    public turns = $state<number | undefined>(undefined);
+    public originalTurnCount: number | undefined;
+    public turnsLeft = $state<number | undefined>(undefined);
+    public turnsPassed = $state(0);
     public timeLimit;
     public image;
     public hasWheel;
@@ -39,7 +43,8 @@ export class CardController implements Card {
         this.id = card.id;
         this.title = card.title;
         this.text = card.text;
-        this.turns = card.turns;
+        this.originalTurnCount = card.turns;
+        this.turnsLeft = card.turns;
         this.timeLimit = card.timeLimit;
         this.image = card.image;
         this.hasWheel = card.hasWheel;
@@ -114,8 +119,8 @@ export class CardController implements Card {
         }
 
         // Handle %TURNS% placeholder
-        if (this.turns !== undefined) {
-            replacePlaceholder(TurnsRegex, () => `${this.turns}`, CardPartType.turns);
+        if (this.turnsLeft !== undefined) {
+            replacePlaceholder(TurnsRegex, () => `${this.turnsLeft}`, CardPartType.turns);
         }
 
         // Filter out used players
@@ -138,9 +143,10 @@ export class CardController implements Card {
     }
 
     public nextTurn() {
-        if (this.turns === undefined) return;
-        if (this.turns <= 0) return;
-        this.turns -= 1;
+        this.turnsPassed += 1;
+        if (this.turnsLeft === undefined) return;
+        if (this.turnsLeft <= 0) return;
+        this.turnsLeft -= 1;
     }
 }
 

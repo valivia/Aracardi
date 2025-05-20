@@ -5,12 +5,14 @@ interface JsonPlayer {
     id: string;
     name: string;
     avatar: string;
+    isHandPicked: boolean;
 }
 
 export class Player {
     public id = $state(nanoid(16));
     public name = $state("");
     public avatar = $state(avatars[0]);
+    public isHandPicked = false;
 
     constructor(name: string, avatar: Avatar | string) {
         this.name = name;
@@ -35,6 +37,7 @@ export class Player {
             id: this.id,
             name: this.name,
             avatar: this.avatar.name,
+            isHandPicked: this.isHandPicked,
         };
     }
 
@@ -58,6 +61,7 @@ export class Player {
         for (const item of input) {
             try {
                 const player = new Player(item.name, item.avatar)
+                player.isHandPicked = item.isHandPicked;
 
                 if (players.find(p => p.avatar.name === player.avatar.name)) {
                     throw new Error(`Duplicate avatar ${player.avatar.name}`);

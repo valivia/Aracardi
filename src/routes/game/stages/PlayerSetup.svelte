@@ -31,6 +31,8 @@
         return avatarPlayerLink.find((avatar) => avatar.name === selectedAvatarName) ?? avatarPlayerLink[0];
     });
 
+    let isAvatarHandPicked = $state(false);
+
     let value = $state("");
 
     function setRandomAvatar() {
@@ -60,6 +62,7 @@
             player.name = name;
         } else {
             player = new Player(name, avatar);
+            player.isHandPicked = isAvatarHandPicked;
         }
 
         game.upsertPlayer(player);
@@ -76,13 +79,13 @@
         setRandomAvatar();
     }
 
-    function selectAvatar(avatar: AvatarPlayerLink) {
+    function selectAvatar(avatar: AvatarPlayerLink, isHandPicked = false) {
         if (avatar.player) {
             value = avatar.player.name;
         } else if (selectedAvatar.player) {
             value = "";
         }
-
+        isAvatarHandPicked = isHandPicked;
         selectedAvatarName = avatar.name;
     }
 
@@ -139,7 +142,7 @@
                 <div class="player" class:active class:selected>
                     <button
                         class="avatar"
-                        onclick={() => selectAvatar(avatar)}
+                        onclick={() => selectAvatar(avatar, avatar.player === undefined)}
                         aria-label="Select {avatar.name} avatar for {active ? "Editing" : "Adding"}"
                     >
                         <avatar.element />

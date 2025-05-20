@@ -12,7 +12,7 @@
     {#if part.type === CardPartType.text}
         {part.value}
     {:else if part.type === CardPartType.turns}
-        <var data-type={part.type}>{card.turns}</var> turn{card.turns === 1 ? "" : "s"}
+        <var data-type={part.type}>{card.turnsLeft}</var> turn{card.turnsLeft === 1 ? "" : "s"}
     {:else if part.type === CardPartType.timeLimit}
         <var data-type={part.type}>{card.timeLimit}</var> second{card.timeLimit === 1 ? "" : "s"}
     {:else}

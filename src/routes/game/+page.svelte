@@ -41,16 +41,25 @@
         }
     });
 
+    document.onvisibilitychange = () => {
+        if (document.visibilityState === "hidden") {
+            game.logGameEnd();
+        }
+    };
+
     $effect(() => {
         console.log("- Settings saved");
         localStorage.setItem("settings", JSON.stringify(game.settings));
     });
 
-    beforeNavigate(({ cancel }) => {
-        if (game.currentStage !== GameStage.game) return;
-        game.endGame();
+    beforeNavigate((navigation) => {
+        if (!game.isOngoing) return;
         if (!confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
-            cancel();
+            navigation.cancel();
+        }
+
+        if (navigation.to?.url.host === location.host) {
+            game.endGame();
         }
     });
 

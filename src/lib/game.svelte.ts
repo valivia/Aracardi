@@ -3,12 +3,13 @@ import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
-import { dev } from "$app/environment";
+import { dev, version } from "$app/environment";
+import { nanoid } from "nanoid";
 
 export enum GameStage {
-    addonSetup,
-    playerSetup,
-    game,
+    addonSetup = "addonSetup",
+    playerSetup = "playerSetup",
+    game = "game",
 }
 
 export interface Settings {
@@ -24,6 +25,10 @@ const defaultSettings: Settings = {
 };
 
 export class GameController {
+    public readonly createdAt: Date = new Date();
+    public readonly id = nanoid(32);
+    public startedAt: Date | null = null;
+
     // Settings
     public settings: Settings = $state(defaultSettings);
 
@@ -51,7 +56,18 @@ export class GameController {
     public activeCards: CardController[] = $state([]);
 
     // Telemetry
-    private cardsPlayed: number = 0;
+    private cardStats = {
+        cardsPlayed: 0,
+        cardsDismissed: 0,
+    }
+
+    private playerStats = {
+        playersAdded: 0,
+        playersLoaded: 0,
+        playersRenamed: 0,
+        playersRemoved: 0,
+        avatarsUsed: new Set<string>(),
+    }
 
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
@@ -162,15 +178,19 @@ export class GameController {
     };
 
     // Active cards
-    public deleteActiveCard = (card: CardController) => {
+    public deleteActiveCard = (card: CardController, forced = false) => {
         this.activeCards = this.activeCards.filter(c => c !== card);
+        if (forced) {
+            this.cardStats.cardsDismissed++;
+            this.logGame(LogAction.dismiss, this.getDismissInfo(card));
+        }
     }
 
     private incrementActiveCards() {
         for (const card of this.activeCards) {
             card.nextTurn();
 
-            if (card.turns === 0) {
+            if (card.turnsLeft === 0) {
                 this.deleteActiveCard(card);
             }
         }
@@ -185,17 +205,27 @@ export class GameController {
         const index = this.players.findIndex(p => p.id === player.id);
 
         if (index === -1) {
+            this.playerStats.playersAdded++;
+            this.playerStats.avatarsUsed.add(player.avatar.name);
             this.players.push(player);
             this.filterCards();
         } else {
+            this.playerStats.playersRenamed++;
             this.players[index] = player;
         }
+
+        console.log({ player });
 
         this.savePlayers();
     }
 
     public removePlayer = (player: Player) => {
-        this.players = this.players.filter(p => p !== player);
+        const newPlayers = this.players.filter(p => p !== player);
+        if (newPlayers.length === this.players.length) return;
+
+        this.players = newPlayers;
+        this.playerStats.playersRemoved++;
+
         this.savePlayers();
         this.filterCards();
 
@@ -205,10 +235,16 @@ export class GameController {
     private savePlayers() {
         Player.savePlayers(this.players);
         this.hasPreviousPlayers = this.players.length > 0;
+
+        // Log if in game
+        if (this.isOngoing) {
+            this.logGame(LogAction.player, this.getPlayerEventInfo());
+        }
     }
 
     public restorePlayers() {
         this.players = Player.loadPlayers();
+        this.playerStats.playersLoaded = this.players.length;
     }
 
     public shufflePlayers = () => {
@@ -221,42 +257,59 @@ export class GameController {
     public nextTurn = () => {
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
 
+        // Active cards
         this.incrementActiveCards();
 
-        if (this.currentCard?.turns) {
+        if (this.currentCard?.turnsLeft) {
             this.activeCards.push(this.currentCard);
         }
 
+        this.cardStats.cardsPlayed++;
+
+        // Log
+        if (this.currentCard) {
+            this.logGame(LogAction.card, this.getCardEventInfo(this.currentCard));
+        }
+
         // Card
-        this.currentCardIndex = (this.currentCardIndex + 1) % this.cards.length;
+        this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
+    }
+
+    private setCurrentCard(index: number) {
+        this.currentCardIndex = index;
         this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
-        this.cardsPlayed++;
     }
 
     public async setStage(state: GameStage) {
         if (state === GameStage.game && !this.currentCard) {
-            await this.loadCards();
-            if (this.cards.length < 10) {
-                alert("Not enough cards");
-                return;
-            }
-            this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
-            this.logGame(LogAction.start, {
-                addons: this.selectedAddons.map(a => a.title),
-                players: this.players.map(p => `${p.name} (${p.avatar.name})`),
-                theme: localStorage.getItem("theme") || "default",
-            });
+            this.startGame();
         }
 
         this.stage = state;
     }
 
+    private async startGame() {
+        await this.loadCards();
+        if (this.cards.length < 10) {
+            alert("Not enough cards");
+            return;
+        }
+        this.startedAt = new Date();
+        this.setCurrentCard(0);
+        this.playerStats.avatarsUsed = new Set(this.players.map(p => p.avatar.name));
+        this.logGame(LogAction.start, this.getStartEventInfo());
+    }
+
     public async endGame() {
-        this.logGame(LogAction.end, {
-            cardsPlayed: this.cardsPlayed,
-            players: this.players.map(p => `${p.name} (${p.avatar.name})`),
-            theme: localStorage.getItem("theme") || "default",
-        });
+        this.logGameEnd(true);
+    }
+
+    public logGameEnd(confirmed = false) {
+        if (this.isOngoing) {
+            this.logGame(LogAction.end, this.getEndEventInfo(confirmed));
+        } else {
+            this.logGame(LogAction.failedSetup, this.getFailedSetupInfo());
+        }
     }
 
     // Settings
@@ -271,21 +324,108 @@ export class GameController {
     // Telemetry
     public async logGame(action: LogAction, data: Record<string, unknown> = {}) {
         if (dev) return;
+        if (!window.navigator.onLine) return;
+        if (localStorage.getItem("telemetry") === "false") return;
         try {
+            const baseData = {
+                id: this.id,
+                version,
+                createdAt: this.createdAt,
+                theme: localStorage.getItem("theme") || "default",
+            }
+
+            const body = {
+                base: baseData,
+                event: {
+                    action,
+                    ...data
+                }
+            };
+
             await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ action, ...data }),
-            })
+                body: JSON.stringify(body),
+                keepalive: true,
+            });
         } catch (e) {
             console.error(e);
+        }
+    }
+
+    // Game events
+    private getFailedSetupInfo() {
+        return {
+            stage: this.stage,
+            addons: this.selectedAddons.map(a => a.fileName),
+            playerInfo: this.getPlayerEventInfo(),
+        }
+    }
+
+    private getStartEventInfo() {
+        return {
+            startedAt: this.startedAt,
+            addons: this.selectedAddons.map(a => a.fileName),
+            playerInfo: this.getPlayerEventInfo(),
+        }
+    }
+
+    private getEndEventInfo(confirmed = false) {
+        return {
+            confirmed,
+            ...this.getStartEventInfo(),
+            cardInfo: this.getBaseCardInfo(),
+        }
+    }
+
+    // Player events
+    private getPlayerEventInfo() {
+        return {
+            ...this.playerStats,
+            players: this.players.map(player => ({
+                name: player.name,
+                avatar: player.avatar.name,
+                isHandPicked: player.isHandPicked || false,
+            })),
+            avatarsUsed: [...this.playerStats.avatarsUsed],
+        }
+    }
+
+    // Card events
+    private getCardEventInfo(currentCard: CardController) {
+        return {
+            cardId: currentCard.id,
+            duration: new Date().getTime() - currentCard.createdAt.getTime(),
+            cardInfo: this.getBaseCardInfo(),
+        }
+    }
+
+    private getDismissInfo(card: CardController) {
+        return {
+            cardId: card.id,
+            turnsPassed: card.turnsPassed,
+            turnCount: card.originalTurnCount,
+            duration: Math.floor((new Date().getTime() - card.createdAt.getTime()) / 1000),
+        }
+    }
+
+    private getBaseCardInfo() {
+        return {
+            ...this.cardStats,
         }
     }
 }
 
 enum LogAction {
-    start = "start",
-    end = "end",
+    failedSetup = "FailedSetup",
+    start = "Start",
+    end = "End",
+
+    player = "Player",
+    card = "Card",
+    dismiss = "Dismiss",
 }
+
+
