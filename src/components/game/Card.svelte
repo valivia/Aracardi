@@ -20,7 +20,7 @@
             <CardText {card} />
         </p>
 
-        {#if card.image && loadImage}
+        {#if card.image && loadImage && window.navigator.onLine}
             <img
                 src="/cards/{card.id}.webp"
                 alt=""
@@ -106,6 +106,9 @@
     .title {
         font-size: 1.5em;
         font-weight: 700;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        hyphens: auto;
     }
 
     .text {

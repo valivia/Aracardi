@@ -10,7 +10,7 @@
     </a>
 
     <a href={PUBLIC_DISCORD_URL} target="_blank" rel="noopener">
-        <DiscordLogo /><span>Join the Discord</span>
+        <DiscordLogo /><span>Join the Discord!</span>
     </a>
 </aside>
 
