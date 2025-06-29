@@ -36,6 +36,7 @@ export class GameController {
     private stage: GameStage = $state(GameStage.playerSetup);
     public settingsOpen = $state(false);
     public get currentStage() { return this.stage };
+    public ended = false;
 
     // Content
     public cards: Card[] = $state([]);
@@ -302,9 +303,11 @@ export class GameController {
 
     public async endGame() {
         this.logGameEnd(true);
+        this.ended = true;
     }
 
     public logGameEnd(confirmed = false) {
+        if (this.ended) return;
         if (this.isOngoing) {
             this.logGame(LogAction.end, this.getEndEventInfo(confirmed));
         } else {
@@ -323,7 +326,10 @@ export class GameController {
 
     // Telemetry
     public async logGame(action: LogAction, data: Record<string, unknown> = {}) {
-        if (dev) return;
+        if (dev) {
+            console.log(`Telemetry: ${action}`, data);
+            return;
+        }
         if (!window.navigator.onLine) return;
         if (localStorage.getItem("telemetry") === "false") return;
         try {
@@ -375,6 +381,7 @@ export class GameController {
     private getEndEventInfo(confirmed = false) {
         return {
             confirmed,
+            lastCard: this.currentCard?.id,
             ...this.getStartEventInfo(),
             cardInfo: this.getBaseCardInfo(),
         }

@@ -54,12 +54,10 @@
 
     beforeNavigate((navigation) => {
         if (!game.isOngoing) return;
-        if (!confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
-            navigation.cancel();
-        }
-
-        if (navigation.to?.url.host === location.host) {
+        if (confirm("Are you sure you want to leave this page? You have unsaved changes that will be lost.")) {
             game.endGame();
+        } else {
+            navigation.cancel();
         }
     });
 
