@@ -26,7 +26,7 @@
                 <h2>{addon.title}</h2>
                 <ul class="cards">
                     {#each addon.cards as card}
-                        <li class="card">
+                        <li class="card" class:isNsfw={card.isNsfw}>
                             <h3>{card.title}</h3>
                             <span>{card.text}</span>
 
@@ -122,6 +122,10 @@
             border-radius: 6px;
             padding: 0.5rem;
         }
+    }
+
+    .card.isNsfw {
+        border: 4px solid var(--theme-error);
     }
 
     img {

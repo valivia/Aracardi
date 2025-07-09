@@ -19,7 +19,7 @@ export class ImageService {
         const cardIds = new Set<string>();
 
         for (const card of this.cards) {
-            if (card.id) cardIds.add(card.id);
+            if (card.id && card.image === true) cardIds.add(card.id);
         }
 
         return this.images.filter(file => file.isFile() && file.name.endsWith(".webp") && !cardIds.has(file.name.slice(0, -5)));

@@ -104,6 +104,7 @@
         }
 
         & > .description {
+            text-align: start;
             font-weight: 400;
             font-size: 0.8em;
             margin: 0;
