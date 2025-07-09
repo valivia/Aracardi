@@ -16,12 +16,14 @@
 
 <style lang="scss">
     button {
+        font-size: clamp(1rem, 2vw, 2rem);
+
         position: fixed;
         color: currentColor;
-        top: 1rem;
-        right: 1rem;
-        width: 2rem;
-        height: 2rem;
+        top: 1em;
+        right: 1em;
+        width: 1em;
+        height: 1em;
         z-index: 1000;
         background-color: transparent;
         cursor: pointer;

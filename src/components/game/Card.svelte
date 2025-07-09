@@ -45,27 +45,22 @@
         border: none;
         background: transparent;
 
-        font-size: clamp(0.8rem, 3vw, 1.5rem);
-
         width: min(100%, 50ch);
         aspect-ratio: 16 / 9;
-        padding: 2em;
-        margin: 2em;
 
+        border: var(--border-width) solid var(--color);
         border-radius: 1rem;
         overflow: hidden;
-        box-shadow:
-            0 0 0 2px var(--color),
-            0 0 0 8px var(--theme-primary),
-            0 0 0 10px var(--color),
-            0 0 0 16px var(--theme-primary),
-            0 0 0 18px var(--color);
 
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 0.5em;
+        padding: 0.75em;
+
+        font-size: 1.3em;
+        text-align: center;
 
         background-position: center;
         background-size: cover;
@@ -74,16 +69,33 @@
 
         animation: spin 1 200ms forwards ease-in-out;
 
-        text-align: center;
-
         color: var(--theme-text);
 
         @include noselect;
 
+        @include defaultOrientation() {
+            margin-inline: 2em;
+        }
+
+        @include large() {
+            cursor: pointer;
+            margin-block: 2em;
+
+            border: none;
+            outline-offset: 24px;
+            box-shadow:
+                0 0 0 2px var(--color),
+                0 0 0 8px var(--theme-primary),
+                0 0 0 10px var(--color),
+                0 0 0 16px var(--theme-primary),
+                0 0 0 18px var(--color);
+        }
+
         &:focus-visible,
         &:hover {
+            border-color: var(--theme-accent);
+            outline-offset: 4px;
             outline: var(--border-width) solid var(--theme-accent);
-            outline-offset: 24px;
         }
 
         & img {
@@ -104,7 +116,7 @@
     }
 
     .title {
-        font-size: 1.5em;
+        font-size: 1.4em;
         font-weight: 700;
         word-break: break-all;
         overflow-wrap: break-word;

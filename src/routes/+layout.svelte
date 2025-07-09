@@ -43,6 +43,9 @@
 
 <style lang="scss">
     h1 {
+        font-weight: 200;
+        font-size: clamp(2.5rem, 5vw, 5rem);
+        text-transform: capitalize;
         padding: 0.2em;
         text-align: center;
     }

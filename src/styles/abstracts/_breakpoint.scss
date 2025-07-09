@@ -12,47 +12,53 @@ $screen-xl-min: 1200px;
 
 // Small devices
 @mixin small {
-  @media (min-width: #{$screen-sm-min}) {
-    @content;
-  }
+    @media (min-width: #{$screen-sm-min}) {
+        @content;
+    }
 }
 
 // Medium devices
 @mixin medium {
-  @media (min-width: #{$screen-md-min}) {
-    @content;
-  }
+    @media (min-width: #{$screen-md-min}) {
+        @content;
+    }
 }
 
 // Large devices
 @mixin large {
-  @media (min-width: #{$screen-lg-min}) {
-    @content;
-  }
+    @media (min-width: #{$screen-lg-min}) {
+        @content;
+    }
 }
 
 // Extra large devices
 @mixin extraLarge {
-  @media (min-width: #{$screen-xl-min}) {
-    @content;
-  }
+    @media (min-width: #{$screen-xl-min}) {
+        @content;
+    }
+}
+
+@mixin defaultOrientation {
+    @media (orientation: landscape) {
+        @content;
+    }
 }
 
 // Custom devices
 @mixin minWidth($screen) {
-  @media (min-width: ($screen + "px")) {
-    @content;
-  }
+    @media (min-width: ($screen + "px")) {
+        @content;
+    }
 }
 
 @mixin reducedMotion() {
-  @media (prefers-reduced-motion: reduce) {
-    @content;
-  }
+    @media (prefers-reduced-motion: reduce) {
+        @content;
+    }
 }
 
 @mixin pointer() {
-  @media (pointer: fine) {
-    @content;
-  }
+    @media (pointer: fine) {
+        @content;
+    }
 }

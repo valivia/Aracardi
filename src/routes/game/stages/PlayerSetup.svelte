@@ -215,24 +215,24 @@
     .selector {
         grid-area: selector;
         display: grid;
-        gap: 1rem;
+        gap: 1em;
         grid-template-columns: 1fr 1fr;
         align-items: end;
         justify-items: center;
-        padding-top: 1rem;
+        padding-top: 1em;
 
         @include large() {
-            grid-template-columns: 1fr 7rem 1fr;
+            grid-template-columns: 1fr 7em 1fr;
         }
 
         form {
             width: min(100%, 26ch);
             display: flex;
-            gap: 0.5rem;
+            gap: 0.5em;
             flex-direction: column;
 
             input {
-                padding: 0.5rem;
+                padding: 0.5em;
                 border: none;
                 color: currentColor;
                 border-bottom: var(--border-width) solid var(--theme-text);
@@ -246,8 +246,8 @@
 
             section {
                 display: flex;
-                gap: 0.5rem;
-                height: 2.2rem;
+                gap: 0.5em;
+                height: 2.2em;
 
                 :global(button) {
                     font-size: 0.8rem;

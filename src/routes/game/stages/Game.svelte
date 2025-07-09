@@ -84,7 +84,7 @@
         height: 100%;
         overflow: hidden auto;
 
-        @include large() {
+        @include defaultOrientation() {
             grid-template-columns: 1fr 3fr 1fr;
             grid-template-rows: 1fr;
             grid-template-areas: "players game active";
@@ -98,7 +98,7 @@
     .active {
         max-width: 90vw;
 
-        @include large() {
+        @include defaultOrientation() {
             max-width: unset;
             max-height: 70dvh;
         }
@@ -113,7 +113,7 @@
         padding: 0.5rem;
         gap: 1rem;
 
-        @include large() {
+        @include defaultOrientation() {
             overflow: hidden auto;
             grid-auto-flow: row;
             padding-block: 0.5rem;
@@ -134,7 +134,7 @@
             grid-template-rows: auto;
             align-items: start;
 
-            @include large() {
+        @include defaultOrientation() {
                 grid-template-columns: $player-size;
                 grid-auto-rows: auto;
                 max-height: 100%;
@@ -160,23 +160,23 @@
     // Main area
     .game {
         grid-area: game;
-        padding-inline: 2rem;
+        padding-inline: 1.5em;
 
         width: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        gap: 1em;
 
-        @include large() {
+        @include defaultOrientation() {
             height: 100%;
             overflow: hidden;
         }
 
         section {
             display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
+            gap: 1em;
         }
     }
 
@@ -184,16 +184,15 @@
     .active {
         grid-area: active;
 
-        grid-template-rows: 10rem;
-        grid-auto-columns: 14rem;
-        justify-content: right;
+        grid-template-rows: 10em;
+        grid-auto-columns: 14em;
 
-        @include large() {
+        @include defaultOrientation() {
             grid-template-columns: min(30ch, 100%);
             grid-auto-rows: min-content;
             grid-template-rows: unset;
             padding: 0;
-            padding-right: 1rem;
+            padding-right: 1em;
         }
     }
 </style>

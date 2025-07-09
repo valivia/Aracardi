@@ -28,8 +28,9 @@
         border-radius: var(--border-radius);
         background-color: transparent;
         color: currentColor;
-        padding: 1rem;
-        margin: 0.5rem;
+        padding: 1em;
+        margin: 0.5em;
+        font-size: inherit;
         cursor: pointer;
 
         .icon {

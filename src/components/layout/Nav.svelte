@@ -9,13 +9,19 @@
 </nav>
 
 <style lang="scss">
+    @use "styles/abstracts" as *;
+
     nav {
         width: 100%;
         padding: 1rem;
         margin-top: auto;
 
-        display: flex;
+        display: none;
         justify-content: center;
+
+        @include large() {
+            display: flex;
+        }
     }
 
     .logo {
