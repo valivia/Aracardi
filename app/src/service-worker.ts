@@ -12,6 +12,8 @@ const CACHE = `cache-${version}`;
 const ASSETS = [
     ...build,
     ...files,
+    "/game",
+    "/",
 ];
 
 sw.addEventListener('install', (event) => {
@@ -27,6 +29,8 @@ sw.addEventListener('install', (event) => {
 });
 
 sw.addEventListener('activate', (event) => {
+    console.log(`activating service worker with ${ASSETS.length} files (version: '${version}')`);
+    console.log({ ASSETS });
     // Remove previous cached data from disk
     async function deleteOldCaches() {
         for (const key of await caches.keys()) {
@@ -50,6 +54,7 @@ sw.addEventListener('fetch', (event) => {
             const response = await cache.match(url.pathname);
 
             if (response) {
+                console.log(`Cache: ${url.pathname}`);
                 return response;
             }
         }
@@ -57,6 +62,7 @@ sw.addEventListener('fetch', (event) => {
         // for everything else, try the network first, but
         // fall back to the cache if we're offline
         try {
+            console.log(`Network: ${url.pathname}`);
             const response = await fetch(event.request);
 
             // if we're offline, fetch can return a value that is not a Response
