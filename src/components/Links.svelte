@@ -1,6 +1,6 @@
 <script>
-    import { PUBLIC_DISCORD_URL, PUBLIC_DONATION_URL } from "$env/static/public";
-    import { CoffeeIcon } from "components/icons";
+    import { PUBLIC_DISCORD_URL, PUBLIC_DONATION_URL, PUBLIC_GIT_URL } from "$env/static/public";
+    import { CoffeeIcon, GithubLogo } from "components/icons";
     import DiscordLogo from "./icons/DiscordLogo.svelte";
 </script>
 
@@ -11,6 +11,10 @@
 
     <a href={PUBLIC_DISCORD_URL} target="_blank" rel="noopener">
         <DiscordLogo /><span>Join the Discord!</span>
+    </a>
+
+    <a href={PUBLIC_GIT_URL} target="_blank" rel="noopener">
+        <GithubLogo /><span>View the source code!</span>
     </a>
 </aside>
 
