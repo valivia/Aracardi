@@ -1,9 +1,13 @@
 <script>
     import Links from "components/Links.svelte";
     import AnchorButton from "components/input/AnchorButton.svelte";
+
+    let value = $state("1234");
 </script>
 
 <main>
+    <input type="text" bind:value />
+    <AnchorButton href={`/lobby/${value}`}>Join Lobby</AnchorButton>
     <p>Have an unforgettable drinking night with your friends on Aracardi!</p>
     <div class="divider"></div>
     <AnchorButton href="/game">Play</AnchorButton>
