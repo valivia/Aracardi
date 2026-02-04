@@ -39,7 +39,7 @@
                 <dd>{game.players.length}</dd>
             </dl>
         {/if}
-        <Links />
+        <Links extended />
     </main>
 
     <nav>
