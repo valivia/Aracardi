@@ -55,6 +55,7 @@
     </aside>
 
     <main class="game">
+        <p>Game ID: {game.gameId}</p>
         {#if game.currentCard}
             <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages} />
         {/if}

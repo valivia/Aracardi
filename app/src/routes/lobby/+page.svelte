@@ -1,33 +1,44 @@
 <script lang="ts">
     import { beforeNavigate } from "$app/navigation";
+    import { WebsocketClient } from "lib/websocket";
 
-    const socket = $state(new WebSocket("ws://localhost:3000/ws/1234"));
-    socket.addEventListener("open", function (event) {
-        console.log("socket open");
-        const player_id = localStorage.getItem("player_id");
-        const connectMessage = `connect:${player_id ?? ""}`;
-        console.log("Sending message: ", connectMessage);
-        socket.send(connectMessage);
-    });
-
-    // Listen for messages
-    socket.addEventListener("message", function (event) {
-        const data: string = event.data;
-        console.log("Message from server ", data);
-
-        if (data.startsWith("player_id:")) {
-            const playerId = data.split(":")[1];
-            console.log("Received player ID: ", playerId);
-            localStorage.setItem("player_id", playerId);
-        }
-    });
+    let socket = $state<WebsocketClient | null>(null);
 
     beforeNavigate(() => {
-        console.log("closing socket");
-        socket.close();
+        socket?.close();
     });
+
+    let current_card = $state("");
+    let current_player = $state("");
+    let session_id = $state("");
+
+    async function connect() {
+        socket = await WebsocketClient.connectToSession(session_id);
+        socket?.onMessage((type, payload) => {
+            if (type === "current_card") {
+                current_card = payload;
+            } else if (type === "current_player") {
+                current_player = payload;
+            }
+        });
+    }
 </script>
 
 <section>
-    <button onclick={() => socket.send("a")}>Send Message</button>
+    {#if !socket}
+        <fieldset>
+            <input type="text" bind:value={session_id} />
+            <button onclick={connect}> Join Session </button>
+        </fieldset>
+    {/if}
+    <fieldset>
+        <legend>Current Card</legend>
+        <input type="text" bind:value={current_card} />
+        <button onclick={() => socket?.send("card", current_card)}>Update</button>
+    </fieldset>
+    <fieldset>
+        <legend>Current Player</legend>
+        <input type="text" bind:value={current_player} />
+        <button onclick={() => socket?.send("player", current_player)}>Update</button>
+    </fieldset>
 </section>

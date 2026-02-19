@@ -9,7 +9,10 @@ use futures_util::{sink::SinkExt, stream::StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
-use crate::{AppState, structs::player::PLAYER_ID_LENGTH};
+use crate::{
+    AppState,
+    structs::{game::player, player::PLAYER_ID_LENGTH},
+};
 
 pub async fn handler(
     ws: WebSocketUpgrade,
@@ -70,10 +73,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_id: Str
         .await
         .unwrap();
 
-
     // Send game state
-    
-
     let (mut sender, mut receiver) = socket.split();
 
     // Send task
@@ -88,18 +88,18 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_id: Str
     // Receive loop
     let state_clone = state.clone();
     let game_id_clone = game_id.clone();
+    let player_id_clone = player_id.clone();
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
-            match msg {
-                Message::Close(_) => break,
-                msg => {
-                    if let Some(game) = state_clone.games.get(&game_id_clone) {
-                        game.broadcast(msg);
-                    }
-                }
+            if let Some(mut game) = state_clone.games.get_mut(&game_id_clone) {
+                game.on_message(&player_id_clone, msg);
             }
         }
     });
+
+    if let Some(game) = state.games.get(&game_id) {
+        game.sync_player(&player_id).await;
+    }
 
     tokio::select! {
         _ = &mut send_task => recv_task.abort(),

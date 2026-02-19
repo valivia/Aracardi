@@ -5,6 +5,7 @@ use axum::{
 };
 use dashmap::DashMap;
 use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 
 mod route;
 mod structs;
@@ -17,11 +18,24 @@ async fn main() {
 
     shared_state.create_game();
 
-    let app = Router::new()
+    // Allow requests from anywhere
+
+    let mut app = Router::new()
         .route("/ws/{game_id}", any(route::lobby::handler))
         .route("/ws", post(route::create::handler))
         .with_state(shared_state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    if cfg!(debug_assertions) {
+        let cors = CorsLayer::new()
+            .allow_origin(Any)
+            .allow_methods(Any)
+            .allow_headers(Any);
+
+        app = app.layer(cors);
+    }
+
+    let address = "0.0.0.0:3000";
+    let listener = tokio::net::TcpListener::bind(address).await.unwrap();
+    println!("Server running on {}", address);
     axum::serve(listener, app).await.unwrap();
 }

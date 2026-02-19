@@ -5,6 +5,7 @@ import { Player } from "./player.svelte";
 import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
 import { dev, version } from "$app/environment";
 import { nanoid } from "nanoid";
+import { WebsocketClient } from "./websocket";
 
 export enum GameStage {
     addonSetup = "addonSetup",
@@ -55,6 +56,10 @@ export class GameController {
 
     // Active cards
     public activeCards: CardController[] = $state([]);
+
+    // Websocket
+    private socket: WebsocketClient | null = $state(null);
+    public readonly gameId: string | null = $derived.by(() => this.socket?.id ?? null);
 
     // Telemetry
     private cardStats = {
@@ -256,7 +261,8 @@ export class GameController {
 
     // Game
     public nextTurn = () => {
-        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+        // Player
+        this.setCurrentPlayer((this.currentPlayerIndex + 1) % this.players.length);
 
         // Active cards
         this.incrementActiveCards();
@@ -276,9 +282,15 @@ export class GameController {
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
     }
 
+    private setCurrentPlayer(index: number) {
+        this.currentPlayerIndex = index;
+        this.socket?.send("current_player", this.currentPlayer.id);
+    }
+
     private setCurrentCard(index: number) {
         this.currentCardIndex = index;
         this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+        this.socket?.send("current_card", this.currentCard.id);
     }
 
     public async setStage(state: GameStage) {
@@ -295,14 +307,24 @@ export class GameController {
             alert("Not enough cards");
             return;
         }
+
+        try {
+            const socket = await WebsocketClient.createSession()
+            this.socket = socket;
+        } catch (e) {
+            console.error("Failed to connect to websocket: ", e);
+        }
+
         this.startedAt = new Date();
         this.setCurrentCard(0);
+        this.setCurrentPlayer(0);
         this.playerStats.avatarsUsed = new Set(this.players.map(p => p.avatar.name));
         this.logGame(LogAction.start, this.getStartEventInfo());
     }
 
     public async endGame() {
         this.logGameEnd(true);
+        this.socket?.close();
         this.ended = true;
     }
 

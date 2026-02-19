@@ -15,3 +15,7 @@ impl Default for GameState {
         }
     }
 }
+
+impl GameState {
+    
+}

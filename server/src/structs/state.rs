@@ -14,7 +14,7 @@ impl AppState {
             game_id = Game::generate_id();
         }
 
-        game_id = "1234".to_string(); // TODO remove
+        // game_id = "1234".to_string(); // TODO remove
 
         let game = Game::new(game_id.clone());
 

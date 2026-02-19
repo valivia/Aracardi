@@ -7,7 +7,7 @@ pub type Tx = mpsc::Sender<Message>;
 pub const PLAYER_ID_LENGTH: usize = 10;
 pub type PlayerId = String;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Role {
     Host,
     Player,
@@ -36,8 +36,8 @@ impl Player {
         &self.tx
     }
 
-    pub fn role(&self) -> &Role {
-        &self.role
+    pub fn role(&self) -> Role {
+        self.role
     }
 
     pub fn last_seen(&self) -> std::time::Instant {
