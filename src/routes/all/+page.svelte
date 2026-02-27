@@ -1,5 +1,6 @@
 <script lang="ts">
     import { CopyIcon } from "components/icons";
+    import { twemoji } from "lib/twemoji.svelte";
 
     const { data } = $props();
 
@@ -27,8 +28,8 @@
                 <ul class="cards">
                     {#each addon.cards as card}
                         <li class="card" class:isNsfw={card.isNsfw}>
-                            <h3>{card.title}</h3>
-                            <span>{card.text}</span>
+                            <h3 use:twemoji>{card.title}</h3>
+                            <span use:twemoji>{card.text}</span>
 
                             <button onclick={() => CopyToClipboard(card.id)}>
                                 <CopyIcon width="1em" height="1em" />

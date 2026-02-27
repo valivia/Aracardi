@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { CardController } from "lib/card.svelte";
     import CardText from "./CardText.svelte";
+    import { twemoji } from "lib/twemoji.svelte";
 
     interface Props {
         card: CardController;
@@ -14,9 +15,9 @@
 {#key card.id}
     <button class="card" id="currentCard" {onclick}>
         {#if card.title}
-            <h1 class="title underlined">{card.title}</h1>
+            <h1 class="title underlined" use:twemoji>{card.title}</h1>
         {/if}
-        <p class="text">
+        <p class="text" use:twemoji>
             <CardText {card} />
         </p>
 
