@@ -120,8 +120,9 @@
 
             <!-- Current avatar -->
             {#key selectedAvatar.name}
+                {@const Avatar = selectedAvatar.element}
                 <button class="activeAvatar" onclick={setRandomAvatar} aria-label="Randomize avatar">
-                    <selectedAvatar.element />
+                    <Avatar />
                 </button>
             {/key}
 
@@ -143,7 +144,7 @@
                     <button
                         class="avatar"
                         onclick={() => selectAvatar(avatar, avatar.player === undefined)}
-                        aria-label="Select {avatar.name} avatar for {active ? "Editing" : "Adding"}"
+                        aria-label="Select {avatar.name} avatar for {active ? 'Editing' : 'Adding'}"
                     >
                         <avatar.element />
                     </button>
@@ -308,7 +309,7 @@
         .player {
             text-align: center;
             transition: transform 200ms ease-in-out;
-            transform: translate();
+            transform: translate(0);
 
             &.active {
                 color: var(--theme-text);
@@ -325,6 +326,11 @@
             .avatar {
                 width: 100%;
                 @include avatar();
+
+                :global(svg) {
+                    width: 100%;
+                    height: 100%;
+                }
             }
 
             .name {
