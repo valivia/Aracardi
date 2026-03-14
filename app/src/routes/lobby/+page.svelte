@@ -7,7 +7,6 @@
     import { WebsocketClient } from "lib/websocket";
     import type { GameCard, GameUpdate } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
-    import Addon from "components/Addon.svelte";
 
     const { data } = $props();
 
@@ -18,8 +17,8 @@
     });
 
     // Connection
-    let hostConnected = $state(true);
-    let serverConnected = $state(true);
+    let hostConnected = $state(false);
+    let serverConnected = $state(false);
 
     let currentCard: CardController | null = $state(null);
     let activeCards = $state<GameCard[]>([]);
@@ -41,6 +40,9 @@
                         players.find((p) => p.id === currentPlayer)?.name ?? "???",
                     );
                 }
+                if (typeof gameUpdate.hostConnected == "boolean") {
+                    hostConnected = gameUpdate.hostConnected;
+                }
                 if (gameUpdate.players) {
                     players = gameUpdate.players.map((player) => {
                         let result = new Player(player.name, player.avatar);
@@ -48,8 +50,6 @@
                         return result;
                     });
                 }
-            } else if (type == "host_connected") {
-                hostConnected = payload == "true";
             }
         });
 

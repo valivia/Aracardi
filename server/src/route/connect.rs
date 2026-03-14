@@ -18,13 +18,13 @@ use crate::{
     AppState,
     structs::{
         game::{Game, client::Client},
-        protocol::topic::OutgoingMessage,
+        protocol::{game_update::GameUpdate, message::OutgoingMessage},
     },
 };
 
 const PING_INTERVAL: Duration = Duration::from_secs(15);
 const PONG_TIMEOUT: Duration = Duration::from_secs(10);
-const CONNECTION_TIMEOUT: Duration = Duration::from_secs(10);
+const CONNECTION_TIMEOUT: Duration = Duration::from_mins(5);
 
 pub async fn handler(
     ws: WebSocketUpgrade,
@@ -59,6 +59,12 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_id: Str
         Some(game) => game.host_id == client_id,
         None => return, // game was deleted during authentication
     };
+
+    if is_host {
+        if let Some(game) = state.games.get(&game_id) {
+            game.send_host_status()
+        };
+    }
 
     let client_type = if is_host { "host" } else { "player" };
 
@@ -113,11 +119,9 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_id: Str
     }
 
     // Communicate host exit to clients
-    if is_host {
-        if let Some(game) = state.games.get(&game_id) {
-            game.broadcast(OutgoingMessage::HostConnected(false).to_message(), None)
-        };
-    }
+    if let Some(game) = state.games.get(&game_id) {
+        game.send_host_status()
+    };
 
     // Stop tasks
     drop(tx);

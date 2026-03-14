@@ -1,2 +1,2 @@
 pub mod game_update;
-pub mod topic;
+pub mod message;

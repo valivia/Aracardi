@@ -16,4 +16,5 @@ export interface GameUpdate {
     currentCard?: GameCard;
     activeCards?: GameCard[];
 
+    hostConnected?: boolean;
 }

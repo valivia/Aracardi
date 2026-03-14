@@ -8,7 +8,7 @@ use crate::structs::{
     game::{Game, GameId, client::ClientId, state::Card},
     protocol::{
         game_update::GameUpdate,
-        topic::{IncomingMessage, OutgoingMessage},
+        message::{IncomingMessage, OutgoingMessage},
     },
 };
 
@@ -23,6 +23,11 @@ impl Game {
             Ok(IncomingMessage::Update(payload)) => {
                 if let Some(mut game) = state.games.get_mut(game_id) {
                     let mut response = GameUpdate::empty();
+
+                    // Check if host
+                    if &game.host_id != client_id {
+                        return;
+                    }
 
                     // Active cards
                     if let Some(active_cards) = &payload.active_cards {

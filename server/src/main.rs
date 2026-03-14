@@ -38,14 +38,14 @@ async fn main() {
         .with_state(shared_state)
         .layer(TraceLayer::new_for_http());
 
-    // if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) {
         let cors = CorsLayer::new()
             .allow_origin(Any)
             .allow_methods(Any)
             .allow_headers(Any);
 
         app = app.layer(cors);
-    // }
+    }
 
     let address = "0.0.0.0:3000";
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();

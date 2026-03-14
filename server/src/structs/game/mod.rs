@@ -1,6 +1,9 @@
-use crate::structs::game::{
-    client::{Client, ClientId},
-    state::GameState,
+use crate::structs::{
+    game::{
+        client::{Client, ClientId},
+        state::GameState,
+    },
+    protocol::{game_update::GameUpdate, message::OutgoingMessage},
 };
 use nanoid::nanoid;
 use std::collections::HashMap;
@@ -33,6 +36,10 @@ impl Game {
         }
     }
 
+    pub fn is_initialized(&self) -> bool {
+        self.state.current_card.is_some() && self.state.current_player_id.is_some()
+    }
+
     // Game
     pub fn is_empty(&self) -> bool {
         self.clients.is_empty()
@@ -40,6 +47,12 @@ impl Game {
 
     pub fn is_host_connected(&self) -> bool {
         self.clients.contains_key(&self.host_id)
+    }
+
+    pub fn send_host_status(&self) {
+        let mut game_update = GameUpdate::empty();
+        game_update.host_connected = Some(self.is_host_connected());
+        self.broadcast(OutgoingMessage::Update(game_update).to_message(), None)
     }
 
     // Other

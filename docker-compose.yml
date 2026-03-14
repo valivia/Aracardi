@@ -1,0 +1,14 @@
+services:
+    server:
+        container_name: aracardi-server
+        build: ./server
+        restart: unless-stopped
+        volumes:
+            - ./addons:/app/addons:ro
+        networks:
+            - nginx
+
+networks:
+    nginx:
+        external: true
+        name: nginx

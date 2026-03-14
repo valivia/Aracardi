@@ -17,3 +17,4 @@ serde = { version = "1", features = ["derive"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features=["env-filter", "time"] }
 thiserror = "2.0.18"
+serde_with = { version = "3.18.0", features = ["json"] }

@@ -4,14 +4,14 @@ use axum::extract::ws::{Message, WebSocket};
 use futures_util::SinkExt;
 use nanoid::nanoid;
 use tokio::sync::mpsc;
-use tracing::{debug, info, warn};
+use tracing::warn;
 
 use crate::structs::{
     app_state::AppState,
     game::Game,
     protocol::{
         game_update::GameUpdate,
-        topic::{IncomingMessage, OutgoingMessage},
+        message::{IncomingMessage, OutgoingMessage},
     },
 };
 
@@ -117,11 +117,10 @@ impl Game {
 
     pub fn sync_client(&self, id: &ClientId) {
         let client = self.clients.get(id);
+        let mut game_update = GameUpdate::from_game(self.state.clone());
+        game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
-            client.send(
-                OutgoingMessage::Update(GameUpdate::from_game_state(self.state.clone()))
-                    .to_message(),
-            );
+            client.send(OutgoingMessage::Update(game_update).to_message());
         }
     }
 }

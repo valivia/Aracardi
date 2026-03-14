@@ -22,7 +22,6 @@ pub enum ParseError {
 pub enum OutgoingMessage {
     ClientId(ClientId),
     Update(GameUpdate),
-    HostConnected(bool),
 }
 
 impl OutgoingMessage {
@@ -30,7 +29,6 @@ impl OutgoingMessage {
         match self {
             OutgoingMessage::ClientId(_) => "client_id",
             OutgoingMessage::Update(_) => "update",
-            OutgoingMessage::HostConnected(_) => "host_connected",
         }
     }
 
@@ -38,7 +36,6 @@ impl OutgoingMessage {
         let mut payload = match &self {
             OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
             OutgoingMessage::ClientId(payload) => Ok(payload.clone()),
-            OutgoingMessage::HostConnected(payload) => Ok(payload.to_string()),
         }
         .unwrap();
 

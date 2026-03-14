@@ -10,11 +10,11 @@ use crate::{
     util::card_loader::AddonCard,
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatedGame {
-    game_id: String,
-    host_id: String,
+    pub game_id: String,
+    pub host_id: String,
 }
 
 pub struct AppState {
@@ -39,7 +39,7 @@ impl AppState {
             host_id: game.host_id.clone(),
         };
 
-        info!("Creating new game with id {}", game_id);
+        info!("[game] {game_id} | Creating new game");
 
         self.games.insert(game_id.clone(), game);
 

@@ -249,6 +249,7 @@ export class GameController {
 
         // Log if in game
         if (this.isOngoing) {
+            this.socket?.send("update", { players: this.players.map((player) => player.getSaveable()) });
             this.logGame(LogAction.player, this.getPlayerEventInfo());
         }
     }
@@ -377,6 +378,8 @@ export class GameController {
 
     // Telemetry
     public async logGame(action: LogAction, data: Record<string, unknown> = {}) {
+        // TODO: deal with telemetry
+        return;
         if (dev) {
             console.log(`Telemetry: ${action}`, data);
             return;

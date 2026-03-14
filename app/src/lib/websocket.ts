@@ -1,4 +1,5 @@
 import { PUBLIC_SERVER_URL } from "$env/static/public";
+import { dev } from "$app/environment";
 
 export class WebsocketClient {
     private socket: WebSocket;
@@ -12,7 +13,7 @@ export class WebsocketClient {
     }
 
     public static async createSession(): Promise<WebsocketClient | null> {
-        const response = await fetch(`http://${PUBLIC_SERVER_URL}/lobby`, { method: "POST" });
+        const response = await fetch(`${dev ? "http" : "https"}://${PUBLIC_SERVER_URL}/lobby`, { method: "POST" });
 
         if (!response.ok) {
             return null;
@@ -21,19 +22,17 @@ export class WebsocketClient {
         const payload = await response.json();
 
         console.log("Created session with ID: ", payload.gameId);
-        localStorage.setItem("client_id", payload.hostId);
 
-        return await this.connectToSocket(payload.gameId);
+        return await this.connectToSocket(payload.gameId, payload.hostId);
     }
 
     public static async connectToSession(sessionId: string): Promise<WebsocketClient | null> {
         return await this.connectToSocket(sessionId).catch(() => null);
     }
 
-    private static async connectToSocket(gameId: string): Promise<WebsocketClient | null> {
-        const url = `ws://${PUBLIC_SERVER_URL}/lobby/${gameId}/ws`;
+    private static async connectToSocket(gameId: string, clientId: string = ""): Promise<WebsocketClient | null> {
+        const url = `${dev ? "ws" : "wss"}://${PUBLIC_SERVER_URL}/lobby/${gameId}/ws`;
         const socket = new WebSocket(url);
-        let clientId = "";
 
         console.debug(`Connecting to websocket at ${url}`);
 
@@ -45,8 +44,7 @@ export class WebsocketClient {
                 }, 5000);
 
                 socket.addEventListener("open", () => {
-                    const clientId = localStorage.getItem("client_id");
-                    const connectMessage = `connect\n${clientId ?? ""}`;
+                    const connectMessage = `connect\n${clientId}`;
                     socket.send(connectMessage);
                 });
 
@@ -55,7 +53,6 @@ export class WebsocketClient {
 
                     if (data.startsWith("client_id")) {
                         clientId = data.split("\n")[1];
-                        localStorage.setItem("client_id", clientId);
                     }
 
                     socket.removeEventListener("message", onMessage);

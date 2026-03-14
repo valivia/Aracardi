@@ -52,7 +52,7 @@ pub fn load_cards() -> HashMap<String, AddonCard> {
         panic!("No cards loaded");
     }
 
-    info!("Loaded {} cards", cards.len());
+    info!("[app] Loaded {} cards", cards.len());
 
     return cards;
 }
@@ -69,7 +69,7 @@ fn read_addon(dir_entry: &DirEntry) -> Result<HashMap<String, AddonCard>, Box<dy
         .collect();
 
     debug!(
-        "Loaded {} cards from {}",
+        "[app] Loaded {} cards from {}",
         cards.len(),
         dir_entry.file_name().to_string_lossy()
     );
