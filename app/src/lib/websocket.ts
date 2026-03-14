@@ -12,10 +12,7 @@ export class WebsocketClient {
     }
 
     public static async createSession(): Promise<WebsocketClient | null> {
-        const response = await fetch(
-            `http://${PUBLIC_SERVER_URL}/lobby`,
-            { method: "POST" }
-        );
+        const response = await fetch(`http://${PUBLIC_SERVER_URL}/lobby`, { method: "POST" });
 
         if (!response.ok) {
             return null;
@@ -30,7 +27,6 @@ export class WebsocketClient {
 
     public static async connectToSession(sessionId: string): Promise<WebsocketClient | null> {
         return await this.connectToSocket(sessionId).catch(() => null);
-
     }
 
     private static async connectToSocket(id: string): Promise<WebsocketClient | null> {
@@ -49,15 +45,15 @@ export class WebsocketClient {
 
                 socket.addEventListener("open", () => {
                     const player_id = localStorage.getItem("player_id");
-                    const connectMessage = `connect:${player_id ?? ""}`;
+                    const connectMessage = `connect\n${player_id ?? ""}`;
                     socket.send(connectMessage);
                 });
 
                 const onMessage = (event: MessageEvent) => {
                     const data: string = event.data;
 
-                    if (data.startsWith("player_id:")) {
-                        playerId = data.split(":")[1];
+                    if (data.startsWith("player_id")) {
+                        playerId = data.split("\n")[1];
                         localStorage.setItem("player_id", playerId);
                     }
 
@@ -65,7 +61,7 @@ export class WebsocketClient {
 
                     clearTimeout(timeout);
                     resolve(socket);
-                }
+                };
 
                 socket.addEventListener("message", onMessage);
 

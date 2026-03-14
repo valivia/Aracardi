@@ -4,12 +4,15 @@ use axum::extract::ws::{Message, WebSocket};
 use futures_util::SinkExt;
 use nanoid::nanoid;
 use tokio::sync::mpsc;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::structs::{
     app_state::AppState,
     game::Game,
-    protocol::{game_update::GameUpdate, topic::OutgoingMessage},
+    protocol::{
+        game_update::GameUpdate,
+        topic::{IncomingMessage, OutgoingMessage},
+    },
 };
 
 pub type Tx = mpsc::Sender<Message>;
@@ -58,39 +61,38 @@ impl Client {
                 _ => return Err(()), // client disconnected
             };
 
-            match msg {
-                Message::Text(text) if text.starts_with("connect:") => {
-                    let requested_id = text.trim_start_matches("connect:").to_string();
+            if let Message::Text(text) = &msg {
+                match IncomingMessage::parse_message(text) {
+                    Ok(IncomingMessage::Connect(requested_player_id)) => {
+                        let mut game = match state.games.get_mut(&game_id) {
+                            Some(g) => g,
+                            None => {
+                                let _ = socket.close().await;
+                                return Err(());
+                            }
+                        };
 
-                    let mut game = match state.games.get_mut(&game_id) {
-                        Some(g) => g,
-                        None => {
-                            let _ = socket.close().await;
-                            return Err(());
+                        // Reconnect if valid + exists
+                        if requested_player_id.len() == CLIENT_ID_LENGTH
+                            && game.clients.get(&requested_player_id).is_some()
+                        {
+                            game.update_client(&requested_player_id, tx.clone());
+                            break requested_player_id.to_string();
                         }
-                    };
 
-                    // Reconnect if valid + exists
-                    if requested_id.len() == CLIENT_ID_LENGTH
-                        && game.clients.get(&requested_id).is_some()
-                    {
-                        game.update_client(&requested_id, tx.clone());
-                        break requested_id.to_string();
+                        // Otherwise create new player
+                        let new_id = game.add_client(tx.clone());
+
+                        break new_id;
                     }
-
-                    // Otherwise create new player
-                    let new_id = game.add_client(tx.clone());
-
-                    break new_id;
+                    Err(error) => warn!("Parse error: {error}"),
+                    _ => warn!("Unexpected message type during connect"),
                 }
-
-                // Ignore everything else until connect
-                _ => continue,
             }
         };
 
         socket
-            .send(format!("player_id:{}", player_id).into())
+            .send(OutgoingMessage::PlayerId(player_id.clone()).to_message())
             .await
             .unwrap();
 

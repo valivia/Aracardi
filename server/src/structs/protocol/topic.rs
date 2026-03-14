@@ -17,12 +17,14 @@ pub enum ParseError {
 }
 
 pub enum OutgoingMessage {
+    PlayerId(String),
     Update(GameUpdate),
 }
 
 impl OutgoingMessage {
     pub fn get_key(&self) -> &str {
         match self {
+            OutgoingMessage::PlayerId(_) => "player_id",
             OutgoingMessage::Update(_) => "update",
         }
     }
@@ -30,6 +32,7 @@ impl OutgoingMessage {
     pub fn to_message(self) -> Message {
         let mut payload = match &self {
             OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
+            OutgoingMessage::PlayerId(payload) => Ok(payload.clone()),
         }
         .unwrap();
 
@@ -41,16 +44,17 @@ impl OutgoingMessage {
 }
 
 pub enum IncomingMessage {
+    Connect(String),
     Update(HostUpdate),
 }
 
 impl IncomingMessage {
     pub fn parse_message(raw: &str) -> Result<IncomingMessage, ParseError> {
-        let (topic, json) = raw.split_once('\n').ok_or(ParseError::MissingNewline)?;
+        let (topic, payload) = raw.split_once('\n').ok_or(ParseError::MissingNewline)?;
 
         macro_rules! parse_json {
             ($type:ty) => {
-                serde_json::from_str::<$type>(json).map_err(|source| ParseError::InvalidJson {
+                serde_json::from_str::<$type>(payload).map_err(|source| ParseError::InvalidJson {
                     topic: topic.to_string(),
                     source,
                 })
@@ -59,6 +63,7 @@ impl IncomingMessage {
 
         let message = match topic {
             "update" => IncomingMessage::Update(parse_json!(HostUpdate)?),
+            "connect" => IncomingMessage::Connect(payload.to_string()),
             other => return Err(ParseError::UnknownTopic(other.to_string())),
         };
 

@@ -111,6 +111,7 @@ impl Game {
                     }
                 }
                 Err(error) => warn!("Parse error: {error}"),
+                _ => {}
             },
         }
     }
