@@ -7,6 +7,7 @@
     import { WebsocketClient } from "lib/websocket";
     import type { GameCard, GameUpdate } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
+    import Addon from "components/Addon.svelte";
 
     const { data } = $props();
 
@@ -15,6 +16,10 @@
     beforeNavigate(() => {
         socket?.close();
     });
+
+    // Connection
+    let hostConnected = $state(true);
+    let serverConnected = $state(true);
 
     let currentCard: CardController | null = $state(null);
     let activeCards = $state<GameCard[]>([]);
@@ -25,6 +30,7 @@
     async function connect() {
         socket = await WebsocketClient.connectToSession(data.lobby);
         socket?.onMessage((type, payload) => {
+            serverConnected = true;
             if (type == "update") {
                 let gameUpdate: GameUpdate = JSON.parse(payload);
                 if (gameUpdate.activeCards) activeCards = gameUpdate.activeCards;
@@ -42,7 +48,13 @@
                         return result;
                     });
                 }
+            } else if (type == "host_connected") {
+                hostConnected = payload == "true";
             }
+        });
+
+        socket?.onClose(() => {
+            serverConnected = false;
         });
     }
 
@@ -60,6 +72,8 @@
     </aside>
 
     <main class="game">
+        <span>host {hostConnected ? "connected" : "unavailable"}</span>
+        <span>server {serverConnected ? "connected" : "unavailable"}</span>
         {#if currentCard}
             <CardElement card={currentCard} onclick={undefined} loadImage={true} />
             <!--Make loadimage dynamic-->

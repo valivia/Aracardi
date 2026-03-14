@@ -85,7 +85,7 @@ export class CardController implements Card {
             }
             return part;
         });
-    };
+    }
 
     // Host card
     static fromHostCard(card: Card, players: Player[], currentPlayerIndex: number) {
@@ -94,29 +94,40 @@ export class CardController implements Card {
         return cardController;
     }
 
-
     private buildHostCard(players: Player[], currentPlayerIndex: number) {
         const currentPlayer = players[currentPlayerIndex];
 
         // Current player
-        this.replacePlaceholder(SelfRegex, () => {
-            this.players.add(currentPlayer);
-            return currentPlayer.name;
-        }, CardPartType.currentPlayer);
+        this.replacePlaceholder(
+            SelfRegex,
+            () => {
+                this.players.add(currentPlayer);
+                return currentPlayer.name;
+            },
+            CardPartType.currentPlayer,
+        );
 
         // Next player
-        this.replacePlaceholder(NextPlayerRegex, () => {
-            const nextPlayer = players[(currentPlayerIndex + 1) % players.length];
-            this.players.add(nextPlayer);
-            return nextPlayer.name;
-        }, CardPartType.player);
+        this.replacePlaceholder(
+            NextPlayerRegex,
+            () => {
+                const nextPlayer = players[(currentPlayerIndex + 1) % players.length];
+                this.players.add(nextPlayer);
+                return nextPlayer.name;
+            },
+            CardPartType.player,
+        );
 
         // Previous player
-        this.replacePlaceholder(PreviousPlayerRegex, () => {
-            const prevPlayer = players[(currentPlayerIndex - 1 + players.length) % players.length];
-            this.players.add(prevPlayer);
-            return prevPlayer.name;
-        }, CardPartType.player);
+        this.replacePlaceholder(
+            PreviousPlayerRegex,
+            () => {
+                const prevPlayer = players[(currentPlayerIndex - 1 + players.length) % players.length];
+                this.players.add(prevPlayer);
+                return prevPlayer.name;
+            },
+            CardPartType.player,
+        );
 
         // Time limit
         if (this.timeLimit !== undefined) {
@@ -136,11 +147,11 @@ export class CardController implements Card {
 
         if (placeholders.length) {
             const shuffledPlayers = shuffle(remainingPlayers).slice(0, placeholders.length);
-            shuffledPlayers.forEach(player => this.players.add(player));
+            shuffledPlayers.forEach((player) => this.players.add(player));
 
             placeholders.forEach((placeholder, index) => {
                 const player = shuffledPlayers[index];
-                this.replacePlaceholder(new RegExp(placeholder, 'g'), () => player.name, CardPartType.player);
+                this.replacePlaceholder(new RegExp(placeholder, "g"), () => player.name, CardPartType.player);
             });
         }
     }
@@ -153,7 +164,6 @@ export class CardController implements Card {
     }
 
     private buildSpectatorCard(players: string[], currentPlayer: string) {
-        console.log(this);
         // Time limit
         if (this.timeLimit !== undefined) {
             this.replacePlaceholder(TimeLimitRegex, () => `${this.timeLimit}`, CardPartType.timeLimit);
@@ -167,14 +177,17 @@ export class CardController implements Card {
         // Current player
         this.replacePlaceholder(SelfRegex, () => currentPlayer, CardPartType.currentPlayer);
 
-
         const playerPlaceholders = [NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex];
 
         playerPlaceholders.forEach((regex) => {
-            this.replacePlaceholder(regex, () => {
-                const player = players.shift();
-                return player ? player : "???";
-            }, CardPartType.player);
+            this.replacePlaceholder(
+                regex,
+                () => {
+                    const player = players.shift();
+                    return player ? player : "???";
+                },
+                CardPartType.player,
+            );
         });
     }
 

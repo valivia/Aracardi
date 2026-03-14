@@ -18,21 +18,22 @@ export class WebsocketClient {
             return null;
         }
 
-        const id = await response.text();
+        const payload = await response.json();
 
-        console.log("Created session with ID: ", id);
+        console.log("Created session with ID: ", payload.gameId);
+        localStorage.setItem("client_id", payload.hostId);
 
-        return await this.connectToSocket(id);
+        return await this.connectToSocket(payload.gameId);
     }
 
     public static async connectToSession(sessionId: string): Promise<WebsocketClient | null> {
         return await this.connectToSocket(sessionId).catch(() => null);
     }
 
-    private static async connectToSocket(id: string): Promise<WebsocketClient | null> {
-        const url = `ws://${PUBLIC_SERVER_URL}/lobby/${id}/ws`;
+    private static async connectToSocket(gameId: string): Promise<WebsocketClient | null> {
+        const url = `ws://${PUBLIC_SERVER_URL}/lobby/${gameId}/ws`;
         const socket = new WebSocket(url);
-        let playerId = "";
+        let clientId = "";
 
         console.debug(`Connecting to websocket at ${url}`);
 
@@ -44,17 +45,17 @@ export class WebsocketClient {
                 }, 5000);
 
                 socket.addEventListener("open", () => {
-                    const player_id = localStorage.getItem("player_id");
-                    const connectMessage = `connect\n${player_id ?? ""}`;
+                    const clientId = localStorage.getItem("client_id");
+                    const connectMessage = `connect\n${clientId ?? ""}`;
                     socket.send(connectMessage);
                 });
 
                 const onMessage = (event: MessageEvent) => {
                     const data: string = event.data;
 
-                    if (data.startsWith("player_id")) {
-                        playerId = data.split("\n")[1];
-                        localStorage.setItem("player_id", playerId);
+                    if (data.startsWith("client_id")) {
+                        clientId = data.split("\n")[1];
+                        localStorage.setItem("client_id", clientId);
                     }
 
                     socket.removeEventListener("message", onMessage);
@@ -75,7 +76,7 @@ export class WebsocketClient {
             return null;
         }
 
-        return new WebsocketClient(socket, id, playerId);
+        return new WebsocketClient(socket, gameId, clientId);
     }
 
     public send(type: string, payload: string | Record<string, unknown>) {
@@ -89,6 +90,12 @@ export class WebsocketClient {
 
             const [type, payload] = data.split("\n");
             callback(type, payload);
+        });
+    }
+
+    public onClose(callback: () => void) {
+        this.socket.addEventListener("close", () => {
+            callback();
         });
     }
 

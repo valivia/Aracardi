@@ -9,8 +9,6 @@
     }
 
     const { card, loadImage, onclick }: Props = $props();
-
-    console.log(card);
 </script>
 
 {#key card.id}

@@ -1,8 +1,8 @@
-use axum::extract::State;
+use axum::{Json, extract::State};
 use std::sync::Arc;
 
-use crate::AppState;
+use crate::{AppState, structs::app_state::CreatedGame};
 
-pub async fn handler(State(state): State<Arc<AppState>>) -> String {
-    state.create_game()
+pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
+    Json(state.create_game())
 }

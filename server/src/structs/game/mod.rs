@@ -11,11 +11,12 @@ pub mod state;
 
 pub type GameId = String;
 
+#[derive(Clone)]
 pub struct Game {
     id: GameId,
     created_at: std::time::Instant,
 
-    pub host_id: Option<ClientId>,
+    pub host_id: ClientId,
     pub clients: HashMap<ClientId, Client>,
 
     state: GameState,
@@ -26,7 +27,7 @@ impl Game {
         Game {
             id,
             created_at: std::time::Instant::now(),
-            host_id: None,
+            host_id: Client::generate_id(),
             clients: HashMap::new(),
             state: GameState::default(),
         }
@@ -35,6 +36,10 @@ impl Game {
     // Game
     pub fn is_empty(&self) -> bool {
         self.clients.is_empty()
+    }
+
+    pub fn is_host_connected(&self) -> bool {
+        self.clients.contains_key(&self.host_id)
     }
 
     // Other

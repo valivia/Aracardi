@@ -20,23 +20,16 @@ pub type Tx = mpsc::Sender<Message>;
 pub const CLIENT_ID_LENGTH: usize = 10;
 pub type ClientId = String;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Role {
-    Host,
-    Player,
-}
-
+#[derive(Clone)]
 pub struct Client {
     pub tx: Tx,
-    pub role: Role,
     pub last_seen: std::time::Instant,
 }
 
 impl Client {
-    pub fn new(tx: Tx, role: Role) -> Self {
+    pub fn new(tx: Tx) -> Self {
         Client {
             tx,
-            role,
             last_seen: std::time::Instant::now(),
         }
     }
@@ -72,18 +65,16 @@ impl Client {
                             }
                         };
 
-                        // Reconnect if valid + exists
-                        if requested_player_id.len() == CLIENT_ID_LENGTH
-                            && game.clients.get(&requested_player_id).is_some()
-                        {
-                            game.update_client(&requested_player_id, tx.clone());
-                            break requested_player_id.to_string();
-                        }
+                        let client = Client::new(tx.clone());
+
+                        let requested_player_id: Option<String> = (requested_player_id.len()
+                            == CLIENT_ID_LENGTH)
+                            .then_some(requested_player_id);
 
                         // Otherwise create new player
-                        let new_id = game.add_client(tx.clone());
+                        let client_id = game.upsert_client(client, requested_player_id);
 
-                        break new_id;
+                        break client_id;
                     }
                     Err(error) => warn!("Parse error: {error}"),
                     _ => warn!("Unexpected message type during connect"),
@@ -92,7 +83,7 @@ impl Client {
         };
 
         socket
-            .send(OutgoingMessage::PlayerId(player_id.clone()).to_message())
+            .send(OutgoingMessage::ClientId(player_id.clone()).to_message())
             .await
             .unwrap();
 
@@ -101,52 +92,27 @@ impl Client {
 }
 
 impl Game {
-    pub fn add_client(&mut self, tx: Tx) -> ClientId {
-        let id = Client::generate_id();
-        let role = if self.host_id.is_none() {
-            self.host_id = Some(id.clone());
-            info!(
-                "Host connected to {} after {}ms",
-                self.id,
-                self.created_at.elapsed().as_millis()
-            );
-            Role::Host
-        } else {
-            Role::Player
+    pub fn upsert_client(&mut self, client: Client, id: Option<ClientId>) -> ClientId {
+        let id = match id {
+            Some(id) => {
+                if id != self.host_id {
+                    Client::generate_id()
+                } else {
+                    id
+                }
+            }
+            None => Client::generate_id(),
         };
 
-        debug!("Adding player {id} ({role:?}) to game {}", self.id);
-
-        let player = Client::new(tx, role);
-        self.clients.insert(id.clone(), player);
+        self.clients.insert(id.clone(), client);
 
         self.sync_client(&id);
 
         return id;
     }
 
-    pub fn remove_client(&mut self, id: &ClientId) {
-        let is_host = self
-            .clients
-            .get(id)
-            .map(|c| c.role == Role::Host)
-            .unwrap_or(false);
-
-        if is_host {
-            self.host_id = None;
-            debug!("Host disconnected from {}", self.id);
-        } else {
-            debug!("Removing client {id} from game {}", self.id);
-            self.clients.remove(id);
-        }
-    }
-
-    pub fn update_client(&mut self, id: &ClientId, tx: Tx) {
-        if let Some(player) = self.clients.get_mut(id) {
-            debug!("Updating client {id} in game {}", self.id);
-            player.tx = tx;
-        }
-        self.sync_client(&id);
+    pub fn remove_client(&mut self, client_id: &ClientId) {
+        self.clients.remove(client_id);
     }
 
     pub fn sync_client(&self, id: &ClientId) {

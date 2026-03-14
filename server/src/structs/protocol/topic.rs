@@ -1,7 +1,10 @@
 use axum::extract::ws::Message;
 use thiserror::Error;
 
-use crate::structs::protocol::game_update::{GameUpdate, HostUpdate};
+use crate::structs::{
+    game::state::ClientId,
+    protocol::game_update::{GameUpdate, HostUpdate},
+};
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -17,22 +20,25 @@ pub enum ParseError {
 }
 
 pub enum OutgoingMessage {
-    PlayerId(String),
+    ClientId(ClientId),
     Update(GameUpdate),
+    HostConnected(bool),
 }
 
 impl OutgoingMessage {
     pub fn get_key(&self) -> &str {
         match self {
-            OutgoingMessage::PlayerId(_) => "player_id",
+            OutgoingMessage::ClientId(_) => "client_id",
             OutgoingMessage::Update(_) => "update",
+            OutgoingMessage::HostConnected(_) => "host_connected",
         }
     }
 
     pub fn to_message(self) -> Message {
         let mut payload = match &self {
             OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
-            OutgoingMessage::PlayerId(payload) => Ok(payload.clone()),
+            OutgoingMessage::ClientId(payload) => Ok(payload.clone()),
+            OutgoingMessage::HostConnected(payload) => Ok(payload.to_string()),
         }
         .unwrap();
 
@@ -44,7 +50,7 @@ impl OutgoingMessage {
 }
 
 pub enum IncomingMessage {
-    Connect(String),
+    Connect(ClientId),
     Update(HostUpdate),
 }
 

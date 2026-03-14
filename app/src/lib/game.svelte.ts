@@ -36,7 +36,9 @@ export class GameController {
     // Stage
     private stage: GameStage = $state(GameStage.playerSetup);
     public settingsOpen = $state(false);
-    public get currentStage() { return this.stage };
+    public get currentStage() {
+        return this.stage;
+    }
     public ended = false;
 
     // Content
@@ -65,7 +67,7 @@ export class GameController {
     private cardStats = {
         cardsPlayed: 0,
         cardsDismissed: 0,
-    }
+    };
 
     private playerStats = {
         playersAdded: 0,
@@ -73,7 +75,7 @@ export class GameController {
         playersRenamed: 0,
         playersRemoved: 0,
         avatarsUsed: new Set<string>(),
-    }
+    };
 
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
@@ -92,16 +94,15 @@ export class GameController {
     });
 
     constructor(addons: AddonSummary[]) {
-        this.selectedAddons = addons.filter(a => a.isDefault);
+        this.selectedAddons = addons.filter((a) => a.isDefault);
 
         // Check if client side
-        if (typeof window !== "undefined")
-            this.hasPreviousPlayers = localStorage.getItem("players") !== null;
+        if (typeof window !== "undefined") this.hasPreviousPlayers = localStorage.getItem("players") !== null;
     }
 
     // Addons
     public toggleAddon = (addon: AddonSummary) => {
-        const index = this.selectedAddons.findIndex(a => a.id === addon.id);
+        const index = this.selectedAddons.findIndex((a) => a.id === addon.id);
         if (index === -1) {
             this.selectedAddons.push(addon);
         } else {
@@ -109,14 +110,14 @@ export class GameController {
         }
 
         this.saveAddons();
-    }
+    };
 
     public hasAddon = (addon: AddonSummary) => {
-        return this.selectedAddons.some(a => a.id === addon.id);
-    }
+        return this.selectedAddons.some((a) => a.id === addon.id);
+    };
 
     private saveAddons() {
-        const savedAddons = this.selectedAddons.map(a => a.id);
+        const savedAddons = this.selectedAddons.map((a) => a.id);
         localStorage.setItem("addons", JSON.stringify(savedAddons));
     }
 
@@ -125,57 +126,63 @@ export class GameController {
         if (json) {
             const savedAddons = JSON.parse(json) as string[];
             console.info(`- Addons loaded (${savedAddons.length})`);
-            const selectedAddons = availableAddons.filter(addon => savedAddons.some(id => id === addon.id));
+            const selectedAddons = availableAddons.filter((addon) => savedAddons.some((id) => id === addon.id));
             this.selectedAddons = selectedAddons;
         }
     }
 
     // Cards
     public loadCards = async () => {
-        const addons = await Promise.all(this.selectedAddons.map(async addonInfo => {
-            const json = await import(`assets/addons/${addonInfo.fileName}.json`)
-            const addon = json.default as Addon;
-            return addon;
-        }));
+        const addons = await Promise.all(
+            this.selectedAddons.map(async (addonInfo) => {
+                const json = await import(`assets/addons/${addonInfo.fileName}.json`);
+                const addon = json.default as Addon;
+                return addon;
+            }),
+        );
 
-        this.cards = shuffle(addons.flatMap(addon => addon.cards));
+        this.cards = shuffle(addons.flatMap((addon) => addon.cards));
         this.filterCards();
     };
 
     public filterCards = () => {
-
         const allCards = [...this.cards, ...this.disabledCards];
 
         type SeparatedCards = {
-            validCards: Card[],
-            invalidCards: Card[]
-        }
+            validCards: Card[];
+            invalidCards: Card[];
+        };
 
-        const overrideIds: Set<string> = new Set(allCards.flatMap(card => card.overrides || []));
+        const overrideIds: Set<string> = new Set(allCards.flatMap((card) => card.overrides || []));
 
         // Filter min and max players
-        const { validCards, invalidCards } = allCards.reduce<SeparatedCards>((acc, card) => {
-            let isInvalid = false;
+        const { validCards, invalidCards } = allCards.reduce<SeparatedCards>(
+            (acc, card) => {
+                let isInvalid = false;
 
-            // Game settings
-            isInvalid = isInvalid ||
-                (card.isNsfw === true && !this.settings.allowNsfw) ||
-                (!this.settings.allowDuplicates && overrideIds.has(card.id));
+                // Game settings
+                isInvalid =
+                    isInvalid ||
+                    (card.isNsfw === true && !this.settings.allowNsfw) ||
+                    (!this.settings.allowDuplicates && overrideIds.has(card.id));
 
-            // Players
-            isInvalid = isInvalid ||
-                (card.minPlayers !== undefined && this.players.length < card.minPlayers) ||
-                (card.maxPlayers !== undefined && this.players.length > card.maxPlayers);
+                // Players
+                isInvalid =
+                    isInvalid ||
+                    (card.minPlayers !== undefined && this.players.length < card.minPlayers) ||
+                    (card.maxPlayers !== undefined && this.players.length > card.maxPlayers);
 
-            // Push to correct array
-            if (isInvalid) {
-                acc.invalidCards.push(card);
-            } else {
-                acc.validCards.push(card);
-            }
+                // Push to correct array
+                if (isInvalid) {
+                    acc.invalidCards.push(card);
+                } else {
+                    acc.validCards.push(card);
+                }
 
-            return acc;
-        }, { validCards: [], invalidCards: [] });
+                return acc;
+            },
+            { validCards: [], invalidCards: [] },
+        );
 
         console.log(`- Filtered cards: ${validCards.length} valid, ${invalidCards.length} invalid`);
 
@@ -185,12 +192,12 @@ export class GameController {
 
     // Active cards
     public deleteActiveCard = (card: CardController, forced = false) => {
-        this.activeCards = this.activeCards.filter(c => c !== card);
+        this.activeCards = this.activeCards.filter((c) => c !== card);
         if (forced) {
             this.cardStats.cardsDismissed++;
             this.logGame(LogAction.dismiss, this.getDismissInfo(card));
         }
-    }
+    };
 
     private incrementActiveCards() {
         for (const card of this.activeCards) {
@@ -204,11 +211,11 @@ export class GameController {
 
     // Players
     public getPlayer(id: string) {
-        return this.players.find(p => p.id === id);
+        return this.players.find((p) => p.id === id);
     }
 
     public upsertPlayer = (player: Player) => {
-        const index = this.players.findIndex(p => p.id === player.id);
+        const index = this.players.findIndex((p) => p.id === player.id);
 
         if (index === -1) {
             this.playerStats.playersAdded++;
@@ -220,13 +227,11 @@ export class GameController {
             this.players[index] = player;
         }
 
-        console.log({ player });
-
         this.savePlayers();
-    }
+    };
 
     public removePlayer = (player: Player) => {
-        const newPlayers = this.players.filter(p => p !== player);
+        const newPlayers = this.players.filter((p) => p !== player);
         if (newPlayers.length === this.players.length) return;
 
         this.players = newPlayers;
@@ -235,8 +240,8 @@ export class GameController {
         this.savePlayers();
         this.filterCards();
 
-        this.activeCards = this.activeCards.filter(card => !card.players.has(player));
-    }
+        this.activeCards = this.activeCards.filter((card) => !card.players.has(player));
+    };
 
     private savePlayers() {
         Player.savePlayers(this.players);
@@ -256,8 +261,8 @@ export class GameController {
     public shufflePlayers = () => {
         const current = this.currentPlayer;
         this.players = shuffle(this.players);
-        this.currentPlayerIndex = this.players.findIndex(p => p === current);
-    }
+        this.currentPlayerIndex = this.players.findIndex((p) => p === current);
+    };
 
     // Game
     public nextTurn = () => {
@@ -281,15 +286,18 @@ export class GameController {
         // Card
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
 
-        const players = this.currentCard?.formattedText.map(part => [CardPartType.player].includes(part.type) ? part.value : null).filter((v): v is string => !!v) ?? [];
+        const players =
+            this.currentCard?.formattedText
+                .map((part) => ([CardPartType.player].includes(part.type) ? part.value : null))
+                .filter((v): v is string => !!v) ?? [];
         this.socket?.send("update", {
             currentPlayerId: this.currentPlayer.id,
             currentCard: {
                 id: this.currentCard?.id,
-                players: players
+                players: players,
             },
         });
-    }
+    };
 
     private setCurrentPlayer(index: number) {
         this.currentPlayerIndex = index;
@@ -297,7 +305,11 @@ export class GameController {
 
     private setCurrentCard(index: number) {
         this.currentCardIndex = index;
-        this.currentCard = CardController.fromHostCard(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
+        this.currentCard = CardController.fromHostCard(
+            this.cards[this.currentCardIndex],
+            [...this.players],
+            this.currentPlayerIndex,
+        );
     }
 
     public async setStage(state: GameStage) {
@@ -318,7 +330,7 @@ export class GameController {
         this.startedAt = new Date();
         this.setCurrentCard(0);
         this.setCurrentPlayer(0);
-        this.playerStats.avatarsUsed = new Set(this.players.map(p => p.avatar.name));
+        this.playerStats.avatarsUsed = new Set(this.players.map((p) => p.avatar.name));
         this.logGame(LogAction.start, this.getStartEventInfo());
 
         const initializeWebsocket = async () => {
@@ -330,10 +342,10 @@ export class GameController {
             }
 
             this.socket?.send("update", {
-                players: this.players.map(player => player.getSaveable()),
+                players: this.players.map((player) => player.getSaveable()),
                 currentPlayerId: this.currentPlayer.id,
                 currentCard: { id: this.currentCard?.id, players: [] },
-            })
+            });
         };
 
         initializeWebsocket();
@@ -377,20 +389,20 @@ export class GameController {
                 version,
                 createdAt: this.createdAt,
                 theme: localStorage.getItem("theme") || "default",
-            }
+            };
 
             const body = {
                 base: baseData,
                 event: {
                     action,
-                    ...data
-                }
+                    ...data,
+                },
             };
 
             await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi`, {
                 method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify(body),
                 keepalive: true,
@@ -404,17 +416,17 @@ export class GameController {
     private getFailedSetupInfo() {
         return {
             stage: this.stage,
-            addons: this.selectedAddons.map(a => a.fileName),
+            addons: this.selectedAddons.map((a) => a.fileName),
             playerInfo: this.getPlayerEventInfo(),
-        }
+        };
     }
 
     private getStartEventInfo() {
         return {
             startedAt: this.startedAt,
-            addons: this.selectedAddons.map(a => a.fileName),
+            addons: this.selectedAddons.map((a) => a.fileName),
             playerInfo: this.getPlayerEventInfo(),
-        }
+        };
     }
 
     private getEndEventInfo(confirmed = false) {
@@ -423,20 +435,20 @@ export class GameController {
             lastCard: this.currentCard?.id,
             ...this.getStartEventInfo(),
             cardInfo: this.getBaseCardInfo(),
-        }
+        };
     }
 
     // Player events
     private getPlayerEventInfo() {
         return {
             ...this.playerStats,
-            players: this.players.map(player => ({
+            players: this.players.map((player) => ({
                 name: player.name,
                 avatar: player.avatar.name,
                 isHandPicked: player.isHandPicked || false,
             })),
             avatarsUsed: [...this.playerStats.avatarsUsed],
-        }
+        };
     }
 
     // Card events
@@ -445,7 +457,7 @@ export class GameController {
             cardId: currentCard.id,
             duration: new Date().getTime() - currentCard.createdAt.getTime(),
             cardInfo: this.getBaseCardInfo(),
-        }
+        };
     }
 
     private getDismissInfo(card: CardController) {
@@ -454,13 +466,13 @@ export class GameController {
             turnsPassed: card.turnsPassed,
             turnCount: card.originalTurnCount,
             duration: Math.floor((new Date().getTime() - card.createdAt.getTime()) / 1000),
-        }
+        };
     }
 
     private getBaseCardInfo() {
         return {
             ...this.cardStats,
-        }
+        };
     }
 }
 
@@ -473,5 +485,3 @@ enum LogAction {
     card = "Card",
     dismiss = "Dismiss",
 }
-
-
