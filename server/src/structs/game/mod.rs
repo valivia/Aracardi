@@ -1,13 +1,12 @@
-use crate::structs::{
-    game::state::GameState,
-    player::{Player, PlayerId},
+use crate::structs::game::{
+    client::{Client, ClientId},
+    state::GameState,
 };
 use nanoid::nanoid;
 use std::collections::HashMap;
 
+pub mod client;
 pub mod message;
-pub mod player;
-pub mod protocol;
 pub mod state;
 
 pub type GameId = String;
@@ -16,8 +15,8 @@ pub struct Game {
     id: GameId,
     created_at: std::time::Instant,
 
-    host: Option<PlayerId>,
-    players: HashMap<PlayerId, Player>,
+    pub host_id: Option<ClientId>,
+    pub clients: HashMap<ClientId, Client>,
 
     state: GameState,
 }
@@ -27,23 +26,15 @@ impl Game {
         Game {
             id,
             created_at: std::time::Instant::now(),
-            host: None,
-            players: HashMap::new(),
+            host_id: None,
+            clients: HashMap::new(),
             state: GameState::default(),
         }
     }
 
     // Game
     pub fn is_empty(&self) -> bool {
-        self.players.is_empty()
-    }
-
-    pub fn id(&self) -> &GameId {
-        &self.id
-    }
-
-    pub fn host(&self) -> Option<&PlayerId> {
-        self.host.as_ref()
+        self.clients.is_empty()
     }
 
     // Other

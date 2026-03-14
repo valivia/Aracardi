@@ -1,5 +1,5 @@
 import type { Addon, AddonSummary } from "lib/addon";
-import { CardController, type Card } from "./card.svelte";
+import { CardController, CardPartType, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
@@ -280,17 +280,24 @@ export class GameController {
 
         // Card
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
+
+        const players = this.currentCard?.formattedText.map(part => [CardPartType.player].includes(part.type) ? part.value : null).filter((v): v is string => !!v) ?? [];
+        this.socket?.send("update", {
+            currentPlayerId: this.currentPlayer.id,
+            currentCard: {
+                id: this.currentCard?.id,
+                players: players
+            },
+        });
     }
 
     private setCurrentPlayer(index: number) {
         this.currentPlayerIndex = index;
-        this.socket?.send("current_player", this.currentPlayer.id);
     }
 
     private setCurrentCard(index: number) {
         this.currentCardIndex = index;
-        this.currentCard = new CardController(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
-        this.socket?.send("current_card", this.currentCard.id);
+        this.currentCard = CardController.fromHostCard(this.cards[this.currentCardIndex], [...this.players], this.currentPlayerIndex);
     }
 
     public async setStage(state: GameStage) {
@@ -308,18 +315,28 @@ export class GameController {
             return;
         }
 
-        try {
-            const socket = await WebsocketClient.createSession()
-            this.socket = socket;
-        } catch (e) {
-            console.error("Failed to connect to websocket: ", e);
-        }
-
         this.startedAt = new Date();
         this.setCurrentCard(0);
         this.setCurrentPlayer(0);
         this.playerStats.avatarsUsed = new Set(this.players.map(p => p.avatar.name));
         this.logGame(LogAction.start, this.getStartEventInfo());
+
+        const initializeWebsocket = async () => {
+            try {
+                const socket = await WebsocketClient.createSession();
+                this.socket = socket;
+            } catch (e) {
+                console.error("Failed to connect to websocket: ", e);
+            }
+
+            this.socket?.send("update", {
+                players: this.players.map(player => player.getSaveable()),
+                currentPlayerId: this.currentPlayer.id,
+                currentCard: { id: this.currentCard?.id, players: [] },
+            })
+        };
+
+        initializeWebsocket();
     }
 
     public async endGame() {

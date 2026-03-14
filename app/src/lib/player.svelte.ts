@@ -1,7 +1,7 @@
 import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
 import { nanoid } from 'nanoid'
 
-interface JsonPlayer {
+export interface JsonPlayer {
     id: string;
     name: string;
     avatar: string;

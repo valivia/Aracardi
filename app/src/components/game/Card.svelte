@@ -9,10 +9,12 @@
     }
 
     const { card, loadImage, onclick }: Props = $props();
+
+    console.log(card);
 </script>
 
 {#key card.id}
-    <button class="card" id="currentCard" {onclick}>
+    <button class="card" id="currentCard" {onclick} disabled={!onclick}>
         {#if card.title}
             <h1 class="title underlined">{card.title}</h1>
         {/if}
@@ -91,8 +93,8 @@
                 0 0 0 18px var(--color);
         }
 
-        &:focus-visible,
-        &:hover {
+        &:focus-visible:not(:disabled),
+        &:hover:not(:disabled) {
             border-color: var(--theme-accent);
             outline-offset: 4px;
             outline: var(--border-width) solid var(--theme-accent);

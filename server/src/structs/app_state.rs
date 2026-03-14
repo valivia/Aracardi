@@ -1,9 +1,17 @@
-use dashmap::DashMap;
+use std::{collections::HashMap, sync::Arc};
 
-use crate::structs::game::{Game, GameId};
+use dashmap::DashMap;
+use tokio::sync::RwLock;
+use tracing::info;
+
+use crate::{
+    structs::game::{Game, GameId},
+    util::card_loader::AddonCard,
+};
 
 pub struct AppState {
     pub games: DashMap<GameId, Game>,
+    pub cards: Arc<RwLock<HashMap<String, AddonCard>>>,
 }
 
 impl AppState {
@@ -18,7 +26,7 @@ impl AppState {
 
         let game = Game::new(game_id.clone());
 
-        println!("Creating new game with id {}", game_id);
+        info!("Creating new game with id {}", game_id);
 
         self.games.insert(game_id.clone(), game);
         game_id

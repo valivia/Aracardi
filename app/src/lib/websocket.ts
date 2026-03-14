@@ -13,7 +13,7 @@ export class WebsocketClient {
 
     public static async createSession(): Promise<WebsocketClient | null> {
         const response = await fetch(
-            `http://${PUBLIC_SERVER_URL}/ws`,
+            `http://${PUBLIC_SERVER_URL}/lobby`,
             { method: "POST" }
         );
 
@@ -34,10 +34,11 @@ export class WebsocketClient {
     }
 
     private static async connectToSocket(id: string): Promise<WebsocketClient | null> {
-        const socket = new WebSocket(`ws://${PUBLIC_SERVER_URL}/ws/${id}`);
+        const url = `ws://${PUBLIC_SERVER_URL}/lobby/${id}/ws`;
+        const socket = new WebSocket(url);
         let playerId = "";
 
-        console.debug(`Connecting to websocket at ws://${PUBLIC_SERVER_URL}/ws/${id}`);
+        console.debug(`Connecting to websocket at ${url}`);
 
         try {
             // Wait for open event before returning the client, 5 sec timeout
@@ -47,20 +48,16 @@ export class WebsocketClient {
                 }, 5000);
 
                 socket.addEventListener("open", () => {
-                    console.log("socket open");
                     const player_id = localStorage.getItem("player_id");
                     const connectMessage = `connect:${player_id ?? ""}`;
-                    console.log("Sending message: ", connectMessage);
                     socket.send(connectMessage);
                 });
 
                 const onMessage = (event: MessageEvent) => {
                     const data: string = event.data;
-                    console.log("Message from server ", data);
 
                     if (data.startsWith("player_id:")) {
                         playerId = data.split(":")[1];
-                        console.log("Received player ID: ", playerId);
                         localStorage.setItem("player_id", playerId);
                     }
 
@@ -85,17 +82,16 @@ export class WebsocketClient {
         return new WebsocketClient(socket, id, playerId);
     }
 
-    public send(type: string, payload: string) {
-        const message = `${type}:${payload}`;
+    public send(type: string, payload: string | Record<string, unknown>) {
+        const message = `${type}\n${typeof payload === "string" ? payload : JSON.stringify(payload)}`;
         this.socket.send(message);
     }
 
     public onMessage(callback: (type: string, payload: string) => void) {
         this.socket.addEventListener("message", (event) => {
             const data: string = event.data;
-            console.log("Message from server ", data);
 
-            const [type, payload] = data.split(":");
+            const [type, payload] = data.split("\n");
             callback(type, payload);
         });
     }

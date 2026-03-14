@@ -7,7 +7,7 @@
 
 <main>
     <input type="text" bind:value />
-    <AnchorButton href={`/lobby/${value}`}>Join Lobby</AnchorButton>
+    <AnchorButton href={`/lobby/?lobby=${value}`}>Join Lobby</AnchorButton>
     <p>Have an unforgettable drinking night with your friends on Aracardi!</p>
     <div class="divider"></div>
     <AnchorButton href="/game">Play</AnchorButton>

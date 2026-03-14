@@ -1,3 +1,3 @@
+pub mod app_state;
 pub mod game;
-pub mod player;
-pub mod state;
+pub mod protocol;
