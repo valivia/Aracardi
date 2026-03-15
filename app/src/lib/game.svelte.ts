@@ -2,8 +2,6 @@ import type { Addon, AddonSummary } from "lib/addon";
 import { CardController, CardPartType, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
-import { PUBLIC_TELEMETRY_URL } from "$env/static/public";
-import { dev, version } from "$app/environment";
 import { nanoid } from "nanoid";
 import { WebsocketClient } from "./websocket";
 
@@ -62,20 +60,6 @@ export class GameController {
     // Websocket
     private socket: WebsocketClient | null = $state(null);
     public readonly gameId: string | null = $derived.by(() => this.socket?.id ?? null);
-
-    // Telemetry
-    private cardStats = {
-        cardsPlayed: 0,
-        cardsDismissed: 0,
-    };
-
-    private playerStats = {
-        playersAdded: 0,
-        playersLoaded: 0,
-        playersRenamed: 0,
-        playersRemoved: 0,
-        avatarsUsed: new Set<string>(),
-    };
 
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
@@ -191,12 +175,8 @@ export class GameController {
     };
 
     // Active cards
-    public deleteActiveCard = (card: CardController, forced = false) => {
+    public deleteActiveCard = (card: CardController) => {
         this.activeCards = this.activeCards.filter((c) => c !== card);
-        if (forced) {
-            this.cardStats.cardsDismissed++;
-            this.logGame(LogAction.dismiss, this.getDismissInfo(card));
-        }
     };
 
     private incrementActiveCards() {
@@ -218,12 +198,9 @@ export class GameController {
         const index = this.players.findIndex((p) => p.id === player.id);
 
         if (index === -1) {
-            this.playerStats.playersAdded++;
-            this.playerStats.avatarsUsed.add(player.avatar.name);
             this.players.push(player);
             this.filterCards();
         } else {
-            this.playerStats.playersRenamed++;
             this.players[index] = player;
         }
 
@@ -235,7 +212,6 @@ export class GameController {
         if (newPlayers.length === this.players.length) return;
 
         this.players = newPlayers;
-        this.playerStats.playersRemoved++;
 
         this.savePlayers();
         this.filterCards();
@@ -248,15 +224,11 @@ export class GameController {
         this.hasPreviousPlayers = this.players.length > 0;
 
         // Log if in game
-        if (this.isOngoing) {
-            this.socket?.send("update", { players: this.players.map((player) => player.getSaveable()) });
-            this.logGame(LogAction.player, this.getPlayerEventInfo());
-        }
+        this.socket?.send("update", { players: this.players.map((player) => player.getSaveable()) });
     }
 
     public restorePlayers() {
         this.players = Player.loadPlayers();
-        this.playerStats.playersLoaded = this.players.length;
     }
 
     public shufflePlayers = () => {
@@ -275,13 +247,6 @@ export class GameController {
 
         if (this.currentCard?.turnsLeft) {
             this.activeCards.push(this.currentCard);
-        }
-
-        this.cardStats.cardsPlayed++;
-
-        // Log
-        if (this.currentCard) {
-            this.logGame(LogAction.card, this.getCardEventInfo(this.currentCard));
         }
 
         // Card
@@ -331,8 +296,6 @@ export class GameController {
         this.startedAt = new Date();
         this.setCurrentCard(0);
         this.setCurrentPlayer(0);
-        this.playerStats.avatarsUsed = new Set(this.players.map((p) => p.avatar.name));
-        this.logGame(LogAction.start, this.getStartEventInfo());
 
         const initializeWebsocket = async () => {
             try {
@@ -353,18 +316,8 @@ export class GameController {
     }
 
     public async endGame() {
-        this.logGameEnd(true);
         this.socket?.close();
         this.ended = true;
-    }
-
-    public logGameEnd(confirmed = false) {
-        if (this.ended) return;
-        if (this.isOngoing) {
-            this.logGame(LogAction.end, this.getEndEventInfo(confirmed));
-        } else {
-            this.logGame(LogAction.failedSetup, this.getFailedSetupInfo());
-        }
     }
 
     // Settings
@@ -375,116 +328,4 @@ export class GameController {
             this.settings = JSON.parse(settings);
         }
     }
-
-    // Telemetry
-    public async logGame(action: LogAction, data: Record<string, unknown> = {}) {
-        // TODO: deal with telemetry
-        return;
-        if (dev) {
-            console.log(`Telemetry: ${action}`, data);
-            return;
-        }
-        if (!window.navigator.onLine) return;
-        if (localStorage.getItem("telemetry") === "false") return;
-        try {
-            const baseData = {
-                id: this.id,
-                version,
-                createdAt: this.createdAt,
-                theme: localStorage.getItem("theme") || "default",
-            };
-
-            const body = {
-                base: baseData,
-                event: {
-                    action,
-                    ...data,
-                },
-            };
-
-            await fetch(`${PUBLIC_TELEMETRY_URL}/aracardi`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
-                keepalive: true,
-            });
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // Game events
-    private getFailedSetupInfo() {
-        return {
-            stage: this.stage,
-            addons: this.selectedAddons.map((a) => a.fileName),
-            playerInfo: this.getPlayerEventInfo(),
-        };
-    }
-
-    private getStartEventInfo() {
-        return {
-            startedAt: this.startedAt,
-            addons: this.selectedAddons.map((a) => a.fileName),
-            playerInfo: this.getPlayerEventInfo(),
-        };
-    }
-
-    private getEndEventInfo(confirmed = false) {
-        return {
-            confirmed,
-            lastCard: this.currentCard?.id,
-            ...this.getStartEventInfo(),
-            cardInfo: this.getBaseCardInfo(),
-        };
-    }
-
-    // Player events
-    private getPlayerEventInfo() {
-        return {
-            ...this.playerStats,
-            players: this.players.map((player) => ({
-                name: player.name,
-                avatar: player.avatar.name,
-                isHandPicked: player.isHandPicked || false,
-            })),
-            avatarsUsed: [...this.playerStats.avatarsUsed],
-        };
-    }
-
-    // Card events
-    private getCardEventInfo(currentCard: CardController) {
-        return {
-            cardId: currentCard.id,
-            duration: new Date().getTime() - currentCard.createdAt.getTime(),
-            cardInfo: this.getBaseCardInfo(),
-        };
-    }
-
-    private getDismissInfo(card: CardController) {
-        return {
-            cardId: card.id,
-            turnsPassed: card.turnsPassed,
-            turnCount: card.originalTurnCount,
-            duration: Math.floor((new Date().getTime() - card.createdAt.getTime()) / 1000),
-        };
-    }
-
-    private getBaseCardInfo() {
-        return {
-            ...this.cardStats,
-        };
-    }
-}
-
-enum LogAction {
-    failedSetup = "FailedSetup",
-    start = "Start",
-    end = "End",
-
-    player = "Player",
-    card = "Card",
-    dismiss = "Dismiss",
 }

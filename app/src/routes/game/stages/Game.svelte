@@ -66,7 +66,7 @@
 
     <aside class="active">
         {#each game.activeCards as card}
-            <ActiveCard {card} onclick={() => game.deleteActiveCard(card, true)} />
+            <ActiveCard {card} onclick={() => game.deleteActiveCard(card)} />
         {/each}
     </aside>
 </div>
@@ -135,7 +135,7 @@
             grid-template-rows: auto;
             align-items: start;
 
-        @include defaultOrientation() {
+            @include defaultOrientation() {
                 grid-template-columns: $player-size;
                 grid-auto-rows: auto;
                 max-height: 100%;
