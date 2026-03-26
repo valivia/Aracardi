@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 use tracing::info;
 
 use crate::{
-    structs::game::{Game, GameId},
+    structs::{game::Game, telemetry::Telemetry},
     util::card_loader::AddonCard,
 };
 
@@ -18,19 +18,18 @@ pub struct CreatedGame {
 }
 
 pub struct AppState {
-    pub games: DashMap<GameId, Game>,
+    pub games: DashMap<String, Game>,
     pub cards: Arc<RwLock<HashMap<String, AddonCard>>>,
+    pub telemetry: Telemetry,
 }
 
 impl AppState {
     pub fn create_game(&self) -> CreatedGame {
-        let mut game_id = Game::generate_id();
+        let mut game_id = Game::generate_join_code();
 
         while self.games.contains_key(&game_id) {
-            game_id = Game::generate_id();
+            game_id = Game::generate_join_code();
         }
-
-        // game_id = "1234".to_string(); // TODO remove
 
         let game = Game::new(game_id.clone());
 

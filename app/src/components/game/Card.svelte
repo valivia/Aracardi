@@ -41,7 +41,6 @@
 
         --color: var(--theme-text);
 
-        cursor: pointer;
         border: none;
         background: transparent;
 
@@ -78,7 +77,6 @@
         }
 
         @include large() {
-            cursor: pointer;
             margin-block: 2em;
 
             border: none;
@@ -93,6 +91,7 @@
 
         &:focus-visible:not(:disabled),
         &:hover:not(:disabled) {
+            cursor: pointer;
             border-color: var(--theme-accent);
             outline-offset: 4px;
             outline: var(--border-width) solid var(--theme-accent);

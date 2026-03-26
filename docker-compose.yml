@@ -1,4 +1,18 @@
 services:
+    mongo:
+        image: mongo:8
+        hostname: aracardi-db
+        restart: unless-stopped
+        ports:
+            - 127.0.0.1:9040:27017
+        networks:
+            - bridge
+        volumes:
+            - "./database:/data/db"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: mongo
+            MONGO_INITDB_ROOT_PASSWORD: password
+
     server:
         container_name: aracardi-server
         build: ./server
@@ -6,9 +20,11 @@ services:
         volumes:
             - ./addons:/app/addons:ro
         networks:
+            - bridge
             - nginx
 
 networks:
+    bridge:
     nginx:
         external: true
         name: nginx

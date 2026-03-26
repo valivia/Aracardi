@@ -8,11 +8,7 @@ use tracing::warn;
 
 use crate::structs::{
     app_state::AppState,
-    game::Game,
-    protocol::{
-        game_update::GameUpdate,
-        message::{IncomingMessage, OutgoingMessage},
-    },
+    protocol::message::{IncomingMessage, OutgoingMessage},
 };
 
 pub type Tx = mpsc::Sender<Message>;
@@ -88,39 +84,5 @@ impl Client {
             .unwrap();
 
         return Ok(player_id);
-    }
-}
-
-impl Game {
-    pub fn upsert_client(&mut self, client: Client, id: Option<ClientId>) -> ClientId {
-        let id = match id {
-            Some(id) => {
-                if id != self.host_id {
-                    Client::generate_id()
-                } else {
-                    id
-                }
-            }
-            None => Client::generate_id(),
-        };
-
-        self.clients.insert(id.clone(), client);
-
-        self.sync_client(&id);
-
-        return id;
-    }
-
-    pub fn remove_client(&mut self, client_id: &ClientId) {
-        self.clients.remove(client_id);
-    }
-
-    pub fn sync_client(&self, id: &ClientId) {
-        let client = self.clients.get(id);
-        let mut game_update = GameUpdate::from_game(self.state.clone());
-        game_update.host_connected = Some(self.is_host_connected());
-        if let Some(client) = client {
-            client.send(OutgoingMessage::Update(game_update).to_message());
-        }
     }
 }

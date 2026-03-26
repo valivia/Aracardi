@@ -1,14 +1,18 @@
-use crate::{structs::app_state::AppState, util::card_loader::load_cards};
+use crate::{
+    structs::{app_state::AppState, db::Database, telemetry::Telemetry},
+    util::card_loader::load_cards,
+};
 use axum::{
     Router,
     routing::{any, get, post},
 };
 use dashmap::DashMap;
+use dotenv::dotenv;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
-use tracing::{Level, event};
+use tracing::{Level, info};
 
 mod route;
 mod structs;
@@ -16,6 +20,7 @@ mod util;
 
 #[tokio::main]
 async fn main() {
+    dotenv().expect("Could not load env");
     tracing_subscriber::fmt()
         .with_target(false)
         .with_max_level(Level::DEBUG)
@@ -26,9 +31,14 @@ async fn main() {
         // )
         .init();
 
+    let database = Database::new().await;
+
+    info!("[db] Database connected");
+
     let shared_state = Arc::new(AppState {
         games: DashMap::new(),
         cards: Arc::new(RwLock::new(load_cards())),
+        telemetry: Telemetry::new(database),
     });
 
     let mut app = Router::new()
@@ -49,6 +59,6 @@ async fn main() {
 
     let address = "0.0.0.0:3000";
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
-    event!(Level::INFO, "Server running on {}", address);
+    info!("[axum] Server running on {}", address);
     axum::serve(listener, app).await.unwrap();
 }

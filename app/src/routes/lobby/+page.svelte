@@ -21,10 +21,11 @@
     let serverConnected = $state(false);
 
     let currentCard: CardController | null = $state(null);
-    let activeCards = $state<GameCard[]>([]);
+    let activeCards = $state<CardController[]>([]);
 
-    let currentPlayer = $state("");
+    let currentPlayerId = $state("");
     let players = $state<Player[]>([]);
+    let currentPlayer = $state<Player>();
 
     async function connect() {
         socket = await WebsocketClient.connectToSession(data.lobby);
@@ -32,23 +33,27 @@
             serverConnected = true;
             if (type == "update") {
                 let gameUpdate: GameUpdate = JSON.parse(payload);
-                if (gameUpdate.activeCards) activeCards = gameUpdate.activeCards;
-                if (gameUpdate.currentPlayerId) currentPlayer = gameUpdate.currentPlayerId;
-                if (gameUpdate.currentCard) {
-                    currentCard = CardController.fromSpectatorCard(
-                        gameUpdate.currentCard,
-                        players.find((p) => p.id === currentPlayer)?.name ?? "???",
-                    );
-                }
-                if (typeof gameUpdate.hostConnected == "boolean") {
-                    hostConnected = gameUpdate.hostConnected;
-                }
+                if (gameUpdate.currentPlayerId) currentPlayerId = gameUpdate.currentPlayerId;
                 if (gameUpdate.players) {
                     players = gameUpdate.players.map((player) => {
                         let result = new Player(player.name, player.avatar);
                         result.id = player.id;
                         return result;
                     });
+                }
+                currentPlayer = players.find((p) => p.id === currentPlayerId);
+                if (gameUpdate.activeCards)
+                    activeCards = gameUpdate.activeCards.map((card) =>
+                        CardController.fromSpectatorCard(card, currentPlayer?.name || "???"),
+                    );
+                if (gameUpdate.currentCard) {
+                    currentCard = CardController.fromSpectatorCard(
+                        gameUpdate.currentCard,
+                        currentPlayer?.name || "???",
+                    );
+                }
+                if (typeof gameUpdate.hostConnected == "boolean") {
+                    hostConnected = gameUpdate.hostConnected;
                 }
             }
         });
@@ -65,7 +70,7 @@
     <aside class="players">
         <div class="playerList">
             {#each players as player}
-                {@const active = currentPlayer === player.id}
+                {@const active = currentPlayerId === player.id}
                 <PlayerElement {player} {active} onDelete={undefined} />
             {/each}
         </div>

@@ -1,5 +1,5 @@
 import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
-import { nanoid } from 'nanoid'
+import { nanoid } from "nanoid";
 
 export interface JsonPlayer {
     id: string;
@@ -13,18 +13,18 @@ export class Player {
     public name = $state("");
     public avatar = $state(avatars[0]);
     public isHandPicked = false;
+    public wasLoaded = false;
 
     constructor(name: string, avatar: Avatar | string) {
         this.name = name;
 
         if (typeof avatar === "string") {
-            const found = avatars.find(a => a.name === avatar);
+            const found = avatars.find((a) => a.name === avatar);
             if (!found) throw new Error(`Avatar ${avatar} not found`);
             avatar = found;
         }
 
         this.avatar = avatar;
-
     }
 
     get htmlId() {
@@ -38,6 +38,7 @@ export class Player {
             name: this.name,
             avatar: this.avatar.name,
             isHandPicked: this.isHandPicked,
+            wasLoaded: this.wasLoaded,
         };
     }
 
@@ -47,7 +48,7 @@ export class Player {
             return;
         }
 
-        const json = JSON.stringify(players.map(p => p.getSaveable()));
+        const json = JSON.stringify(players.map((p) => p.getSaveable()));
         localStorage.setItem("players", json);
     }
 
@@ -60,10 +61,11 @@ export class Player {
 
         for (const item of input) {
             try {
-                const player = new Player(item.name, item.avatar)
+                const player = new Player(item.name, item.avatar);
                 player.isHandPicked = item.isHandPicked;
+                player.wasLoaded = true;
 
-                if (players.find(p => p.avatar.name === player.avatar.name)) {
+                if (players.find((p) => p.avatar.name === player.avatar.name)) {
                     throw new Error(`Duplicate avatar ${player.avatar.name}`);
                 }
 

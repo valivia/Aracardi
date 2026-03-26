@@ -41,12 +41,6 @@
         }
     });
 
-    document.onvisibilitychange = () => {
-        if (document.visibilityState === "hidden") {
-            game.logGameEnd();
-        }
-    };
-
     $effect(() => {
         console.log("- Settings saved");
         localStorage.setItem("settings", JSON.stringify(game.settings));

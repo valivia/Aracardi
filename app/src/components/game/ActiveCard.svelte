@@ -11,7 +11,7 @@
     let { card, onclick }: Props = $props();
 </script>
 
-<button {onclick} aria-label="Delete active card">
+<button {onclick} aria-label="Delete active card" disabled={onclick == undefined}>
     <span class="text">
         <CardText {card} />
     </span>
@@ -31,7 +31,6 @@
         padding: 1em;
         margin: 0.5em;
         font-size: inherit;
-        cursor: pointer;
 
         .icon {
             display: none;
@@ -39,8 +38,9 @@
 
         @include noselect();
 
-        &:hover,
-        &:focus-visible {
+        &:hover:not(:disabled),
+        &:focus-visible:not(:disabled) {
+            cursor: pointer;
             outline: var(--outline-focus);
             outline-offset: var(--outline-focus-offset);
 

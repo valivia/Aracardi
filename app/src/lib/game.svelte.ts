@@ -177,6 +177,9 @@ export class GameController {
     // Active cards
     public deleteActiveCard = (card: CardController) => {
         this.activeCards = this.activeCards.filter((c) => c !== card);
+        this.socket?.send("update", {
+            activeCards: this.activeCards.map((card) => card.getHostCard()),
+        });
     };
 
     private incrementActiveCards() {
@@ -251,17 +254,10 @@ export class GameController {
 
         // Card
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
-
-        const players =
-            this.currentCard?.formattedText
-                .map((part) => ([CardPartType.player].includes(part.type) ? part.value : null))
-                .filter((v): v is string => !!v) ?? [];
         this.socket?.send("update", {
             currentPlayerId: this.currentPlayer.id,
-            currentCard: {
-                id: this.currentCard?.id,
-                players: players,
-            },
+            currentCard: this.currentCard?.getHostCard(),
+            activeCards: this.activeCards.map((card) => card.getHostCard()),
         });
     };
 

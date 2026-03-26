@@ -8,6 +8,7 @@ use crate::structs::game::state::{Card, GameState, Player};
 pub struct HostCard {
     pub id: String,
     pub players: Vec<String>,
+    pub turns: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -17,7 +18,7 @@ pub struct HostUpdate {
     pub current_player_id: Option<String>,
 
     pub current_card: Option<HostCard>,
-    pub active_cards: Option<Vec<Card>>,
+    pub active_cards: Option<Vec<HostCard>>,
 }
 
 #[skip_serializing_none]

@@ -156,6 +156,21 @@ export class CardController implements Card {
         }
     }
 
+    public getHostCard() {
+        const players =
+            this.formattedText
+                .map((part) =>
+                    [CardPartType.player, CardPartType.currentPlayer].includes(part.type) ? part.value : null,
+                )
+                .filter((v): v is string => !!v) ?? [];
+
+        return {
+            id: this.id,
+            players: players,
+            turns: this.turnsLeft,
+        };
+    }
+
     // Spectator card
     static fromSpectatorCard(card: GameCard, currentPlayer: string) {
         const cardController = new CardController({ ...card, hasWheel: undefined, isNsfw: undefined });
@@ -174,10 +189,7 @@ export class CardController implements Card {
             this.replacePlaceholder(TurnsRegex, () => `${this.turnsLeft}`, CardPartType.turns);
         }
 
-        // Current player
-        this.replacePlaceholder(SelfRegex, () => currentPlayer, CardPartType.currentPlayer);
-
-        const playerPlaceholders = [NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex];
+        const playerPlaceholders = [SelfRegex, NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex];
 
         playerPlaceholders.forEach((regex) => {
             this.replacePlaceholder(
@@ -186,6 +198,7 @@ export class CardController implements Card {
                     const player = players.shift();
                     return player ? player : "???";
                 },
+                // TODO: Figure out current player highlight
                 CardPartType.player,
             );
         });
