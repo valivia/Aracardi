@@ -23,7 +23,7 @@
         <span>Join code</span>
         <span>{codeVisible ? joinCode : "------"}</span>
     </div>
-    <button onclick={async () => navigator.clipboard.writeText(`${page.url.origin}/lobby?join_code=${joinCode}`)}>
+    <button onclick={async () => await navigator.clipboard.writeText(`${page.url.origin}/lobby?join_code=${joinCode}`)}>
         <CopyIcon />
     </button>
 </span>

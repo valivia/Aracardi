@@ -120,9 +120,8 @@
 
             <!-- Current avatar -->
             {#key selectedAvatar.name}
-                {@const Avatar = selectedAvatar.element}
                 <button class="activeAvatar" onclick={setRandomAvatar} aria-label="Randomize avatar">
-                    <Avatar />
+                    <selectedAvatar.element />
                 </button>
             {/key}
 
