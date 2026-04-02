@@ -16,7 +16,8 @@ services:
     server:
         container_name: aracardi-server
         build: ./server
-        restart: unless-stopped
+        restart: no
+        env_file: .env
         volumes:
             - ./addons:/app/addons:ro
         networks:

@@ -14,7 +14,7 @@
         fill: transparent;
         stroke: currentColor;
         stroke-width: 2px;
-        cursor: pointer;
+        /* cursor: pointer; */
         overflow: visible;
 
         & > * {

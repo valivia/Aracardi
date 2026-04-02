@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::structs::game::state::{Card, GameState, Player};
+use crate::structs::game::{
+    info::GameInfo,
+    state::{Card, GameState, Player},
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -19,6 +22,8 @@ pub struct HostUpdate {
 
     pub current_card: Option<HostCard>,
     pub active_cards: Option<Vec<HostCard>>,
+
+    pub info: Option<GameInfo>,
 }
 
 #[skip_serializing_none]

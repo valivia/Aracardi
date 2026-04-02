@@ -9,8 +9,10 @@ use crate::structs::{
     telemetry::{Telemetry, event::TelemetryEvent},
 };
 use axum::extract::ws::Message;
+use chrono::Utc;
 use nanoid::nanoid;
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Not};
+use tracing::debug;
 use uuid::Uuid;
 
 pub mod client;
@@ -26,9 +28,9 @@ pub struct Game {
     pub created_at: std::time::Instant,
 
     pub host_id: ClientId,
-    pub clients: HashMap<ClientId, Client>,
+    pub connected_clients: HashMap<ClientId, Client>,
 
-    pub info: GameInfo,
+    pub info: Option<GameInfo>,
     pub state: GameState,
     pub stats: GameStats,
 }
@@ -41,9 +43,9 @@ impl Game {
             created_at: std::time::Instant::now(),
 
             host_id: Client::generate_id(),
-            clients: HashMap::new(),
+            connected_clients: HashMap::new(),
 
-            info: GameInfo::default(),
+            info: None,
             state: GameState::default(),
             stats: GameStats::default(),
         }
@@ -51,11 +53,13 @@ impl Game {
 
     // Game
     pub fn is_initialized(&self) -> bool {
-        self.state.current_card.is_some() && self.state.current_player_id.is_some()
+        self.info.is_some()
+            && self.state.current_card.is_some()
+            && self.state.current_player_id.is_some()
     }
 
     pub fn is_host_connected(&self) -> bool {
-        self.clients.contains_key(&self.host_id)
+        self.connected_clients.contains_key(&self.host_id)
     }
 
     // Clients
@@ -71,29 +75,40 @@ impl Game {
             None => Client::generate_id(),
         };
 
-        self.clients.insert(id.clone(), client);
+        self.connected_clients.insert(id.clone(), client);
 
-        self.sync_client(&id);
+        if id != self.host_id {
+            // TODO: figure out reconnect?
+            self.stats.client.clients_connected += 1;
+            self.sync_client(&id);
+        } else if self.is_initialized() {
+            // TODO: mayde add a host_has_connected field to self?
+            self.stats.client.host_reconnected += 1;
+        }
 
         return id;
     }
 
     pub fn remove_client(&mut self, client_id: &ClientId) {
-        self.clients.remove(client_id);
+        if client_id != &self.host_id {
+            self.stats.client.clients_disconnected += 1;
+        }
+        self.connected_clients.remove(client_id);
     }
 
     pub fn sync_client(&self, id: &ClientId) {
-        let client = self.clients.get(id);
+        let client = self.connected_clients.get(id);
         let mut game_update = GameUpdate::from_game(self.state.clone());
         game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
+            debug!("[game] {} | {} syncing player", self.join_code, id);
             client.send(OutgoingMessage::Update(game_update).to_message());
         }
     }
 
     // Communication
     pub fn broadcast(&self, msg: Message, source_client: Option<&String>) {
-        for (id, client) in &self.clients {
+        for (id, client) in &self.connected_clients {
             if Some(id) == source_client {
                 continue;
             }
@@ -104,20 +119,31 @@ impl Game {
     pub fn send_host_status(&self) {
         let mut game_update = GameUpdate::empty();
         game_update.host_connected = Some(self.is_host_connected());
-        self.broadcast(OutgoingMessage::Update(game_update).to_message(), None)
+        self.broadcast(
+            OutgoingMessage::Update(game_update).to_message(),
+            Some(&self.host_id),
+        )
     }
 
     // Other
     pub fn generate_join_code() -> String {
-        const ALPHABET: [char; 22] = [
+        const ALPHABET: [char; 23] = [
             'A', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'T', 'U', 'V',
-            'W', 'X', 'Y', '3', '4',
+            'W', 'X', 'Y', 'Z', '3', '4',
         ];
         nanoid!(6, &ALPHABET)
     }
 
     // Telemetry
-    pub fn log_end(&self, telemetry: &Telemetry) {
+    pub fn log_end(&mut self, telemetry: &Telemetry) {
+        if let Some(info) = &mut self.info {
+            info.ended_at_ms = Utc::now().timestamp_millis()
+        }
+
+        if self.is_initialized().not() {
+            return;
+        }
+
         telemetry.push(TelemetryEvent::from_game_ended(self));
     }
 }

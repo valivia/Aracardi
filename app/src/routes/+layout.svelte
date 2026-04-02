@@ -1,9 +1,12 @@
 <script lang="ts">
-    import Nav from "components/layout/Nav.svelte";
-    import { syncTheme } from "components/ThemeSelect.svelte";
-    import { type Snippet } from "svelte";
     import "styles/themes.scss";
     import "styles/global.scss";
+
+    import Nav from "components/layout/Nav.svelte";
+    import { syncTheme } from "components/ThemeSelect.svelte";
+    import { onMount, type Snippet } from "svelte";
+    import { updated } from "$app/state";
+    import { version } from "$app/environment";
 
     interface Props {
         children?: Snippet;
@@ -16,6 +19,29 @@
         "Have an unforgettable drinking night with your friends on Aracardi! With over 300 unique cards every round brings fresh and original prompts to enjoy!";
 
     if (typeof window !== "undefined") syncTheme();
+
+    onMount(async () => {
+        const consoleStyle = "background: black;color: gold;";
+
+        console.info("%c##########################", consoleStyle);
+        console.info("%c######## Aracardi ########", consoleStyle);
+        console.info("%c##### Made by Owlive #####", consoleStyle);
+        console.info("%c##########################", consoleStyle);
+
+        await updated.check();
+
+        let versionDate = new Date(Number(version));
+
+        console.info(`Version: ${versionDate.toLocaleDateString()} ${versionDate.toLocaleTimeString()} (${version})`);
+        console.info(`has update: ${updated.current}`);
+
+        if (updated.current) {
+            const confirmed = confirm("A new version of Aracardi is available. Do you want to update?");
+            if (confirmed) {
+                window.location.reload();
+            }
+        }
+    });
 </script>
 
 <svelte:head>
@@ -37,7 +63,7 @@
     <meta property="og:type" content="website" />
 </svelte:head>
 
-<h1>Aracardi</h1>
+<h1><a href="/">Aracardi</a></h1>
 {@render children?.()}
 <Nav />
 

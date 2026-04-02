@@ -6,6 +6,7 @@
     import { GameStage, GameController } from "lib/game.svelte";
     import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
     import Button from "components/input/Button.svelte";
+    import JoinCode from "components/game/JoinCode.svelte";
 
     interface Props {
         game: GameController;
@@ -55,7 +56,9 @@
     </aside>
 
     <main class="game">
-        <p>Game ID: {game.gameId}</p>
+        {#if game.joinCode}
+            <JoinCode joinCode={game.joinCode} />
+        {/if}
         {#if game.currentCard}
             <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages} />
         {/if}

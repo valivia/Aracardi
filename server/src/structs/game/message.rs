@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use chrono::Utc;
 use tracing::{info, warn};
 
 use crate::structs::{
@@ -7,6 +8,7 @@ use crate::structs::{
     game::{
         Game,
         client::ClientId,
+        info::GameInfo,
         state::{Card, Player},
         stats::GamePlayerStats,
     },
@@ -75,6 +77,11 @@ impl Game {
                 .await;
         }
 
+        // Game Info
+        if let Some(game_info) = &payload.info {
+            game.parse_game_info(game_info.clone());
+        }
+
         // Card change
         match (&original_state.current_card, &response.current_card) {
             (Some(previous_card), Some(_)) => {
@@ -84,6 +91,8 @@ impl Game {
                     previous_card.id,
                     previous_card.get_duration() as f64 / 1000.0
                 );
+
+                game.stats.card.register_card(previous_card);
 
                 state
                     .telemetry
@@ -116,7 +125,7 @@ impl Game {
             )
         }
 
-        self.stats.players += GamePlayerStats::calculate_changes(&old_players, &new_players);
+        self.stats.player += GamePlayerStats::calculate_changes(&old_players, &new_players);
         self.stats
             .used_avatars
             .extend(new_players.iter().map(|p| p.avatar.clone()));
@@ -133,7 +142,7 @@ impl Game {
         } else {
             warn!(
                 "[game] {} | invalid player ID: {current_player_id}",
-                self.id
+                self.join_code
             );
             return false;
         }
@@ -153,7 +162,7 @@ impl Game {
         {
             warn!(
                 "[game] {} | received update with unchanged card ID",
-                self.id
+                self.join_code
             );
             return false;
         }
@@ -165,12 +174,18 @@ impl Game {
                     response.current_card = self.state.current_card.clone();
                     return true;
                 } else {
-                    warn!("[game] {} | current_card has invalid player", self.id);
+                    warn!(
+                        "[game] {} | current_card has invalid player",
+                        self.join_code
+                    );
                     return false;
                 }
             }
             None => {
-                warn!("[game] {} | invalid card ID: {}", self.id, current_card.id);
+                warn!(
+                    "[game] {} | invalid card ID: {}",
+                    self.join_code, current_card.id
+                );
                 return false;
             }
         }
@@ -192,11 +207,25 @@ impl Game {
                 }
                 None => warn!(
                     "[game] {} | invalid active card ID: {}",
-                    self.id, active_card.id
+                    self.join_code, active_card.id
                 ),
             }
         }
         self.state.active_cards = active_cards;
         response.active_cards = Some(self.state.active_cards.clone());
+    }
+
+    fn parse_game_info(&mut self, mut game_info: GameInfo) {
+        let is_first = self.info.is_none();
+        if !is_first {
+            warn!(
+                "[game] {} | Attempted to update game info after game start",
+                self.join_code
+            );
+            return;
+        }
+        game_info.started_at_ms = Utc::now().timestamp_millis();
+        // TODO: validate
+        self.info = Some(game_info);
     }
 }

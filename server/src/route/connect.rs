@@ -4,6 +4,7 @@ use axum::{
         Path, State,
         ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade},
     },
+    http::HeaderMap,
     response::Response,
 };
 use futures_util::{
@@ -34,13 +35,19 @@ const CONNECTION_TIMEOUT: Duration = Duration::from_mins(5);
 
 pub async fn handler(
     ws: WebSocketUpgrade,
-    Path(game_id): Path<String>,
+    Path(join_code): Path<String>,
+    headers: HeaderMap,
     State(state): State<Arc<AppState>>,
 ) -> Response {
-    ws.on_upgrade(move |socket| handle_socket(socket, state, game_id.to_uppercase()))
+    ws.on_upgrade(move |socket| handle_socket(socket, state, join_code.to_uppercase(), headers))
 }
 
-async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_join_id: String) {
+async fn handle_socket(
+    mut socket: WebSocket,
+    state: Arc<AppState>,
+    game_join_id: String,
+    headers: HeaderMap,
+) {
     if !state.games.contains_key(&game_join_id) {
         let _ = socket
             .send(Message::Close(Some(CloseFrame {
@@ -99,7 +106,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>, game_join_id
             .remove_if(&game_join_id, |_, game| !game.is_host_connected());
 
         match removed {
-            Some((_id, game)) => {
+            Some((_id, mut game)) => {
                 game.log_end(&state.telemetry);
                 info!("[game] {game_join_id} | deleted game after host timeout");
             }
@@ -134,12 +141,7 @@ async fn run_client(
         client_id.clone(),
     ));
 
-    let send_task = tokio::spawn(send_task(
-        rx,
-        sender,
-        game_join_id.clone(),
-        client_id.clone(),
-    ));
+    let send_task = tokio::spawn(send_task(rx, sender));
 
     // Receive loop
     loop {
@@ -158,7 +160,7 @@ async fn run_client(
                         Message::Close(_) => break,
                         Message::Pong(_) => {
                             if let Some(mut game) = state.games.get_mut(&game_join_id) {
-                                if let Some(client) = game.clients.get_mut(&client_id) {
+                                if let Some(client) = game.connected_clients.get_mut(&client_id) {
                                     client.last_seen = std::time::Instant::now();
                                 }
                             }
@@ -194,12 +196,7 @@ async fn run_client(
     debug!("[game] {game_join_id} | {client_id} closed send thread");
 }
 
-pub async fn send_task(
-    mut rx: Receiver<Message>,
-    mut sender: SplitSink<WebSocket, Message>,
-    game_id: String,
-    client_id: String,
-) {
+pub async fn send_task(mut rx: Receiver<Message>, mut sender: SplitSink<WebSocket, Message>) {
     while let Some(msg) = rx.recv().await {
         if sender.send(msg).await.is_err() {
             break;
@@ -230,7 +227,7 @@ pub async fn ping_task(
             .games
             .get(&game_id)
             .and_then(|game| {
-                game.clients
+                game.connected_clients
                     .get(&client_id)
                     .map(|client| client.last_seen < ping_sent_at)
             })

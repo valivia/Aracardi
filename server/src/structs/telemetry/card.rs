@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::structs::game::state::Card;
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TelemetryCard {
     pub card_id: String,
     pub duration_ms: i64,

@@ -6,9 +6,7 @@
     import PlayerSetup from "./stages/PlayerSetup.svelte";
     import Settings from "./stages/Settings.svelte";
     import SettingsButton from "components/input/SettingsButton.svelte";
-    import { updated } from "$app/state";
     import { onMount } from "svelte";
-    import { version } from "$app/environment";
 
     let { data } = $props();
 
@@ -16,29 +14,9 @@
 
     let game: GameController = $state(new GameController(addons));
 
-    onMount(async () => {
-        const consoleStyle = "background: black;color: gold;";
-
-        console.info("%c##########################", consoleStyle);
-        console.info("%c######## Aracardi ########", consoleStyle);
-        console.info("%c##### Made by Owlive #####", consoleStyle);
-        console.info("%c##########################", consoleStyle);
-
+    onMount(() => {
         game.restoreSettings();
         game.restoreAddons(addons);
-        await updated.check();
-
-        let versionDate = new Date(Number(version));
-
-        console.info(`Version: ${versionDate.toLocaleDateString()} ${versionDate.toLocaleTimeString()} (${version})`);
-        console.info(`has update: ${updated.current}`);
-
-        if (updated.current) {
-            const confirmed = confirm("A new version of Aracardi is available. Do you want to update?");
-            if (confirmed) {
-                window.location.reload();
-            }
-        }
     });
 
     $effect(() => {

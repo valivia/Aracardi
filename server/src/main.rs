@@ -20,7 +20,8 @@ mod util;
 
 #[tokio::main]
 async fn main() {
-    dotenv().expect("Could not load env");
+    dotenv().ok();
+
     tracing_subscriber::fmt()
         .with_target(false)
         .with_max_level(Level::DEBUG)
@@ -30,6 +31,8 @@ async fn main() {
         //         .unwrap(),
         // )
         .init();
+
+    info!("Booting up...");
 
     let database = Database::new().await;
 
@@ -42,7 +45,8 @@ async fn main() {
     });
 
     let mut app = Router::new()
-        .route("/lobby/{game_id}/ws", any(route::connect::handler))
+        .route("/lobby/{join_code}", get(route::check::handler))
+        .route("/lobby/{join_code}/ws", any(route::connect::handler))
         .route("/lobby", post(route::create::handler))
         .route("/lobby", get(route::list::handler))
         .with_state(shared_state)

@@ -7,9 +7,10 @@ use crate::structs::{
 };
 
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TelemetryGame {
     pub id: Uuid,
     pub players: Vec<TelemetryPlayer>,
-    pub info: GameInfo,
+    pub info: Option<GameInfo>,
     pub stats: GameStats,
 }

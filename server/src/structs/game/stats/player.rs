@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use crate::structs::game::state::Player;
 
 #[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GamePlayerStats {
     pub initial: u32,
     pub loaded: u32,

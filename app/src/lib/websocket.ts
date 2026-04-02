@@ -1,5 +1,4 @@
-import { PUBLIC_SERVER_URL } from "$env/static/public";
-import { dev } from "$app/environment";
+import { PUBLIC_SERVER_HTTP_URL, PUBLIC_SERVER_WS_URL } from "$env/static/public";
 
 export class WebsocketClient {
     private socket: WebSocket;
@@ -13,7 +12,7 @@ export class WebsocketClient {
     }
 
     public static async createSession(): Promise<WebsocketClient | null> {
-        const response = await fetch(`${dev ? "http" : "https"}://${PUBLIC_SERVER_URL}/lobby`, { method: "POST" });
+        const response = await fetch(`${PUBLIC_SERVER_HTTP_URL}/lobby`, { method: "POST" });
 
         if (!response.ok) {
             return null;
@@ -31,7 +30,7 @@ export class WebsocketClient {
     }
 
     private static async connectToSocket(gameId: string, clientId: string = ""): Promise<WebsocketClient | null> {
-        const url = `${dev ? "ws" : "wss"}://${PUBLIC_SERVER_URL}/lobby/${gameId}/ws`;
+        const url = `${PUBLIC_SERVER_WS_URL}/lobby/${gameId}/ws`;
         const socket = new WebSocket(url);
 
         console.debug(`Connecting to websocket at ${url}`);
@@ -63,7 +62,8 @@ export class WebsocketClient {
 
                 socket.addEventListener("message", onMessage);
 
-                socket.addEventListener("error", () => {
+                socket.addEventListener("error", (e) => {
+                    console.log({ e });
                     clearTimeout(timeout);
                     reject(new Error("Websocket connection error"));
                 });

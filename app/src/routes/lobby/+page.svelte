@@ -5,7 +5,7 @@
     import { Player } from "lib/player.svelte";
     import PlayerElement from "components/game/Player.svelte";
     import { WebsocketClient } from "lib/websocket";
-    import type { GameCard, GameUpdate } from "lib/protocol.js";
+    import type { GameUpdate } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
 
     const { data } = $props();
@@ -16,9 +16,12 @@
         socket?.close();
     });
 
+    type ConnectionStatus = "connecting" | "connected" | "failed";
+
     // Connection
     let hostConnected = $state(false);
     let serverConnected = $state(false);
+    let connectionStatus: ConnectionStatus = $state("connecting");
 
     let currentCard: CardController | null = $state(null);
     let activeCards = $state<CardController[]>([]);
@@ -29,6 +32,13 @@
 
     async function connect() {
         socket = await WebsocketClient.connectToSession(data.lobby);
+        if (socket == null) {
+            connectionStatus = "failed";
+            return;
+        }
+
+        connectionStatus = "connected";
+
         socket?.onMessage((type, payload) => {
             serverConnected = true;
             if (type == "update") {
@@ -59,6 +69,7 @@
         });
 
         socket?.onClose(() => {
+            console.log("closed");
             serverConnected = false;
         });
     }
@@ -66,31 +77,35 @@
     connect();
 </script>
 
-<div class="layout">
-    <aside class="players">
-        <div class="playerList">
-            {#each players as player}
-                {@const active = currentPlayerId === player.id}
-                <PlayerElement {player} {active} onDelete={undefined} />
+{#if connectionStatus == "connected"}
+    <div class="layout">
+        <aside class="players">
+            <div class="playerList">
+                {#each players as player}
+                    {@const active = currentPlayerId === player.id}
+                    <PlayerElement {player} {active} onDelete={undefined} />
+                {/each}
+            </div>
+        </aside>
+
+        <main class="game">
+            {#if currentCard}
+                <CardElement card={currentCard} onclick={undefined} loadImage={true} />
+                <!--Make loadimage dynamic-->
+            {/if}
+        </main>
+
+        <aside class="active">
+            {#each activeCards as card}
+                <ActiveCard {card} onclick={undefined} />
             {/each}
-        </div>
-    </aside>
-
-    <main class="game">
-        <span>host {hostConnected ? "connected" : "unavailable"}</span>
-        <span>server {serverConnected ? "connected" : "unavailable"}</span>
-        {#if currentCard}
-            <CardElement card={currentCard} onclick={undefined} loadImage={true} />
-            <!--Make loadimage dynamic-->
-        {/if}
-    </main>
-
-    <aside class="active">
-        {#each activeCards as card}
-            <ActiveCard {card} onclick={undefined} />
-        {/each}
-    </aside>
-</div>
+        </aside>
+    </div>
+{:else if connectionStatus == "connecting"}
+    connecting...
+{:else}
+    Failed to connect
+{/if}
 
 <style lang="scss">
     @use "styles/abstracts" as *;

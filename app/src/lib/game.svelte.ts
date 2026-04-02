@@ -1,9 +1,10 @@
 import type { Addon, AddonSummary } from "lib/addon";
-import { CardController, CardPartType, type Card } from "./card.svelte";
+import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { nanoid } from "nanoid";
 import { WebsocketClient } from "./websocket";
+import { version } from "$app/environment";
 
 export enum GameStage {
     addonSetup = "addonSetup",
@@ -59,7 +60,7 @@ export class GameController {
 
     // Websocket
     private socket: WebsocketClient | null = $state(null);
-    public readonly gameId: string | null = $derived.by(() => this.socket?.id ?? null);
+    public readonly joinCode: string | null = $derived.by(() => this.socket?.id ?? null);
 
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
@@ -304,7 +305,12 @@ export class GameController {
             this.socket?.send("update", {
                 players: this.players.map((player) => player.getSaveable()),
                 currentPlayerId: this.currentPlayer.id,
-                currentCard: { id: this.currentCard?.id, players: [] },
+                currentCard: this.currentCard?.getHostCard(),
+                info: {
+                    addons: this.selectedAddons.map((addon) => addon.title),
+                    setupTimeMs: Number(this.startedAt) - Number(this.createdAt),
+                    version: version,
+                },
             });
         };
 

@@ -1,11 +1,12 @@
-import CardsIcon from "virtual:icons/carbon/Layers";
-import PlusIcon from "virtual:icons/carbon/Add";
-import ShuffleIcon from "virtual:icons/carbon/Shuffle";
-import DeleteIcon from "virtual:icons/carbon/TrashCan";
-import SettingsIcon from "virtual:icons/carbon/Settings";
-import UserIcon from "virtual:icons/carbon/User";
-import CoffeeIcon from "virtual:icons/carbon/cafe";
-import CopyIcon from "virtual:icons/carbon/Copy";
-
-
-export { CardsIcon, PlusIcon, ShuffleIcon, DeleteIcon, SettingsIcon, UserIcon, CoffeeIcon, CopyIcon };
+export { default as CardsIcon } from "virtual:icons/carbon/Layers";
+export { default as PlusIcon } from "virtual:icons/carbon/Add";
+export { default as ShuffleIcon } from "virtual:icons/carbon/Shuffle";
+export { default as DeleteIcon } from "virtual:icons/carbon/TrashCan";
+export { default as SettingsIcon } from "virtual:icons/carbon/Settings";
+export { default as UserIcon } from "virtual:icons/carbon/User";
+export { default as CoffeeIcon } from "virtual:icons/carbon/cafe";
+export { default as CopyIcon } from "virtual:icons/carbon/Copy";
+export { default as ErrorIcon } from "virtual:icons/carbon/error";
+export { default as SuccessIcon } from "virtual:icons/carbon/checkmark";
+export { default as VisibleIcon } from "virtual:icons/carbon/view";
+export { default as InvisibleIcon } from "virtual:icons/carbon/view-off";

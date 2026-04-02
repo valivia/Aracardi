@@ -15,6 +15,12 @@
     transition: --animatedNumber 0.5s;
     counter-set: num var(--animatedNumber);
 
+    @property --animatedNumber {
+        syntax: "<integer>";
+        inherits: false;
+        initial-value: 0;
+    }
+
     &::before {
         content: counter(num);
     }
