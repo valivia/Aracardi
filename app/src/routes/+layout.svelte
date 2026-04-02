@@ -20,9 +20,59 @@
 
     if (typeof window !== "undefined") syncTheme();
 
+    // Update state
+    let newWorker: ServiceWorker | null;
+    let updateReady = $state(false);
+
+    async function prepareUpdate() {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) return;
+
+        // Ensure browser checks for new SW
+        await reg.update();
+
+        if (reg.waiting) {
+            // Case 1: already waiting
+            newWorker = reg.waiting;
+            updateReady = true;
+            return;
+        } else if (reg.installing) {
+            // Case 2: installing now
+            trackInstalling(reg.installing);
+        } else {
+            // Case 3: will install soon
+            reg.addEventListener("updatefound", () => {
+                if (reg.installing) {
+                    trackInstalling(reg.installing);
+                }
+            });
+        }
+    }
+
+    function trackInstalling(worker: ServiceWorker) {
+        worker.addEventListener("statechange", () => {
+            if (worker.state === "installed") {
+                if (navigator.serviceWorker.controller) {
+                    // New version ready
+                    newWorker = worker;
+                    updateReady = true;
+                }
+            }
+        });
+    }
+
+    // Prompt for update
+    $effect(() => {
+        if (updateReady && newWorker) {
+            const confirmed = confirm("A new version is available. Update now?");
+            if (confirmed && newWorker) {
+                newWorker.postMessage("SKIP_WAITING");
+            }
+        }
+    });
+
     onMount(async () => {
         const consoleStyle = "background: black;color: gold;";
-
         console.info("%c##########################", consoleStyle);
         console.info("%c######## Aracardi ########", consoleStyle);
         console.info("%c##### Made by Owlive #####", consoleStyle);
@@ -31,15 +81,17 @@
         await updated.check();
 
         let versionDate = new Date(Number(version));
-
         console.info(`Version: ${versionDate.toLocaleDateString()} ${versionDate.toLocaleTimeString()} (${version})`);
-        console.info(`has update: ${updated.current}`);
 
         if (updated.current) {
-            const confirmed = confirm("A new version of Aracardi is available. Do you want to update?");
-            if (confirmed) {
+            console.info("Updated detected");
+
+            // Reload if sw changed
+            navigator.serviceWorker?.addEventListener("controllerchange", () => {
                 window.location.reload();
-            }
+            });
+
+            prepareUpdate();
         }
     });
 </script>

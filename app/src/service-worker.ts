@@ -5,19 +5,13 @@
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
-import { build, files, version } from '$service-worker';
+import { build, files, version } from "$service-worker";
 
 const CACHE = `cache-${version}`;
 
-const ASSETS = [
-    ...build,
-    ...files,
-    "/game",
-    "/",
-];
+const ASSETS = [...build, ...files, "/game", "/"];
 
-sw.addEventListener('install', (event) => {
-    // Create a new cache and add all files to it
+sw.addEventListener("install", (event) => {
     console.log(`installing service worker with ${ASSETS.length} files (version: '${version}')`);
 
     async function addFilesToCache() {
@@ -28,9 +22,9 @@ sw.addEventListener('install', (event) => {
     event.waitUntil(addFilesToCache());
 });
 
-sw.addEventListener('activate', (event) => {
+sw.addEventListener("activate", (event) => {
     console.log(`activating service worker with ${ASSETS.length} files (version: '${version}')`);
-    console.log({ ASSETS });
+    console.log({ assets: ASSETS });
     // Remove previous cached data from disk
     async function deleteOldCaches() {
         for (const key of await caches.keys()) {
@@ -38,12 +32,12 @@ sw.addEventListener('activate', (event) => {
         }
     }
 
-    event.waitUntil(deleteOldCaches());
+    event.waitUntil(Promise.all([deleteOldCaches(), sw.clients.claim()]));
 });
 
-sw.addEventListener('fetch', (event) => {
+sw.addEventListener("fetch", (event) => {
     // ignore POST requests etc
-    if (event.request.method !== 'GET') return;
+    if (event.request.method !== "GET") return;
 
     async function respond() {
         const url = new URL(event.request.url);
@@ -54,7 +48,6 @@ sw.addEventListener('fetch', (event) => {
             const response = await cache.match(url.pathname);
 
             if (response) {
-                console.log(`Cache: ${url.pathname}`);
                 return response;
             }
         }
@@ -62,13 +55,10 @@ sw.addEventListener('fetch', (event) => {
         // for everything else, try the network first, but
         // fall back to the cache if we're offline
         try {
-            console.log(`Network: ${url.pathname}`);
             const response = await fetch(event.request);
 
-            // if we're offline, fetch can return a value that is not a Response
-            // instead of throwing - and we can't pass this non-Response to respondWith
             if (!(response instanceof Response)) {
-                throw new Error('invalid response from fetch');
+                throw new Error("invalid response from fetch");
             }
 
             if (response.status === 200) {
@@ -90,4 +80,10 @@ sw.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(respond());
+});
+
+sw.addEventListener("message", (event) => {
+    if (event.data === "SKIP_WAITING") {
+        sw.skipWaiting();
+    }
 });

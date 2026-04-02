@@ -1,6 +1,8 @@
 import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
+const EXCLUDED_SW_FILES = /^(cards|branding|service-worker|version)\//;
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
     preprocess: vitePreprocess(),
@@ -10,16 +12,7 @@ const config = {
             name: String(Date.now()),
         },
         serviceWorker: {
-            files: (file) => {
-                if (file.startsWith("cards/")) {
-                    return false;
-                }
-                if (file.startsWith("branding/")) {
-                    return false;
-                }
-
-                return true;
-            },
+            files: (file) => !EXCLUDED_SW_FILES.test(file),
         },
         adapter: adapter({
             pages: "build",
