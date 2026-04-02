@@ -57,12 +57,6 @@
     @use "./layout.scss" as *;
     @use "/src/styles/abstracts" as *;
 
-    @property --animatedNumber {
-        syntax: "<integer>";
-        inherits: false;
-        initial-value: 0;
-    }
-
     main {
         display: grid;
         width: min(100%, 80ch);
