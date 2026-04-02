@@ -10,3 +10,4 @@ export { default as ErrorIcon } from "virtual:icons/carbon/error";
 export { default as SuccessIcon } from "virtual:icons/carbon/checkmark";
 export { default as VisibleIcon } from "virtual:icons/carbon/view";
 export { default as InvisibleIcon } from "virtual:icons/carbon/view-off";
+export { default as GithubLogo } from "virtual:icons/carbon/LogoGithub";
