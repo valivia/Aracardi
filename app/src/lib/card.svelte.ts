@@ -1,4 +1,4 @@
-import type { Player } from "lib/player.svelte";
+import { Player } from "lib/player.svelte";
 import { shuffle } from "lib/helpers";
 import type { GameCard } from "./protocol";
 
@@ -52,38 +52,34 @@ export class CardController implements Card {
         this.formattedText = [{ value: this.text, type: CardPartType.text }];
     }
 
-    private replacePlaceholder(regex: RegExp, getValue: () => CardPart["value"], type: CardPartType) {
+    private replacePlaceholder(
+        regex: RegExp,
+        getValue: () => CardPart["value"],
+        getType: CardPartType | (() => CardPartType),
+    ) {
         this.formattedText = this.formattedText.flatMap((part) => {
-            if (part.type === CardPartType.text && regex.test(part.value)) {
-                const result: CardPart[] = [];
+            if (part.type !== CardPartType.text) return part;
 
-                // Reset regex lastIndex for global searches
-                regex.lastIndex = 0;
-                let lastIndex = 0;
+            const matches = [...part.value.matchAll(regex)];
+            if (!matches.length) return part;
 
-                for (const match of part.value.matchAll(regex)) {
-                    const matchStart = match.index!;
-                    const matchEnd = matchStart + match[0].length;
+            const result: CardPart[] = [];
+            let lastIndex = 0;
 
-                    // Add text before the match
-                    if (lastIndex < matchStart) {
-                        result.push({ value: part.value.slice(lastIndex, matchStart), type: CardPartType.text });
-                    }
-
-                    // Add the placeholder replacement
-                    result.push({ value: getValue(), type });
-
-                    lastIndex = matchEnd;
+            for (const match of matches) {
+                const matchStart = match.index;
+                if (lastIndex < matchStart) {
+                    result.push({ value: part.value.slice(lastIndex, matchStart), type: CardPartType.text });
                 }
-
-                // Add any remaining text after the last match
-                if (lastIndex < part.value.length) {
-                    result.push({ value: part.value.slice(lastIndex), type: CardPartType.text });
-                }
-
-                return result;
+                result.push({ value: getValue(), type: typeof getType === "function" ? getType() : getType });
+                lastIndex = matchStart + match[0].length;
             }
-            return part;
+
+            if (lastIndex < part.value.length) {
+                result.push({ value: part.value.slice(lastIndex), type: CardPartType.text });
+            }
+
+            return result;
         });
     }
 
@@ -157,28 +153,23 @@ export class CardController implements Card {
     }
 
     public getHostCard() {
-        const players =
-            this.formattedText
-                .map((part) =>
-                    [CardPartType.player, CardPartType.currentPlayer].includes(part.type) ? part.value : null,
-                )
-                .filter((v): v is string => !!v) ?? [];
+        const players = this.formattedText
+            .filter((part) => [CardPartType.player, CardPartType.currentPlayer].includes(part.type))
+            .map((slot) => slot.value);
 
-        return {
-            id: this.id,
-            players: players,
-            turns: this.turnsLeft,
-        };
+        return { id: this.id, players, turns: this.turnsLeft };
     }
 
     // Spectator card
     static fromSpectatorCard(card: GameCard, currentPlayer: string) {
         const cardController = new CardController({ ...card, hasWheel: undefined, isNsfw: undefined });
-        cardController.buildSpectatorCard([...card.players], currentPlayer);
+        cardController.buildSpectatorCard(card.players, currentPlayer);
         return cardController;
     }
 
     private buildSpectatorCard(players: string[], currentPlayer: string) {
+        const playerQueue = [...players];
+
         // Time limit
         if (this.timeLimit !== undefined) {
             this.replacePlaceholder(TimeLimitRegex, () => `${this.timeLimit}`, CardPartType.timeLimit);
@@ -188,20 +179,19 @@ export class CardController implements Card {
         if (this.turnsLeft !== undefined) {
             this.replacePlaceholder(TurnsRegex, () => `${this.turnsLeft}`, CardPartType.turns);
         }
+        const allPlayerRegex = new RegExp(
+            [SelfRegex, NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex].map((r) => r.source).join("|"),
+            "g",
+        );
 
-        const playerPlaceholders = [SelfRegex, NextPlayerRegex, PreviousPlayerRegex, RandomPlayerRegex];
-
-        playerPlaceholders.forEach((regex) => {
-            this.replacePlaceholder(
-                regex,
-                () => {
-                    const player = players.shift();
-                    return player ? player : "???";
-                },
-                // TODO: Figure out current player highlight
-                CardPartType.player,
-            );
-        });
+        this.replacePlaceholder(
+            allPlayerRegex,
+            () => playerQueue[0] ?? "???",
+            () => {
+                const slot = playerQueue.shift();
+                return slot === currentPlayer ? CardPartType.currentPlayer : CardPartType.player;
+            },
+        );
     }
 
     public nextTurn() {
