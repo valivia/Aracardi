@@ -5,6 +5,8 @@ import { Player } from "./player.svelte";
 import { nanoid } from "nanoid";
 import { WebsocketClient } from "./websocket";
 import { version } from "$app/environment";
+import { defaultSettings, type Settings } from "./settingsContext";
+import type { Writable } from "svelte/store";
 
 export enum GameStage {
     addonSetup = "addonSetup",
@@ -12,25 +14,10 @@ export enum GameStage {
     game = "game",
 }
 
-export interface Settings {
-    allowNsfw: boolean;
-    allowDuplicates: boolean;
-    loadImages: boolean;
-}
-
-const defaultSettings: Settings = {
-    allowNsfw: true,
-    allowDuplicates: false,
-    loadImages: true,
-};
-
 export class GameController {
     public readonly createdAt: Date = new Date();
     public readonly id = nanoid(32);
     public startedAt: Date | null = null;
-
-    // Settings
-    public settings: Settings = $state(defaultSettings);
 
     // Stage
     private stage: GameStage = $state(GameStage.playerSetup);
@@ -39,6 +26,9 @@ export class GameController {
         return this.stage;
     }
     public ended = false;
+
+    public settings: Settings = $state(defaultSettings);
+    private unsubscribeSettings: () => void;
 
     // Content
     public cards: Card[] = $state([]);
@@ -78,8 +68,21 @@ export class GameController {
         return this.currentCard !== null;
     });
 
-    constructor(addons: AddonSummary[]) {
+    constructor(addons: AddonSummary[], settingsStore: Writable<Settings>) {
         this.selectedAddons = addons.filter((a) => a.isDefault);
+
+        this.unsubscribeSettings = settingsStore.subscribe((updated) => {
+            const prev = this.settings;
+
+            const nsfwChanged = prev.allowNsfw !== updated.allowNsfw;
+            const dupChanged = prev.allowDuplicates !== updated.allowDuplicates;
+
+            this.settings = { ...updated };
+
+            if (nsfwChanged || dupChanged) {
+                this.filterCards();
+            }
+        });
 
         // Check if client side
         if (typeof window !== "undefined") this.hasPreviousPlayers = localStorage.getItem("players") !== null;
@@ -131,6 +134,7 @@ export class GameController {
     };
 
     public filterCards = () => {
+        // TODO: filter out current card
         const allCards = [...this.cards, ...this.disabledCards];
 
         type SeparatedCards = {
@@ -318,16 +322,12 @@ export class GameController {
     }
 
     public async endGame() {
-        this.socket?.close();
-        this.ended = true;
-    }
+        if (this.ended) return;
 
-    // Settings
-    public restoreSettings() {
-        const settings = localStorage.getItem("settings");
-        if (settings) {
-            console.info("- Settings loaded");
-            this.settings = JSON.parse(settings);
-        }
+        this.ended = true;
+        this.unsubscribeSettings();
+        this.socket?.close();
+
+        console.info("game ended");
     }
 }

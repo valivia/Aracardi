@@ -13,6 +13,7 @@
         invalid: "No lobby found with that code.",
         error: "Couldn't reach the server. Try again.",
     };
+
     let code: string | undefined = $state(undefined);
     let status: keyof typeof statusMessages = $state("idle");
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;

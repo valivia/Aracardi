@@ -7,6 +7,11 @@
     import { onMount, type Snippet } from "svelte";
     import { updated } from "$app/state";
     import { version } from "$app/environment";
+    import { createSettingsContext } from "lib/settingsContext";
+    import SettingsButton from "components/input/SettingsButton.svelte";
+    import { onNavigate } from "$app/navigation";
+    import { resolve } from "$app/paths";
+    import Settings from "components/Settings.svelte";
 
     interface Props {
         children?: Snippet;
@@ -14,13 +19,19 @@
 
     const { children }: Props = $props();
 
+    // Setting menu
+    const { isOpen, close } = createSettingsContext();
+    onNavigate(() => close());
+
+    // Metadata
     const title = "Aracardi - Online Drinking Game";
     const description =
         "Have an unforgettable drinking night with your friends on Aracardi! With over 300 unique cards every round brings fresh and original prompts to enjoy!";
 
+    // Theme
     if (typeof window !== "undefined") syncTheme();
 
-    // Update state
+    // SW update state
     let newWorker: ServiceWorker | null;
     let updateReady = $state(false);
 
@@ -115,11 +126,27 @@
     <meta property="og:type" content="website" />
 </svelte:head>
 
-<h1><a href="/">Aracardi</a></h1>
-{@render children?.()}
+<h1><a href={resolve("/")}>Aracardi</a></h1>
+<div class:hidden={$isOpen}>
+    {@render children?.()}
+</div>
+
+{#if $isOpen}
+    <Settings />
+{/if}
+<SettingsButton />
+
 <Nav />
 
 <style lang="scss">
+    div {
+        display: contents;
+    }
+
+    .hidden {
+        display: none;
+    }
+
     h1 {
         font-weight: 200;
         font-size: clamp(2.5rem, 5vw, 5rem);

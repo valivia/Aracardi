@@ -1,18 +1,10 @@
 <script lang="ts">
-    import type { GameController } from "lib/game.svelte";
     import { SettingsIcon } from "components/icons";
-
-    interface Props {
-        game: GameController;
-    }
-
-    let { game }: Props = $props();
+    import { useSettings } from "lib/settingsContext";
+    const { toggle, isOpen } = useSettings();
 </script>
 
-<button
-    onclick={() => (game.settingsOpen = !game.settingsOpen)}
-    aria-label={`${game.settingsOpen ? "Close" : "Open"} settings menu`}><SettingsIcon /></button
->
+<button onclick={toggle} aria-label={`${isOpen ? "Close" : "Open"} settings menu`}><SettingsIcon /></button>
 
 <style lang="scss">
     button {

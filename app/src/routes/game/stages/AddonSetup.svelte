@@ -24,7 +24,7 @@
     <main>
         <!-- Addons -->
         <div class="addons">
-            {#each addons as addon}
+            {#each addons as addon (addon.id)}
                 <Addon
                     {addon}
                     active={game.hasAddon(addon)}
@@ -54,8 +54,8 @@
 </div>
 
 <style lang="scss">
-    @use "./layout.scss" as *;
-    @use "/src/styles/abstracts" as *;
+    @use "styles/layout.scss" as *;
+    @use "styles/abstracts" as *;
 
     main {
         display: grid;

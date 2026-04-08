@@ -7,6 +7,7 @@
     import { PUBLIC_MINIMUM_PLAYER_COUNT } from "$env/static/public";
     import Button from "components/input/Button.svelte";
     import JoinCode from "components/game/JoinCode.svelte";
+    import { useSettings } from "lib/settingsContext";
 
     interface Props {
         game: GameController;
@@ -15,6 +16,7 @@
     let { game }: Props = $props();
 
     const minPlayers = Number(PUBLIC_MINIMUM_PLAYER_COUNT);
+    const { settings } = useSettings();
 
     $effect(() => {
         const player = document.getElementById(game.currentPlayer.htmlId);
@@ -44,7 +46,7 @@
             >
                 <ShuffleIcon width="35%" height="35%" />
             </button>
-            {#each game.players as player}
+            {#each game.players as player (player.id)}
                 {@const active = game.currentPlayer.id === player.id}
                 {@const canDelete = game.players.length > minPlayers && !active}
                 {@const onDelete = canDelete
@@ -60,7 +62,7 @@
             <JoinCode joinCode={game.joinCode} />
         {/if}
         {#if game.currentCard}
-            <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={game.settings.loadImages} />
+            <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={$settings.loadImages} />
         {/if}
         <section>
             <Button onclick={() => game.nextTurn()}>Next card</Button>
@@ -68,7 +70,7 @@
     </main>
 
     <aside class="active">
-        {#each game.activeCards as card}
+        {#each game.activeCards as card (card.createdAt)}
             <ActiveCard {card} onclick={() => game.deleteActiveCard(card)} />
         {/each}
     </aside>

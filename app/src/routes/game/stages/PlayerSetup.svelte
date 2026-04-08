@@ -47,9 +47,7 @@
         selectAvatar(availableAvatars[Math.floor(Math.random() * availableAvatars.length)]);
     }
 
-    function onSubmit(event: Event) {
-        event.preventDefault();
-
+    function onSubmit() {
         const name = value.trim();
         if (name.length < 3) return;
 
@@ -104,10 +102,10 @@
         <!-- Selector -->
         <section class="selector">
             <!-- Add player -->
-            <form onsubmit={onSubmit}>
+            <form>
                 <input type="text" placeholder="Player name" bind:value minlength="3" maxlength="20" required />
                 <section class="selectorControls">
-                    <Button type="submit" disabled={selectedAvatar.player?.name === value}>
+                    <Button type="button" onclick={onSubmit} disabled={selectedAvatar.player?.name === value}>
                         {selectedAvatar.player ? "Update" : "Add"}
                     </Button>
                     {#if selectedAvatar.player !== undefined}
@@ -136,7 +134,7 @@
 
         <!-- Avatars -->
         <section class="avatars">
-            {#each avatarPlayerLink as avatar}
+            {#each avatarPlayerLink as avatar (avatar.name)}
                 {@const selected = selectedAvatar.name === avatar.name}
                 {@const active = avatar.player !== undefined}
                 <div class="player" class:active class:selected>
@@ -176,7 +174,7 @@
 
 <style lang="scss">
     @use "styles/abstracts" as *;
-    @use "./layout.scss" as *;
+    @use "styles/layout.scss" as *;
 
     $clampFactor: 10vw;
 

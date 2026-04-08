@@ -7,8 +7,11 @@
     import { WebsocketClient } from "lib/websocket";
     import type { GameUpdate } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
+    import { useSettings } from "lib/settingsContext.js";
 
     const { data } = $props();
+
+    let { settings } = useSettings();
 
     let socket = $state<WebsocketClient | null>();
 
@@ -81,7 +84,7 @@
     <div class="layout">
         <aside class="players">
             <div class="playerList">
-                {#each players as player}
+                {#each players as player (player.id)}
                     {@const active = currentPlayerId === player.id}
                     <PlayerElement {player} {active} onDelete={undefined} />
                 {/each}
@@ -90,13 +93,13 @@
 
         <main class="game">
             {#if currentCard}
-                <CardElement card={currentCard} onclick={undefined} loadImage={true} />
+                <CardElement card={currentCard} onclick={undefined} loadImage={$settings.loadImages} />
                 <!--Make loadimage dynamic-->
             {/if}
         </main>
 
         <aside class="active">
-            {#each activeCards as card}
+            {#each activeCards as card (card.createdAt)}
                 <ActiveCard {card} onclick={undefined} />
             {/each}
         </aside>

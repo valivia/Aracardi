@@ -4,24 +4,19 @@
     import AddonStage from "./stages/AddonSetup.svelte";
     import Game from "./stages/Game.svelte";
     import PlayerSetup from "./stages/PlayerSetup.svelte";
-    import Settings from "./stages/Settings.svelte";
-    import SettingsButton from "components/input/SettingsButton.svelte";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
+    import { useSettings } from "lib/settingsContext";
+    import GameSettings from "components/game/GameSettings.svelte";
 
     let { data } = $props();
+    const { setExtras, settings } = useSettings();
 
     let { addons } = data;
 
-    let game: GameController = $state(new GameController(addons));
+    let game: GameController = $state(new GameController(addons, settings));
 
     onMount(() => {
-        game.restoreSettings();
         game.restoreAddons(addons);
-    });
-
-    $effect(() => {
-        console.log("- Settings saved");
-        localStorage.setItem("settings", JSON.stringify(game.settings));
     });
 
     beforeNavigate((navigation) => {
@@ -45,17 +40,24 @@
                 return " ??";
         }
     });
+
+    // Settings menu
+    setExtras(gameSettings);
+    onDestroy(() => {
+        setExtras(null);
+        game.endGame();
+    });
 </script>
 
 <svelte:head>
     <title>Aracardi{title}</title>
 </svelte:head>
 
-<SettingsButton {game} />
+{#snippet gameSettings()}
+    <GameSettings {game} />
+{/snippet}
 
-{#if game.settingsOpen}
-    <Settings bind:game onchange={() => game.filterCards()} />
-{:else if game.currentStage === GameStage.addonSetup}
+{#if game.currentStage === GameStage.addonSetup}
     <AddonStage {game} {addons} />
 {:else if game.currentStage === GameStage.playerSetup}
     <PlayerSetup {game} />
