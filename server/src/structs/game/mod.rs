@@ -5,7 +5,10 @@ use crate::structs::{
         state::GameState,
         stats::GameStats,
     },
-    protocol::{game_update::GameUpdate, message::OutgoingMessage},
+    protocol::{
+        game_update::GameUpdate,
+        message::{ConnectionClose, OutgoingMessage},
+    },
     telemetry::{Telemetry, event::TelemetryEvent},
 };
 use axum::extract::ws::Message;
@@ -135,7 +138,7 @@ impl Game {
     }
 
     // Telemetry
-    pub fn log_end(&mut self, telemetry: &Telemetry) {
+    pub fn close(&mut self, telemetry: &Telemetry) {
         if let Some(info) = &mut self.info {
             info.ended_at_ms = Utc::now().timestamp_millis()
         }
@@ -143,6 +146,9 @@ impl Game {
         if self.is_initialized().not() {
             return;
         }
+
+        // Broadcast close
+        self.broadcast(ConnectionClose::GameEnded.to_message(), None);
 
         telemetry.push(TelemetryEvent::from_game_ended(self));
     }

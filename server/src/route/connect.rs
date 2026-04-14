@@ -2,7 +2,7 @@ use axum::{
     body::Bytes,
     extract::{
         Path, State,
-        ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade},
+        ws::{Message, WebSocket, WebSocketUpgrade},
     },
     http::HeaderMap,
     response::Response,
@@ -23,7 +23,10 @@ use tracing::{debug, info};
 
 use crate::{
     AppState,
-    structs::game::{Game, client::Client},
+    structs::{
+        game::{Game, client::Client},
+        protocol::message::ConnectionClose,
+    },
 };
 
 const PING_INTERVAL: Duration = Duration::from_secs(5);
@@ -49,23 +52,21 @@ async fn handle_socket(
     headers: HeaderMap,
 ) {
     if !state.games.contains_key(&game_join_id) {
-        let _ = socket
-            .send(Message::Close(Some(CloseFrame {
-                code: 1011,
-                reason: "Game not found".into(),
-            })))
-            .await;
+        let _ = socket.send(ConnectionClose::NotFound.to_message()).await;
         return;
     }
 
     let (client_tx, client_rx) = mpsc::channel::<Message>(32);
 
     let client_id =
-        match Client::authenticate(&mut socket, &state, client_tx.clone(), game_join_id.clone())
-            .await
-        {
+        match Client::authenticate(&mut socket, &state, client_tx.clone(), &game_join_id).await {
             Ok(id) => id,
-            Err(_) => return,
+            Err(auth_error) => {
+                if let Some(close_message) = auth_error.into_connection_close() {
+                    let _ = socket.send(close_message.to_message()).await;
+                }
+                return;
+            }
         };
 
     let is_host = match state.games.get(&game_join_id) {
@@ -107,7 +108,7 @@ async fn handle_socket(
 
         match removed {
             Some((_id, mut game)) => {
-                game.log_end(&state.telemetry);
+                game.close(&state.telemetry);
                 info!("[game] {game_join_id} | deleted game after host timeout");
             }
             None => {

@@ -4,27 +4,21 @@
     import CardElement from "components/game/Card.svelte";
     import { Player } from "lib/player.svelte";
     import PlayerElement from "components/game/Player.svelte";
-    import { WebsocketClient } from "lib/websocket";
-    import type { GameUpdate } from "lib/protocol.js";
+    import { WebsocketClient } from "lib/websocket.svelte";
+    import { Messagetopic } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
     import { useSettings } from "lib/settingsContext.js";
+    import { onDestroy } from "svelte";
 
     const { data } = $props();
 
     let { settings } = useSettings();
 
-    let socket = $state<WebsocketClient | null>();
-
-    beforeNavigate(() => {
-        socket?.close();
-    });
-
-    type ConnectionStatus = "connecting" | "connected" | "failed";
+    let socket = $state<WebsocketClient>(new WebsocketClient(data.lobby));
+    socket.connectToSocket().catch(() => null);
 
     // Connection
     let hostConnected = $state(false);
-    let serverConnected = $state(false);
-    let connectionStatus: ConnectionStatus = $state("connecting");
 
     let currentCard: CardController | null = $state(null);
     let activeCards = $state<CardController[]>([]);
@@ -33,82 +27,65 @@
     let players = $state<Player[]>([]);
     let currentPlayer = $state<Player>();
 
-    async function connect() {
-        socket = await WebsocketClient.connectToSession(data.lobby);
-        if (socket == null) {
-            connectionStatus = "failed";
-            return;
+    socket.onMessage(Messagetopic.Update, (payload) => {
+        if (payload.currentPlayerId) currentPlayerId = payload.currentPlayerId;
+        if (payload.players) {
+            players = payload.players.map((player) => {
+                let result = new Player(player.name, player.avatar);
+                result.id = player.id;
+                return result;
+            });
         }
+        currentPlayer = players.find((p) => p.id === currentPlayerId);
+        if (payload.activeCards)
+            activeCards = payload.activeCards.map((card) =>
+                CardController.fromSpectatorCard(card, currentPlayer?.name || "???"),
+            );
+        if (payload.currentCard) {
+            currentCard = CardController.fromSpectatorCard(payload.currentCard, currentPlayer?.name || "???");
+        }
+        if (typeof payload.hostConnected == "boolean") {
+            hostConnected = payload.hostConnected;
+        }
+    });
 
-        connectionStatus = "connected";
+    socket.onClose(() => {
+        console.log("closed");
+    });
 
-        socket?.onMessage((type, payload) => {
-            serverConnected = true;
-            if (type == "update") {
-                let gameUpdate: GameUpdate = JSON.parse(payload);
-                if (gameUpdate.currentPlayerId) currentPlayerId = gameUpdate.currentPlayerId;
-                if (gameUpdate.players) {
-                    players = gameUpdate.players.map((player) => {
-                        let result = new Player(player.name, player.avatar);
-                        result.id = player.id;
-                        return result;
-                    });
-                }
-                currentPlayer = players.find((p) => p.id === currentPlayerId);
-                if (gameUpdate.activeCards)
-                    activeCards = gameUpdate.activeCards.map((card) =>
-                        CardController.fromSpectatorCard(card, currentPlayer?.name || "???"),
-                    );
-                if (gameUpdate.currentCard) {
-                    currentCard = CardController.fromSpectatorCard(
-                        gameUpdate.currentCard,
-                        currentPlayer?.name || "???",
-                    );
-                }
-                if (typeof gameUpdate.hostConnected == "boolean") {
-                    hostConnected = gameUpdate.hostConnected;
-                }
-            }
-        });
+    // TODO: is redundant?
+    beforeNavigate(() => {
+        socket?.close();
+    });
 
-        socket?.onClose(() => {
-            console.log("closed");
-            serverConnected = false;
-        });
-    }
-
-    connect();
+    onDestroy(() => {
+        socket?.close();
+    });
 </script>
 
-{#if connectionStatus == "connected"}
-    <div class="layout">
-        <aside class="players">
-            <div class="playerList">
-                {#each players as player (player.id)}
-                    {@const active = currentPlayerId === player.id}
-                    <PlayerElement {player} {active} onDelete={undefined} />
-                {/each}
-            </div>
-        </aside>
-
-        <main class="game">
-            {#if currentCard}
-                <CardElement card={currentCard} onclick={undefined} loadImage={$settings.loadImages} />
-                <!--Make loadimage dynamic-->
-            {/if}
-        </main>
-
-        <aside class="active">
-            {#each activeCards as card (card.createdAt)}
-                <ActiveCard {card} onclick={undefined} />
+<div class="layout">
+    <aside class="players">
+        <div class="playerList">
+            {#each players as player (player.id)}
+                {@const active = currentPlayerId === player.id}
+                <PlayerElement {player} {active} />
             {/each}
-        </aside>
-    </div>
-{:else if connectionStatus == "connecting"}
-    connecting...
-{:else}
-    Failed to connect
-{/if}
+        </div>
+    </aside>
+
+    <main class="game">
+        {socket.connectionStatusString}
+        {#if currentCard}
+            <CardElement card={currentCard} loadImage={$settings.loadImages} />
+        {/if}
+    </main>
+
+    <aside class="active">
+        {#each activeCards as card (card.createdAt)}
+            <ActiveCard {card} />
+        {/each}
+    </aside>
+</div>
 
 <style lang="scss">
     @use "styles/abstracts" as *;

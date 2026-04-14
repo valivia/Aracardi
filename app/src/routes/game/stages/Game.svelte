@@ -61,6 +61,7 @@
         {#if game.joinCode}
             <JoinCode joinCode={game.joinCode} />
         {/if}
+        {game.socket?.connectionStatusString}
         {#if game.currentCard}
             <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={$settings.loadImages} />
         {/if}

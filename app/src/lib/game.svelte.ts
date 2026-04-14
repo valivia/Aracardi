@@ -3,10 +3,11 @@ import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { nanoid } from "nanoid";
-import { WebsocketClient } from "./websocket";
+import { WebsocketClient } from "./websocket.svelte";
 import { version } from "$app/environment";
 import { defaultSettings, type Settings } from "./settingsContext";
 import type { Writable } from "svelte/store";
+import { IncomingMessageTopic } from "./protocol";
 
 export enum GameStage {
     addonSetup = "addonSetup",
@@ -49,7 +50,7 @@ export class GameController {
     public activeCards: CardController[] = $state([]);
 
     // Websocket
-    private socket: WebsocketClient | null = $state(null);
+    public socket: WebsocketClient | null = $state(null);
     public readonly joinCode: string | null = $derived.by(() => this.socket?.id ?? null);
 
     // Setup
@@ -182,7 +183,7 @@ export class GameController {
     // Active cards
     public deleteActiveCard = (card: CardController) => {
         this.activeCards = this.activeCards.filter((c) => c !== card);
-        this.socket?.send("update", {
+        this.socket?.send(IncomingMessageTopic.Update, {
             activeCards: this.activeCards.map((card) => card.getHostCard()),
         });
     };
@@ -232,7 +233,7 @@ export class GameController {
         this.hasPreviousPlayers = this.players.length > 0;
 
         // Log if in game
-        this.socket?.send("update", { players: this.players.map((player) => player.getSaveable()) });
+        this.socket?.send(IncomingMessageTopic.Update, { players: this.players.map((player) => player.getSaveable()) });
     }
 
     public restorePlayers() {
@@ -259,7 +260,7 @@ export class GameController {
 
         // Card
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
-        this.socket?.send("update", {
+        this.socket?.send(IncomingMessageTopic.Update, {
             currentPlayerId: this.currentPlayer.id,
             currentCard: this.currentCard?.getHostCard(),
             activeCards: this.activeCards.map((card) => card.getHostCard()),
@@ -306,7 +307,7 @@ export class GameController {
                 console.error("Failed to connect to websocket: ", e);
             }
 
-            this.socket?.send("update", {
+            this.socket?.send(IncomingMessageTopic.Update, {
                 players: this.players.map((player) => player.getSaveable()),
                 currentPlayerId: this.currentPlayer.id,
                 currentCard: this.currentCard?.getHostCard(),

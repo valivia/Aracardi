@@ -1,20 +1,39 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::extract::ws::{Message, WebSocket};
-use futures_util::SinkExt;
 use nanoid::nanoid;
-use tokio::sync::mpsc;
+use tokio::{sync::mpsc, time::timeout};
 use tracing::warn;
 
 use crate::structs::{
     app_state::AppState,
-    protocol::message::{IncomingMessage, OutgoingMessage},
+    protocol::message::{ConnectionClose, IncomingMessage, OutgoingMessage},
 };
 
 pub type Tx = mpsc::Sender<Message>;
 
 pub const CLIENT_ID_LENGTH: usize = 10;
 pub type ClientId = String;
+
+pub enum AuthError {
+    GameNotFound,
+    GameFull,
+    TimedOut,
+
+    SendFailed,
+    ClientDisconnected,
+}
+
+impl AuthError {
+    pub fn into_connection_close(&self) -> Option<ConnectionClose> {
+        match self {
+            AuthError::GameNotFound => Some(ConnectionClose::NotFound),
+            AuthError::TimedOut => Some(ConnectionClose::TimedOut),
+            AuthError::GameFull => Some(ConnectionClose::GameFull),
+            _ => None,
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Client {
@@ -42,47 +61,67 @@ impl Client {
         socket: &mut WebSocket,
         state: &Arc<AppState>,
         tx: Tx,
-        game_id: String,
-    ) -> Result<String, ()> {
-        let player_id = loop {
+        game_id: &str,
+    ) -> Result<ClientId, AuthError> {
+        let client_id = timeout(
+            Duration::from_secs(10),
+            Self::handshake(socket, state, tx, game_id),
+        )
+        .await
+        .unwrap_or(Err(AuthError::TimedOut))?;
+
+        socket
+            .send(OutgoingMessage::ClientId(client_id.clone()).to_message())
+            .await
+            .map_err(|_| AuthError::SendFailed)?;
+
+        Ok(client_id)
+    }
+
+    async fn handshake(
+        socket: &mut WebSocket,
+        state: &Arc<AppState>,
+        tx: Tx,
+        game_id: &str,
+    ) -> Result<ClientId, AuthError> {
+        loop {
             let msg = match socket.recv().await {
                 Some(Ok(msg)) => msg,
-                _ => return Err(()), // client disconnected
+                _ => return Err(AuthError::ClientDisconnected),
             };
 
-            if let Message::Text(text) = &msg {
-                match IncomingMessage::parse_message(text) {
-                    Ok(IncomingMessage::Connect(requested_player_id)) => {
-                        let mut game = match state.games.get_mut(&game_id) {
-                            Some(g) => g,
-                            None => {
-                                let _ = socket.close().await;
-                                return Err(());
-                            }
-                        };
+            let Message::Text(text) = msg else {
+                continue;
+            };
 
-                        let client = Client::new(tx.clone());
-
-                        let requested_player_id: Option<String> = (requested_player_id.len()
-                            == CLIENT_ID_LENGTH)
-                            .then_some(requested_player_id);
-
-                        // Otherwise create new player
-                        let client_id = game.upsert_client(client, requested_player_id);
-
-                        break client_id;
-                    }
-                    Err(error) => warn!("Parse error: {error}"),
-                    _ => warn!("Unexpected message type during connect"),
+            match IncomingMessage::parse_message(&text) {
+                Ok(IncomingMessage::Connect(requested_id)) => {
+                    return Self::resolve_client(state, tx, game_id, requested_id).await;
                 }
+                Err(e) => warn!("Parse error: {e}"),
+                _ => warn!("Unexpected message type during connect"),
+            }
+        }
+    }
+
+    async fn resolve_client(
+        state: &Arc<AppState>,
+        tx: Tx,
+        game_id: &str,
+        requested_id: String,
+    ) -> Result<ClientId, AuthError> {
+        let mut game = match state.games.get_mut(game_id) {
+            Some(g) => g,
+            None => {
+                return Err(AuthError::GameNotFound);
             }
         };
 
-        socket
-            .send(OutgoingMessage::ClientId(player_id.clone()).to_message())
-            .await
-            .unwrap();
+        let client_id = requested_id
+            .len()
+            .eq(&CLIENT_ID_LENGTH)
+            .then_some(requested_id);
 
-        return Ok(player_id);
+        Ok(game.upsert_client(Client::new(tx), client_id))
     }
 }

@@ -1,4 +1,4 @@
-use axum::extract::ws::Message;
+use axum::extract::ws::{CloseFrame, Message};
 use thiserror::Error;
 
 use crate::structs::{
@@ -19,6 +19,42 @@ pub enum ParseError {
     },
 }
 
+#[derive(Debug)]
+pub enum ConnectionClose {
+    NotFound,
+    GameFull,
+    GameEnded,
+    TimedOut,
+    ServerError,
+}
+
+impl ToString for ConnectionClose {
+    fn to_string(&self) -> String {
+        match self {
+            Self::GameFull => "game_full",
+            Self::NotFound => "not_found",
+            Self::GameEnded => "game_ended",
+            Self::TimedOut => "timed_out",
+            Self::ServerError => "server_error",
+        }
+        .into()
+    }
+}
+
+impl ConnectionClose {
+    pub fn to_message(&self) -> Message {
+        let code = match self {
+            Self::GameEnded => 1000,
+            _ => 4000,
+        };
+
+        Message::Close(Some(CloseFrame {
+            code,
+            reason: self.to_string().into(),
+        }))
+    }
+}
+
 pub enum OutgoingMessage {
     ClientId(ClientId),
     Update(GameUpdate),
@@ -34,8 +70,8 @@ impl OutgoingMessage {
 
     pub fn to_message(self) -> Message {
         let mut payload = match &self {
-            OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
             OutgoingMessage::ClientId(payload) => Ok(payload.clone()),
+            OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
         }
         .unwrap();
 
