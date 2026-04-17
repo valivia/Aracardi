@@ -16,7 +16,7 @@ impl ClientConnection {
                 .and_then(|value| value.to_str().ok())
                 .map(str::to_owned),
             user_agent: headers
-                .get("user_agent")
+                .get("User-Agent")
                 .and_then(|value| value.to_str().ok())
                 .map(str::to_owned),
             country_code: headers
