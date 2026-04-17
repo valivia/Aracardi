@@ -1,5 +1,8 @@
+use std::str::FromStr;
+
 use axum::extract::ws::{CloseFrame, Message};
 use thiserror::Error;
+use uuid::Uuid;
 
 use crate::structs::{
     game::state::ClientId,
@@ -70,7 +73,7 @@ impl OutgoingMessage {
 
     pub fn to_message(self) -> Message {
         let mut payload = match &self {
-            OutgoingMessage::ClientId(payload) => Ok(payload.clone()),
+            OutgoingMessage::ClientId(payload) => Ok(payload.to_string()),
             OutgoingMessage::Update(payload) => serde_json::to_string(&payload),
         }
         .unwrap();
@@ -83,7 +86,7 @@ impl OutgoingMessage {
 }
 
 pub enum IncomingMessage {
-    Connect(ClientId),
+    Connect(Option<ClientId>),
     Update(HostUpdate),
 }
 
@@ -102,7 +105,7 @@ impl IncomingMessage {
 
         let message = match topic {
             "update" => IncomingMessage::Update(parse_json!(HostUpdate)?),
-            "connect" => IncomingMessage::Connect(payload.to_string()),
+            "connect" => IncomingMessage::Connect(Uuid::from_str(payload).ok()),
             other => return Err(ParseError::UnknownTopic(other.to_string())),
         };
 

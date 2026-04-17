@@ -10,7 +10,7 @@ pub mod player;
 pub struct GameState {
     // Players
     pub players: Vec<Player>,
-    pub current_player_id: Option<ClientId>,
+    pub current_player_id: Option<String>,
 
     // Cards
     pub active_cards: Vec<Card>,

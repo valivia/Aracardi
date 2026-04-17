@@ -1,5 +1,4 @@
 use axum::{
-    body::Bytes,
     extract::{
         Path, State,
         ws::{Message, WebSocket, WebSocketUpgrade},
@@ -11,15 +10,13 @@ use futures_util::{
     sink::SinkExt,
     stream::{SplitSink, StreamExt},
 };
-use std::{
-    sync::Arc,
-    time::{Duration, Instant},
-};
+use std::{sync::Arc, time::Duration};
 use tokio::sync::{
     mpsc::{self, Receiver, Sender},
     oneshot,
 };
 use tracing::{debug, info};
+use uuid::Uuid;
 
 use crate::{
     AppState,
@@ -58,16 +55,23 @@ async fn handle_socket(
 
     let (client_tx, client_rx) = mpsc::channel::<Message>(32);
 
-    let client_id =
-        match Client::authenticate(&mut socket, &state, client_tx.clone(), &game_join_id).await {
-            Ok(id) => id,
-            Err(auth_error) => {
-                if let Some(close_message) = auth_error.into_connection_close() {
-                    let _ = socket.send(close_message.to_message()).await;
-                }
-                return;
+    let client_id = match Client::authenticate(
+        &mut socket,
+        &state,
+        &headers,
+        client_tx.clone(),
+        &game_join_id,
+    )
+    .await
+    {
+        Ok(id) => id,
+        Err(auth_error) => {
+            if let Some(close_message) = auth_error.into_connection_close() {
+                let _ = socket.send(close_message.to_message()).await;
             }
-        };
+            return;
+        }
+    };
 
     let is_host = match state.games.get(&game_join_id) {
         Some(game) => game.host_id == client_id,
@@ -126,7 +130,7 @@ async fn run_client(
     socket: WebSocket,
     state: Arc<AppState>,
     game_join_id: String,
-    client_id: String,
+    client_id: Uuid,
     rx: Receiver<Message>,
     tx: Sender<Message>,
 ) {
@@ -135,7 +139,6 @@ async fn run_client(
     let (timeout_tx, mut timeout_rx) = oneshot::channel::<()>();
 
     let ping_task = tokio::spawn(ping_task(
-        tx.clone(),
         timeout_tx,
         state.clone(),
         game_join_id.clone(),
@@ -161,9 +164,9 @@ async fn run_client(
                         Message::Close(_) => break,
                         Message::Pong(_) => {
                             if let Some(mut game) = state.games.get_mut(&game_join_id) {
-                                if let Some(client) = game.connected_clients.get_mut(&client_id) {
-                                    client.last_seen = std::time::Instant::now();
-                                }
+                                if let Some(client) = game.clients.get_mut(&client_id) {
+                                    client.pong();
+                            }
                             }
                         }
                         Message::Text(text) => {
@@ -206,39 +209,39 @@ pub async fn send_task(mut rx: Receiver<Message>, mut sender: SplitSink<WebSocke
 }
 
 pub async fn ping_task(
-    client_tx: Sender<Message>,
     timeout_tx: oneshot::Sender<()>,
     state: Arc<AppState>,
     game_id: String,
-    client_id: String,
+    client_id: Uuid,
 ) {
-    let mut interval = tokio::time::interval(PING_INTERVAL);
-    interval.tick().await; // skip immediate first tick
-
     loop {
-        let ping_sent_at = Instant::now();
+        tokio::time::sleep(PING_INTERVAL).await;
 
-        if client_tx.send(Message::Ping(Bytes::new())).await.is_err() {
-            break;
-        }
+        match state.games.get_mut(&game_id) {
+            Some(mut game) => match game.clients.get_mut(&client_id) {
+                Some(client) => {
+                    if client.ping().is_err() {
+                        break;
+                    }
+                }
+                None => break,
+            },
+            None => break,
+        };
 
         tokio::time::sleep(PONG_TIMEOUT).await;
 
-        let timed_out = state
-            .games
-            .get(&game_id)
-            .and_then(|game| {
-                game.connected_clients
-                    .get(&client_id)
-                    .map(|client| client.last_seen < ping_sent_at)
-            })
-            .unwrap_or(true); // if game/client gone, consider timed out
+        let timed_out = match state.games.get(&game_id) {
+            Some(game) => match game.clients.get(&client_id) {
+                Some(client) => client.is_ping_timed_out(),
+                None => true,
+            },
+            None => true,
+        };
 
         if timed_out {
             break;
         }
-
-        interval.tick().await;
     }
 
     let _ = timeout_tx.send(());

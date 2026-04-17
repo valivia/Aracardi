@@ -100,6 +100,8 @@ button:not(:disabled) {
 
 select,
 textarea {
+    caret-color: var(--accent-color);
+
     &:focus-visible,
     &:hover {
         outline: var(--outline-focus);

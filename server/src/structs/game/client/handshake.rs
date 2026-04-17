@@ -1,19 +1,21 @@
 use std::{sync::Arc, time::Duration};
 
-use axum::extract::ws::{Message, WebSocket};
-use nanoid::nanoid;
-use tokio::{sync::mpsc, time::timeout};
+use axum::{
+    extract::ws::{Message, WebSocket},
+    http::HeaderMap,
+};
+use tokio::time::timeout;
 use tracing::warn;
+use uuid::Uuid;
 
 use crate::structs::{
     app_state::AppState,
+    game::{
+        client::{Client, Tx},
+        state::ClientId,
+    },
     protocol::message::{ConnectionClose, IncomingMessage, OutgoingMessage},
 };
-
-pub type Tx = mpsc::Sender<Message>;
-
-pub const CLIENT_ID_LENGTH: usize = 10;
-pub type ClientId = String;
 
 pub enum AuthError {
     GameNotFound,
@@ -35,37 +37,17 @@ impl AuthError {
     }
 }
 
-#[derive(Clone)]
-pub struct Client {
-    pub tx: Tx,
-    pub last_seen: std::time::Instant,
-}
-
 impl Client {
-    pub fn new(tx: Tx) -> Self {
-        Client {
-            tx,
-            last_seen: std::time::Instant::now(),
-        }
-    }
-
-    pub fn generate_id() -> ClientId {
-        nanoid!(CLIENT_ID_LENGTH, &nanoid::alphabet::SAFE)
-    }
-
-    pub fn send(&self, message: Message) {
-        self.tx.try_send(message).ok();
-    }
-
     pub async fn authenticate(
         socket: &mut WebSocket,
         state: &Arc<AppState>,
+        headers: &HeaderMap,
         tx: Tx,
         game_id: &str,
     ) -> Result<ClientId, AuthError> {
         let client_id = timeout(
             Duration::from_secs(10),
-            Self::handshake(socket, state, tx, game_id),
+            Self::handshake(socket, state, headers, tx, game_id),
         )
         .await
         .unwrap_or(Err(AuthError::TimedOut))?;
@@ -81,6 +63,7 @@ impl Client {
     async fn handshake(
         socket: &mut WebSocket,
         state: &Arc<AppState>,
+        headers: &HeaderMap,
         tx: Tx,
         game_id: &str,
     ) -> Result<ClientId, AuthError> {
@@ -96,7 +79,7 @@ impl Client {
 
             match IncomingMessage::parse_message(&text) {
                 Ok(IncomingMessage::Connect(requested_id)) => {
-                    return Self::resolve_client(state, tx, game_id, requested_id).await;
+                    return Self::resolve_client(state, headers, tx, game_id, requested_id).await;
                 }
                 Err(e) => warn!("Parse error: {e}"),
                 _ => warn!("Unexpected message type during connect"),
@@ -106,9 +89,10 @@ impl Client {
 
     async fn resolve_client(
         state: &Arc<AppState>,
+        headers: &HeaderMap,
         tx: Tx,
         game_id: &str,
-        requested_id: String,
+        requested_id: Option<Uuid>,
     ) -> Result<ClientId, AuthError> {
         let mut game = match state.games.get_mut(game_id) {
             Some(g) => g,
@@ -117,11 +101,6 @@ impl Client {
             }
         };
 
-        let client_id = requested_id
-            .len()
-            .eq(&CLIENT_ID_LENGTH)
-            .then_some(requested_id);
-
-        Ok(game.upsert_client(Client::new(tx), client_id))
+        Ok(game.upsert_client(Client::new(tx, headers), requested_id))
     }
 }

@@ -35,7 +35,7 @@ impl AppState {
 
         let response = CreatedGame {
             game_id: game_id.clone(),
-            host_id: game.host_id.clone(),
+            host_id: game.host_id.to_string(),
         };
 
         info!("[game] {game_id} | Creating new game");

@@ -15,7 +15,7 @@ use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
 use std::{collections::HashMap, ops::Not};
-use tracing::debug;
+use tracing::{debug, info};
 use uuid::Uuid;
 
 pub mod client;
@@ -31,7 +31,7 @@ pub struct Game {
     pub created_at: std::time::Instant,
 
     pub host_id: ClientId,
-    pub connected_clients: HashMap<ClientId, Client>,
+    pub clients: HashMap<ClientId, Client>,
 
     pub info: Option<GameInfo>,
     pub state: GameState,
@@ -46,7 +46,7 @@ impl Game {
             created_at: std::time::Instant::now(),
 
             host_id: Client::generate_id(),
-            connected_clients: HashMap::new(),
+            clients: HashMap::new(),
 
             info: None,
             state: GameState::default(),
@@ -62,7 +62,7 @@ impl Game {
     }
 
     pub fn is_host_connected(&self) -> bool {
-        self.connected_clients.contains_key(&self.host_id)
+        self.clients.contains_key(&self.host_id)
     }
 
     // Clients
@@ -78,9 +78,11 @@ impl Game {
             None => Client::generate_id(),
         };
 
-        self.connected_clients.insert(id.clone(), client);
+        self.clients.insert(id.clone(), client);
 
-        if id != self.host_id {
+        let is_host = id == self.host_id;
+
+        if !is_host {
             // TODO: figure out reconnect?
             self.stats.client.clients_connected += 1;
             self.sync_client(&id);
@@ -89,6 +91,14 @@ impl Game {
             self.stats.client.host_reconnected += 1;
         }
 
+        info!(
+            game = self.join_code,
+            client = id.to_string(),
+            "{} {}",
+            if is_host { "Host" } else { "Client" },
+            "connected"
+        );
+
         return id;
     }
 
@@ -96,11 +106,11 @@ impl Game {
         if client_id != &self.host_id {
             self.stats.client.clients_disconnected += 1;
         }
-        self.connected_clients.remove(client_id);
+        self.clients.remove(client_id);
     }
 
     pub fn sync_client(&self, id: &ClientId) {
-        let client = self.connected_clients.get(id);
+        let client = self.clients.get(id);
         let mut game_update = GameUpdate::from_game(self.state.clone());
         game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
@@ -110,12 +120,12 @@ impl Game {
     }
 
     // Communication
-    pub fn broadcast(&self, msg: Message, source_client: Option<&String>) {
-        for (id, client) in &self.connected_clients {
+    pub fn broadcast(&self, msg: Message, source_client: Option<&ClientId>) {
+        for (id, client) in &self.clients {
             if Some(id) == source_client {
                 continue;
             }
-            let _ = client.tx.try_send(msg.clone()).ok();
+            client.send(msg.clone());
         }
     }
 
