@@ -83,8 +83,6 @@ async fn handle_socket(
         };
     }
 
-    let client_type = if is_host { "host" } else { "player" };
-
     // Main loop
     run_client(
         socket,
