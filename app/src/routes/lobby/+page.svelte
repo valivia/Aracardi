@@ -5,7 +5,7 @@
     import { Player } from "lib/player.svelte";
     import PlayerElement from "components/game/Player.svelte";
     import { WebsocketClient } from "lib/websocket.svelte";
-    import { Messagetopic } from "lib/protocol.js";
+    import { IncomingMessageTopic } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
     import { useSettings } from "lib/settingsContext.js";
     import { onDestroy } from "svelte";
@@ -27,7 +27,7 @@
     let players = $state<Player[]>([]);
     let currentPlayer = $state<Player>();
 
-    socket.onMessage(Messagetopic.Update, (payload) => {
+    socket.onMessage(IncomingMessageTopic.Update, (payload) => {
         if (payload.currentPlayerId) currentPlayerId = payload.currentPlayerId;
         if (payload.players) {
             players = payload.players.map((player) => {

@@ -1,46 +1,44 @@
-use std::time::Duration;
-
-use axum::http::HeaderMap;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use serde::Serialize;
-use uuid::Uuid;
 
 #[derive(Clone, Serialize)]
 pub struct SessionMeta {
-    #[serde(skip)]
-    pub remote_addr: Option<String>,
-    pub user_agent: Option<String>,
-    pub country_code: Option<String>,
-
     pub original_connect_at: DateTime<Utc>,
-    pub reconnect_count: u32,
+    #[serde(skip)]
     pub last_reconnect_at: Option<DateTime<Utc>>,
+
     pub total_connected_duration: Duration,
+
+    pub reconnect_count: u32,
     pub disconnect_count: u32,
 }
 
 impl SessionMeta {
-    pub fn new(headers: &HeaderMap) -> Self {
+    pub fn new() -> Self {
         Self {
-            remote_addr: headers
-                .get("CF-Connecting-IP")
-                .and_then(|value| value.to_str().ok())
-                .map(str::to_owned),
-            user_agent: headers
-                .get("user_agent")
-                .and_then(|value| value.to_str().ok())
-                .map(str::to_owned),
-            country_code: headers
-                .get("CF-IPCountry")
-                .and_then(|value| value.to_str().ok())
-                .map(str::to_owned),
-
             original_connect_at: Utc::now(),
+            last_reconnect_at: None,
+
             total_connected_duration: Duration::default(),
 
-            last_reconnect_at: None,
             reconnect_count: 0,
             disconnect_count: 0,
         }
+    }
+
+    pub fn log_disconnect(&mut self) {
+        self.disconnect_count += 1;
+        if let Some(last_reconnect) = self.last_reconnect_at {
+            self.total_connected_duration += Utc::now().signed_duration_since(last_reconnect);
+            self.last_reconnect_at = None;
+        } else if self.total_connected_duration == Duration::zero() {
+            self.total_connected_duration +=
+                Utc::now().signed_duration_since(self.original_connect_at);
+        }
+    }
+
+    pub fn log_reconnect(&mut self) {
+        self.reconnect_count += 1;
+        self.last_reconnect_at = Some(Utc::now());
     }
 }

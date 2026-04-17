@@ -31,7 +31,7 @@ impl Database {
         let mut games: Vec<TelemetryGame> = Vec::new();
 
         for event in events {
-            match event.event {
+            match event.0 {
                 TelemetryEventType::CardViewed(card) => cards.push(card),
                 TelemetryEventType::GameEnded(game) => games.push(game),
                 _ => {}

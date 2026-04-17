@@ -1,21 +1,18 @@
 use crate::structs::{
     game::{
-        client::{Client, ClientId},
+        client::{Client, ClientId, connection::ClientConnection, socket::ClientSocket},
         info::GameInfo,
         state::GameState,
         stats::GameStats,
     },
-    protocol::{
-        game_update::GameUpdate,
-        message::{ConnectionClose, OutgoingMessage},
-    },
+    protocol::{game_update::GameUpdate, message::OutgoingMessage},
     telemetry::{Telemetry, event::TelemetryEvent},
 };
 use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
 use std::{collections::HashMap, ops::Not};
-use tracing::{debug, info};
+use tracing::info;
 use uuid::Uuid;
 
 pub mod client;
@@ -24,9 +21,11 @@ pub mod message;
 pub mod state;
 pub mod stats;
 
+pub type GameId = Uuid;
+
 #[derive(Clone)]
 pub struct Game {
-    pub id: Uuid,
+    pub id: GameId,
     pub join_code: String,
     pub created_at: std::time::Instant,
 
@@ -41,9 +40,10 @@ pub struct Game {
 impl Game {
     pub fn new(join_code: String) -> Self {
         Game {
+            created_at: std::time::Instant::now(),
+
             id: Uuid::now_v7(),
             join_code,
-            created_at: std::time::Instant::now(),
 
             host_id: Client::generate_id(),
             clients: HashMap::new(),
@@ -62,51 +62,73 @@ impl Game {
     }
 
     pub fn is_host_connected(&self) -> bool {
-        self.clients.contains_key(&self.host_id)
+        self.clients
+            .get(&self.host_id)
+            .map(|client| client.is_connected())
+            .unwrap_or(false)
     }
 
     // Clients
-    pub fn upsert_client(&mut self, client: Client, id: Option<ClientId>) -> ClientId {
-        let id = match id {
-            Some(id) => {
-                if id != self.host_id {
-                    Client::generate_id()
-                } else {
-                    id
-                }
-            }
-            None => Client::generate_id(),
+    pub fn upsert_client(
+        &mut self,
+        id: Option<ClientId>,
+        connection: ClientConnection,
+        socket: ClientSocket,
+    ) -> ClientId {
+        let Some(id) = id else {
+            return self.new_client(connection, socket);
         };
 
-        self.clients.insert(id.clone(), client);
-
-        let is_host = id == self.host_id;
-
-        if !is_host {
-            // TODO: figure out reconnect?
-            self.stats.client.clients_connected += 1;
-            self.sync_client(&id);
-        } else if self.is_initialized() {
-            // TODO: mayde add a host_has_connected field to self?
-            self.stats.client.host_reconnected += 1;
+        // Host connect
+        if !self.is_host_connected() && id == self.host_id {
+            let client = Client::new(id, connection, socket);
+            self.clients.insert(id, client);
+            info!(
+                game = self.join_code,
+                client = id.to_string(),
+                "Host connected",
+            );
+            return id;
         }
+
+        let Some(client) = self.clients.get_mut(&id) else {
+            return self.new_client(connection, socket);
+        };
+
+        // TODO: Handle user trying to connect to a non-dead connection
+        // TODO: Maybe also compare ip/user agent
+        client.reconnect(socket);
+        self.sync_client(&id);
 
         info!(
             game = self.join_code,
             client = id.to_string(),
-            "{} {}",
-            if is_host { "Host" } else { "Client" },
-            "connected"
+            "{} reconnected",
+            if id == self.host_id { "Host" } else { "Client" },
+        );
+
+        return id;
+    }
+
+    fn new_client(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
+        let id = Client::generate_id();
+        let client = Client::new(id, connection, socket);
+        self.clients.insert(id, client);
+        self.sync_client(&id);
+
+        info!(
+            game = self.join_code,
+            client = id.to_string(),
+            "Client connected",
         );
 
         return id;
     }
 
     pub fn remove_client(&mut self, client_id: &ClientId) {
-        if client_id != &self.host_id {
-            self.stats.client.clients_disconnected += 1;
+        if let Some(client) = self.clients.get_mut(&client_id) {
+            client.disconnect();
         }
-        self.clients.remove(client_id);
     }
 
     pub fn sync_client(&self, id: &ClientId) {
@@ -114,7 +136,6 @@ impl Game {
         let mut game_update = GameUpdate::from_game(self.state.clone());
         game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
-            debug!("[game] {} | {} syncing player", self.join_code, id);
             client.send(OutgoingMessage::Update(game_update).to_message());
         }
     }
@@ -157,8 +178,9 @@ impl Game {
             return;
         }
 
-        // Broadcast close
-        self.broadcast(ConnectionClose::GameEnded.to_message(), None);
+        for (_id, client) in &mut self.clients {
+            client.disconnect();
+        }
 
         telemetry.push(TelemetryEvent::from_game_ended(self));
     }

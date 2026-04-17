@@ -16,12 +16,11 @@ use tokio::sync::{
     oneshot,
 };
 use tracing::{debug, info};
-use uuid::Uuid;
 
 use crate::{
     AppState,
     structs::{
-        game::{Game, client::Client},
+        game::{Game, client::Client, state::ClientId},
         protocol::message::ConnectionClose,
     },
 };
@@ -85,7 +84,6 @@ async fn handle_socket(
     }
 
     let client_type = if is_host { "host" } else { "player" };
-    info!("[game] {game_join_id} | {client_type} {client_id} connected");
 
     // Main loop
     run_client(
@@ -130,7 +128,7 @@ async fn run_client(
     socket: WebSocket,
     state: Arc<AppState>,
     game_join_id: String,
-    client_id: Uuid,
+    client_id: ClientId,
     rx: Receiver<Message>,
     tx: Sender<Message>,
 ) {
@@ -212,7 +210,7 @@ pub async fn ping_task(
     timeout_tx: oneshot::Sender<()>,
     state: Arc<AppState>,
     game_id: String,
-    client_id: Uuid,
+    client_id: ClientId,
 ) {
     loop {
         tokio::time::sleep(PING_INTERVAL).await;

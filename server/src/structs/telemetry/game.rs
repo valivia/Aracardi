@@ -1,16 +1,16 @@
 use serde::Serialize;
-use uuid::Uuid;
 
 use crate::structs::{
-    game::{info::GameInfo, stats::GameStats},
+    game::{GameId, client::Client, info::GameInfo, stats::GameStats},
     telemetry::player::TelemetryPlayer,
 };
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TelemetryGame {
-    pub id: Uuid,
+    pub id: GameId,
     pub players: Vec<TelemetryPlayer>,
+    pub clients: Vec<Client>,
     pub info: Option<GameInfo>,
     pub stats: GameStats,
 }

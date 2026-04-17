@@ -266,7 +266,7 @@ export class WebsocketClient {
     private resolveRefusalReason(serverMessage: string): string {
         switch (serverMessage) {
             case ConnectionClose.NotFound:
-                return this.clientId ? "Lobby no longer exists" : "Lobby not found";
+                return this.clientId ? "Session no longer exists" : "Session not found";
             case ConnectionClose.GameFull:
                 return "This lobby is full";
         }

@@ -6,12 +6,11 @@ use axum::{
 };
 use tokio::time::timeout;
 use tracing::warn;
-use uuid::Uuid;
 
 use crate::structs::{
     app_state::AppState,
     game::{
-        client::{Client, Tx},
+        client::{Client, Tx, connection::ClientConnection, socket::ClientSocket},
         state::ClientId,
     },
     protocol::message::{ConnectionClose, IncomingMessage, OutgoingMessage},
@@ -79,7 +78,14 @@ impl Client {
 
             match IncomingMessage::parse_message(&text) {
                 Ok(IncomingMessage::Connect(requested_id)) => {
-                    return Self::resolve_client(state, headers, tx, game_id, requested_id).await;
+                    return Self::resolve_client(
+                        state,
+                        game_id,
+                        requested_id,
+                        ClientConnection::new(headers),
+                        ClientSocket::new(tx),
+                    )
+                    .await;
                 }
                 Err(e) => warn!("Parse error: {e}"),
                 _ => warn!("Unexpected message type during connect"),
@@ -89,10 +95,10 @@ impl Client {
 
     async fn resolve_client(
         state: &Arc<AppState>,
-        headers: &HeaderMap,
-        tx: Tx,
         game_id: &str,
-        requested_id: Option<Uuid>,
+        requested_id: Option<ClientId>,
+        connection: ClientConnection,
+        socket: ClientSocket,
     ) -> Result<ClientId, AuthError> {
         let mut game = match state.games.get_mut(game_id) {
             Some(g) => g,
@@ -101,6 +107,6 @@ impl Client {
             }
         };
 
-        Ok(game.upsert_client(Client::new(tx, headers), requested_id))
+        Ok(game.upsert_client(requested_id, connection, socket))
     }
 }

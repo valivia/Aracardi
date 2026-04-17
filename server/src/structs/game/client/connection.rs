@@ -1,27 +1,28 @@
-use axum::extract::ws::Message;
-use tokio::time::Instant;
+use axum::http::HeaderMap;
+use serde::Serialize;
 
-use crate::structs::game::client::Tx;
-
-#[derive(Clone)]
-pub struct ConnectionMeta {
-    pub tx: Tx,
-    pub last_seen_at: Instant,
-    pub last_ping_at: Instant,
-    pub connected_at: Instant,
+#[derive(Clone, Serialize)]
+pub struct ClientConnection {
+    pub remote_addr: Option<String>,
+    pub user_agent: Option<String>,
+    pub country_code: Option<String>,
 }
 
-impl ConnectionMeta {
-    pub fn new(tx: Tx) -> Self {
+impl ClientConnection {
+    pub fn new(headers: &HeaderMap) -> Self {
         Self {
-            tx,
-            last_ping_at: Instant::now(),
-            last_seen_at: Instant::now(),
-            connected_at: Instant::now(),
+            remote_addr: headers
+                .get("CF-Connecting-IP")
+                .and_then(|value| value.to_str().ok())
+                .map(str::to_owned),
+            user_agent: headers
+                .get("user_agent")
+                .and_then(|value| value.to_str().ok())
+                .map(str::to_owned),
+            country_code: headers
+                .get("CF-IPCountry")
+                .and_then(|value| value.to_str().ok())
+                .map(str::to_owned),
         }
-    }
-
-    pub fn try_send(&self, message: Message) {
-        self.tx.try_send(message).ok();
     }
 }

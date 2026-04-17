@@ -96,7 +96,7 @@ impl Game {
 
                 state
                     .telemetry
-                    .push(TelemetryEvent::from_card_viewed(game.id, previous_card));
+                    .push(TelemetryEvent::from_card_viewed(previous_card));
             }
             _ => {}
         }
