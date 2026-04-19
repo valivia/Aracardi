@@ -55,12 +55,19 @@ impl Client {
         self.session.log_reconnect();
     }
 
-    pub fn disconnect(&mut self) {
-        if let Some(socket) = &self.socket {
-            socket.try_send(ConnectionClose::GameEnded.to_message());
-            self.socket = None;
-            self.session.log_disconnect();
-        }
+    pub fn is_disconnected(&self) -> bool {
+        self.socket.is_none()
+    }
+
+    pub fn disconnect(&mut self, game_ended: bool) {
+        let Some(socket) = &self.socket else {
+            return;
+        };
+
+        socket.try_send(ConnectionClose::GameEnded.to_message());
+
+        self.socket = None;
+        self.session.log_disconnect(game_ended);
     }
 
     pub fn ping(&mut self) -> Result<(), ()> {

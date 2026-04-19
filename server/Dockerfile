@@ -15,7 +15,7 @@ RUN rm src/main.rs
 
 # Now copy real source and do a targeted rebuild
 COPY ./src ./src
-RUN cargo build --release
+RUN touch src/main.rs && cargo build --release
 
 # Runner
 FROM debian:bookworm-slim AS runner

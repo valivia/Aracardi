@@ -119,7 +119,7 @@ async fn handle_socket(
         }
     }
 
-    info!("[game] {game_join_id} | {client_id} disconnected");
+    debug!("[game] {game_join_id} | {client_id} thread exiting");
 }
 
 async fn run_client(
@@ -186,7 +186,6 @@ async fn run_client(
     debug!("[game] {game_join_id} | {client_id} closed ping thread");
 
     if let Some(mut game) = state.games.get_mut(&game_join_id) {
-        debug!("[game] {game_join_id} | {client_id} client removed from game");
         game.remove_client(&client_id);
     }
 

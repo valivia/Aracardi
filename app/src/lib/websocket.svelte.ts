@@ -62,6 +62,8 @@ export class WebsocketClient {
             }
             case ConnectionStatus.Refused:
                 return this.connectionRefusedReason;
+            case ConnectionStatus.Closed:
+                return "Connection closed";
             case ConnectionStatus.Failed:
                 return "Failed to connect";
         }

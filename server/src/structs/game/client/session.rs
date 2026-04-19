@@ -28,14 +28,17 @@ impl SessionData {
         }
     }
 
-    pub fn log_disconnect(&mut self) {
+    pub fn log_disconnect(&mut self, game_ended: bool) {
         if let Some(last_reconnect) = self.last_reconnect_at {
             self.total_time_connected_s += (Utc::now() - last_reconnect).num_seconds();
             self.last_reconnect_at = None;
         } else if self.total_time_connected_s == 0 {
             self.total_time_connected_s += (Utc::now() - self.original_connect_at).num_seconds();
         }
-        self.is_connected = false;
+
+        if !game_ended {
+            self.is_connected = false;
+        }
     }
 
     pub fn log_reconnect(&mut self) {

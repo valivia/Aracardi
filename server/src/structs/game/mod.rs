@@ -12,7 +12,7 @@ use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
 use std::{collections::HashMap, ops::Not};
-use tracing::info;
+use tracing::{debug, info};
 use uuid::Uuid;
 
 pub mod client;
@@ -28,6 +28,7 @@ pub struct Game {
     pub id: GameId,
     pub join_code: String,
     pub created_at: std::time::Instant,
+    pub game_ended: bool,
 
     pub host_id: ClientId,
     pub clients: HashMap<ClientId, Client>,
@@ -41,6 +42,7 @@ impl Game {
     pub fn new(join_code: String) -> Self {
         Game {
             created_at: std::time::Instant::now(),
+            game_ended: false,
 
             id: Uuid::now_v7(),
             join_code,
@@ -127,7 +129,19 @@ impl Game {
 
     pub fn remove_client(&mut self, client_id: &ClientId) {
         if let Some(client) = self.clients.get_mut(&client_id) {
-            client.disconnect();
+            if client.is_disconnected() {
+                debug!(client_id = client_id.to_string(), "Attempted to double disconnect");
+                return;
+            }
+
+            client.disconnect(self.game_ended);
+            
+            info!(
+                game = self.join_code,
+                client = client_id.to_string(),
+                "{} disconnected",
+                if client_id == &self.host_id { "Host" } else { "Client" }
+            );
         }
     }
 
@@ -170,6 +184,7 @@ impl Game {
 
     // Telemetry
     pub fn close(&mut self, telemetry: &Telemetry) {
+        self.game_ended = true;
         if let Some(info) = &mut self.info {
             info.ended_at_ms = Utc::now().timestamp_millis()
         }
@@ -179,7 +194,7 @@ impl Game {
         }
 
         for (_id, client) in &mut self.clients {
-            client.disconnect();
+            client.disconnect(self.game_ended);
         }
 
         telemetry.push(TelemetryEvent::from_game_ended(self));
