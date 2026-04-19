@@ -187,11 +187,11 @@ export class WebsocketClient {
         });
 
         socket.addEventListener("close", (event) => {
-            if (event.wasClean || this.manualClose) {
-                this.connectionStatus = ConnectionStatus.Closed;
-
-                if (event.wasClean) {
-                    this.connectionStatus = event.code != 1000 ? ConnectionStatus.Refused : ConnectionStatus.Closed;
+            if (event.code === 1000 || event.code === 4000 || this.manualClose) {
+                if (event.code === 4000) {
+                    this.connectionStatus = ConnectionStatus.Refused;
+                } else {
+                    this.connectionStatus = ConnectionStatus.Closed;
                 }
 
                 for (const callback of this.closeListeners) callback();
