@@ -1,6 +1,9 @@
 import { avatars, type Avatar } from "assets/avatars/avatars.svelte";
 import { nanoid } from "nanoid";
 
+export const MAX_PLAYER_NAME_LENGTH = 20;
+export const MIN_PLAYER_NAME_LENGTH = 3;
+
 export interface JsonPlayer {
     id: string;
     name: string;

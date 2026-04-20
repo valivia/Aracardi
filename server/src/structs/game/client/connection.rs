@@ -2,6 +2,7 @@ use axum::http::HeaderMap;
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientConnection {
     #[serde(skip)]
     pub remote_addr: Option<String>,

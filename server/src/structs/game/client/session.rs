@@ -4,6 +4,7 @@ use serde_with::serde_as;
 
 #[serde_as]
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SessionData {
     pub original_connect_at: DateTime<Utc>,
     pub is_connected: bool,

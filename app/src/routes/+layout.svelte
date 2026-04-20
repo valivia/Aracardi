@@ -8,7 +8,7 @@
     import { updated } from "$app/state";
     import { version } from "$app/environment";
     import { createSettingsContext } from "lib/settingsContext";
-    import SettingsButton from "components/input/SettingsButton.svelte";
+    import SettingsButton from "components/layout/SettingsButton.svelte";
     import { onNavigate } from "$app/navigation";
     import { resolve } from "$app/paths";
     import Settings from "components/Settings.svelte";

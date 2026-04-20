@@ -7,7 +7,7 @@
     import Tag from "components/Tag.svelte";
     import { type GameController, GameStage } from "lib/game.svelte";
     import { DeleteIcon, UserIcon } from "components/icons";
-    import { Player } from "lib/player.svelte";
+    import { MAX_PLAYER_NAME_LENGTH, MIN_PLAYER_NAME_LENGTH, Player } from "lib/player.svelte";
 
     // Props
     interface Props {
@@ -47,9 +47,10 @@
         selectAvatar(availableAvatars[Math.floor(Math.random() * availableAvatars.length)]);
     }
 
-    function onSubmit() {
+    function onSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
+        event.preventDefault();
+
         const name = value.trim();
-        if (name.length < 3) return;
 
         const avatar = avatars.find((avatar) => avatar.name === selectedAvatar.name);
         if (!avatar) return;
@@ -102,10 +103,20 @@
         <!-- Selector -->
         <section class="selector">
             <!-- Add player -->
-            <form>
-                <input type="text" placeholder="Player name" bind:value minlength="3" maxlength="20" required />
+            <form onsubmit={onSubmit}>
+                <input
+                    type="text"
+                    placeholder="Player name"
+                    bind:value
+                    minlength={MIN_PLAYER_NAME_LENGTH}
+                    maxlength={MAX_PLAYER_NAME_LENGTH}
+                    required
+                />
                 <section class="selectorControls">
-                    <Button type="button" onclick={onSubmit} disabled={selectedAvatar.player?.name === value}>
+                    <Button
+                        type="submit"
+                        disabled={selectedAvatar.player?.name === value || value.trim().length < MIN_PLAYER_NAME_LENGTH}
+                    >
                         {selectedAvatar.player ? "Update" : "Add"}
                     </Button>
                     {#if selectedAvatar.player !== undefined}
@@ -176,7 +187,7 @@
     @use "styles/abstracts" as *;
     @use "styles/layout.scss" as *;
 
-    $clampFactor: 10vw;
+    $clampFactor: 6vw;
 
     main {
         gap: 1rem;

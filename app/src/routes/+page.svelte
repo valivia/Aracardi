@@ -5,6 +5,7 @@
     import { ErrorIcon, SuccessIcon } from "components/icons";
     import AnchorButton from "components/input/AnchorButton.svelte";
     import Button from "components/input/Button.svelte";
+    import { resolve } from "$app/paths";
 
     const statusMessages = {
         idle: "",
@@ -94,7 +95,7 @@
             }
         }
         if (status === "valid") {
-            goto(`/lobby?join_code=${code}`);
+            goto(resolve(`/lobby?join_code=${code}`));
         }
     }
 </script>

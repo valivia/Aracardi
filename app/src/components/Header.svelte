@@ -18,7 +18,7 @@
     header {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5em;
 
         margin-inline: auto;
         text-align: center;
