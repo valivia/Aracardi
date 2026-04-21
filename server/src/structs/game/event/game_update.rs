@@ -12,9 +12,10 @@ use crate::structs::{
         state::{Card, Player},
         stats::GamePlayerStats,
     },
-    protocol::{
-        game_update::{GameUpdate, HostCard},
-        message::{IncomingMessage, OutgoingMessage},
+    protocol::message::{
+        game_update::GameUpdate,
+        host_update::{HostCard, HostUpdate},
+        outgoing::OutgoingMessage,
     },
     telemetry::event::TelemetryEvent,
 };
@@ -23,22 +24,12 @@ const MAX_ACTIVE_CARDS: usize = 50;
 const MAX_PLAYERS: usize = 20;
 
 impl Game {
-    pub async fn on_message(
-        state: Arc<AppState>,
+    pub async fn on_game_update(
+        state: &Arc<AppState>,
         game_id: &String,
         client_id: &ClientId,
-        text: &str,
+        payload: HostUpdate,
     ) {
-        // Parse incoming message
-        let payload = match IncomingMessage::parse_message(text) {
-            Ok(IncomingMessage::Update(p)) => p,
-            Ok(_) => return,
-            Err(e) => {
-                warn!("[game] {game_id} | parse error from {client_id}: {e}");
-                return;
-            }
-        };
-
         // Get game
         let Some(mut game) = state.games.get_mut(game_id) else {
             warn!("[game] {game_id} | update for unknown game from {client_id}");
@@ -103,7 +94,7 @@ impl Game {
 
         if !response.is_empty() {
             game.broadcast(
-                OutgoingMessage::Update(response).to_message(),
+                OutgoingMessage::GameUpdate(response).to_message(),
                 Some(client_id),
             );
         }
@@ -216,8 +207,7 @@ impl Game {
     }
 
     fn parse_game_info(&mut self, mut game_info: GameInfo) {
-        let is_first = self.info.is_none();
-        if !is_first {
+        if self.info.is_some() {
             warn!(
                 "[game] {} | Attempted to update game info after game start",
                 self.join_code

@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use serde_with::serde_as;
 
-#[serde_as]
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionData {
@@ -16,8 +14,8 @@ pub struct SessionData {
     pub total_time_connected_s: i64,
 }
 
-impl SessionData {
-    pub fn new() -> Self {
+impl Default for SessionData {
+    fn default() -> Self {
         Self {
             original_connect_at: Utc::now(),
             is_connected: true,
@@ -28,7 +26,9 @@ impl SessionData {
             total_time_connected_s: 0,
         }
     }
+}
 
+impl SessionData {
     pub fn log_disconnect(&mut self, game_ended: bool) {
         if let Some(last_reconnect) = self.last_reconnect_at {
             self.total_time_connected_s += (Utc::now() - last_reconnect).num_seconds();

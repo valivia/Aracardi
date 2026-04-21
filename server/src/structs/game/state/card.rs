@@ -4,7 +4,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::structs::{app_state::AppState, game::state::Player, protocol::game_update::HostCard};
+use crate::structs::{
+    app_state::AppState, game::state::Player, protocol::message::host_update::HostCard,
+};
 
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, Clone, Debug)]

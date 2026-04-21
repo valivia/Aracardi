@@ -1,16 +1,20 @@
 import { getContext, setContext } from "svelte";
 import { writable, type Writable } from "svelte/store";
 import type { Snippet } from "svelte";
+import { applyTheme } from "components/theme";
+import { themes } from "../lib/themes";
 
 const KEY = Symbol("settings");
 
 export interface Settings {
+    theme: keyof typeof themes;
     allowNsfw: boolean;
     loadImages: boolean;
     allowDuplicates: boolean;
 }
 
 export const defaultSettings: Settings = {
+    theme: "system",
     allowNsfw: true,
     loadImages: true,
     allowDuplicates: false,
@@ -42,7 +46,6 @@ export function createSettingsContext(): SettingsContext {
     const isOpen = writable(false);
     const extras = writable<Snippet | null>(null);
     const settings = writable<Settings>(defaultSettings);
-    let initialized = false;
 
     // Load settings
     const settingsJson = localStorage.getItem("settings");
@@ -57,14 +60,22 @@ export function createSettingsContext(): SettingsContext {
         }
     }
 
+    let previousSettings: Settings | undefined;
+
     // Auto save
     settings.subscribe((update) => {
-        if (!initialized) {
-            initialized = true;
+        if (previousSettings === undefined) {
+            previousSettings = { ...update };
             return;
         }
+
+        if (previousSettings.theme !== update.theme) {
+            applyTheme(update.theme);
+        }
+
         console.log("- Settings saved");
         localStorage.setItem("settings", JSON.stringify(update));
+        previousSettings = { ...update };
     });
 
     const ctx: SettingsContext = {

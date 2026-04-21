@@ -6,8 +6,9 @@ import { nanoid } from "nanoid";
 import { WebsocketClient } from "./websocket.svelte";
 import { version } from "$app/environment";
 import { defaultSettings, type Settings } from "./settingsContext";
-import type { Writable } from "svelte/store";
-import { IncomingMessageTopic } from "./protocol";
+import type { Unsubscriber, Writable } from "svelte/store";
+import { IncomingMessageTopic, OutgoingMessageTopic } from "./protocol";
+import { HAS_TRIED_THEMES_KEY } from "components/theme";
 
 export enum GameStage {
     addonSetup = "addonSetup",
@@ -29,7 +30,7 @@ export class GameController {
     public ended = false;
 
     public settings: Settings = $state(defaultSettings);
-    private unsubscribeSettings: () => void;
+    private unsubscribeSettings: Unsubscriber;
 
     // Content
     public cards: Card[] = $state([]);
@@ -52,6 +53,8 @@ export class GameController {
     // Websocket
     public socket: WebsocketClient | null = $state(null);
     public readonly joinCode: string | null = $derived.by(() => this.socket?.id ?? null);
+    private settingsStore: Writable<Settings>;
+    private unsubscribeSocketSettings: Unsubscriber | undefined;
 
     // Setup
     public selectedAddons: AddonSummary[] = $state([]);
@@ -71,6 +74,7 @@ export class GameController {
 
     constructor(addons: AddonSummary[], settingsStore: Writable<Settings>) {
         this.selectedAddons = addons.filter((a) => a.isDefault);
+        this.settingsStore = settingsStore;
 
         this.unsubscribeSettings = settingsStore.subscribe((updated) => {
             const prev = this.settings;
@@ -183,7 +187,7 @@ export class GameController {
     // Active cards
     public deleteActiveCard = (card: CardController) => {
         this.activeCards = this.activeCards.filter((c) => c !== card);
-        this.socket?.send(IncomingMessageTopic.Update, {
+        this.socket?.send(IncomingMessageTopic.GameUpdate, {
             activeCards: this.activeCards.map((card) => card.getHostCard()),
         });
     };
@@ -233,21 +237,23 @@ export class GameController {
         this.hasPreviousPlayers = this.players.length > 0;
 
         // Log if in game
-        this.socket?.send(IncomingMessageTopic.Update, { players: this.players.map((player) => player.getSaveable()) });
+        this.socket?.send(IncomingMessageTopic.GameUpdate, {
+            players: this.players.map((player) => player.getSaveable()),
+        });
     }
 
     public restorePlayers() {
         this.players = Player.loadPlayers();
     }
 
-    public shufflePlayers = () => {
+    public shufflePlayers() {
         const current = this.currentPlayer;
         this.players = shuffle(this.players);
         this.currentPlayerIndex = this.players.findIndex((p) => p === current);
-    };
+    }
 
     // Game
-    public nextTurn = () => {
+    public nextTurn() {
         // Player
         this.setCurrentPlayer((this.currentPlayerIndex + 1) % this.players.length);
 
@@ -260,12 +266,12 @@ export class GameController {
 
         // Card
         this.setCurrentCard((this.currentCardIndex + 1) % this.cards.length);
-        this.socket?.send(IncomingMessageTopic.Update, {
+        this.socket?.send(IncomingMessageTopic.GameUpdate, {
             currentPlayerId: this.currentPlayer.id,
             currentCard: this.currentCard?.getHostCard(),
             activeCards: this.activeCards.map((card) => card.getHostCard()),
         });
-    };
+    }
 
     private setCurrentPlayer(index: number) {
         this.currentPlayerIndex = index;
@@ -305,9 +311,10 @@ export class GameController {
                 this.socket = socket;
             } catch (e) {
                 console.error("Failed to connect to websocket: ", e);
+                return;
             }
 
-            this.socket?.send(IncomingMessageTopic.Update, {
+            this.socket?.send(IncomingMessageTopic.GameUpdate, {
                 players: this.players.map((player) => player.getSaveable()),
                 currentPlayerId: this.currentPlayer.id,
                 currentCard: this.currentCard?.getHostCard(),
@@ -316,6 +323,14 @@ export class GameController {
                     setupTimeMs: Number(this.startedAt) - Number(this.createdAt),
                     version: version,
                 },
+            });
+
+            this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
+                this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
+                    theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
+                    loadImages: value.loadImages,
+                    allowNsfw: value.allowNsfw,
+                });
             });
         };
 
@@ -327,6 +342,7 @@ export class GameController {
 
         this.ended = true;
         this.unsubscribeSettings();
+        this.unsubscribeSocketSettings?.();
         this.socket?.close();
 
         console.info("game ended");

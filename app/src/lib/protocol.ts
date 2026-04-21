@@ -1,5 +1,6 @@
 import type { JsonPlayer } from "./player.svelte";
 
+// Connection
 export enum ConnectionClose {
     NotFound = "not_found",
     GameFull = "game_full",
@@ -7,24 +8,31 @@ export enum ConnectionClose {
     TimedOut = "timed_out",
 }
 
-export enum IncomingMessageTopic {
-    Update = "update",
-    ClientId = "client_id",
-}
-
-export interface IncomingTopicMap {
-    update: GameUpdate;
-    client_id: string;
-}
-
+// Outgoing
 export enum OutgoingMessageTopic {
-    Connect = "connect",
+    Connect = "CONNECT",
+    ClientUpdate = "CLIENT_UPDATE",
+    GameUpdate = "GAME_UPDATE",
 }
 
 export interface OutgoingTopicMap {
-    update: HostUpdate;
+    CONNECT: string;
+    CLIENT_UPDATE: ClientUpdate;
+    GAME_UPDATE: HostUpdate;
 }
 
+// Incoming
+export enum IncomingMessageTopic {
+    GameUpdate = "GAME_UPDATE",
+    ClientId = "CLIENT_ID",
+}
+
+export interface IncomingTopicMap {
+    GAME_UPDATE: GameUpdate;
+    CLIENT_ID: string;
+}
+
+// Data structs
 export interface GameCard {
     id: string;
     title: string;
@@ -38,6 +46,12 @@ export interface HostCard {
     id: string;
     players: string[];
     turns?: number;
+}
+
+export interface ClientUpdate {
+    theme?: string;
+    loadImages: boolean;
+    allowNsfw: boolean;
 }
 
 export interface GameUpdate {

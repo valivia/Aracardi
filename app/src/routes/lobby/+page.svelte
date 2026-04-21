@@ -5,10 +5,12 @@
     import { Player } from "lib/player.svelte";
     import PlayerElement from "components/game/Player.svelte";
     import { WebsocketClient } from "lib/websocket.svelte";
-    import { IncomingMessageTopic } from "lib/protocol.js";
+    import { IncomingMessageTopic, OutgoingMessageTopic } from "lib/protocol.js";
     import { CardController } from "lib/card.svelte.js";
     import { useSettings } from "lib/settingsContext.js";
     import { onDestroy } from "svelte";
+    import { HAS_TRIED_THEMES_KEY } from "components/theme.js";
+    import type { Unsubscriber } from "svelte/store";
 
     const { data } = $props();
 
@@ -27,7 +29,21 @@
     let players = $state<Player[]>([]);
     let currentPlayer = $state<Player>();
 
-    socket.onMessage(IncomingMessageTopic.Update, (payload) => {
+    let settingUnsubscriber: Unsubscriber | undefined;
+
+    socket.onReady(() => {
+        // Client settings
+        if (settingUnsubscriber) settingUnsubscriber();
+        settingUnsubscriber = settings.subscribe((value) => {
+            socket.send(OutgoingMessageTopic.ClientUpdate, {
+                theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
+                loadImages: value.loadImages,
+                allowNsfw: value.allowNsfw,
+            });
+        });
+    });
+
+    socket.onMessage(IncomingMessageTopic.GameUpdate, (payload) => {
         if (payload.currentPlayerId) currentPlayerId = payload.currentPlayerId;
         if (payload.players) {
             players = payload.players.map((player) => {
@@ -60,6 +76,7 @@
 
     onDestroy(() => {
         socket?.close();
+        settingUnsubscriber?.();
     });
 </script>
 

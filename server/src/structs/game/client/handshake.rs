@@ -13,7 +13,10 @@ use crate::structs::{
         client::{Client, Tx, connection::ClientConnection, socket::ClientSocket},
         state::ClientId,
     },
-    protocol::message::{ConnectionClose, IncomingMessage, OutgoingMessage},
+    protocol::{
+        connection::ConnectionClose,
+        message::{incoming::IncomingMessage, outgoing::OutgoingMessage},
+    },
 };
 
 pub enum AuthError {

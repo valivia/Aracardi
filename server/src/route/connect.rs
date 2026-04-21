@@ -21,7 +21,7 @@ use crate::{
     AppState,
     structs::{
         game::{Game, client::Client, state::ClientId},
-        protocol::message::ConnectionClose,
+        protocol::connection::ConnectionClose,
     },
 };
 
@@ -166,7 +166,7 @@ async fn run_client(
                             }
                         }
                         Message::Text(text) => {
-                            Game::on_message(state.clone(), &game_join_id, &client_id, &text).await;
+                            Game::on_message(&state, &game_join_id, &client_id, &text).await;
                         }
                         _ => {}
                     },

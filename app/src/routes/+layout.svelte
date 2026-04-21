@@ -3,7 +3,7 @@
     import "styles/global.scss";
 
     import Nav from "components/layout/Nav.svelte";
-    import { syncTheme } from "components/ThemeSelect.svelte";
+    import { syncTheme } from "components/theme";
     import { onMount, type Snippet } from "svelte";
     import { updated } from "$app/state";
     import { version } from "$app/environment";
@@ -21,6 +21,7 @@
 
     // Setting menu
     const { isOpen, close } = createSettingsContext();
+    // Close settings menu when navigating to different page.
     onNavigate(() => close());
 
     // Metadata

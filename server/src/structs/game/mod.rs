@@ -5,7 +5,7 @@ use crate::structs::{
         state::GameState,
         stats::GameStats,
     },
-    protocol::{game_update::GameUpdate, message::OutgoingMessage},
+    protocol::message::{game_update::GameUpdate, outgoing::OutgoingMessage},
     telemetry::{Telemetry, event::TelemetryEvent},
 };
 use axum::extract::ws::Message;
@@ -16,8 +16,8 @@ use tracing::{debug, info};
 use uuid::Uuid;
 
 pub mod client;
+pub mod event;
 pub mod info;
-pub mod message;
 pub mod state;
 pub mod stats;
 
@@ -83,7 +83,8 @@ impl Game {
 
         // Host connect
         if !self.is_host_connected() && id == self.host_id {
-            let client = Client::new(id, connection, socket);
+            let mut client = Client::new(id, connection, socket);
+            client.is_host = true;
             self.clients.insert(id, client);
             info!(
                 game = self.join_code,
@@ -130,17 +131,24 @@ impl Game {
     pub fn remove_client(&mut self, client_id: &ClientId) {
         if let Some(client) = self.clients.get_mut(&client_id) {
             if client.is_disconnected() {
-                debug!(client_id = client_id.to_string(), "Attempted to double disconnect");
+                debug!(
+                    client_id = client_id.to_string(),
+                    "Attempted to double disconnect"
+                );
                 return;
             }
 
             client.disconnect(self.game_ended);
-            
+
             info!(
                 game = self.join_code,
                 client = client_id.to_string(),
                 "{} disconnected",
-                if client_id == &self.host_id { "Host" } else { "Client" }
+                if client_id == &self.host_id {
+                    "Host"
+                } else {
+                    "Client"
+                }
             );
         }
     }
@@ -150,7 +158,7 @@ impl Game {
         let mut game_update = GameUpdate::from_game(self.state.clone());
         game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
-            client.send(OutgoingMessage::Update(game_update).to_message());
+            client.send(OutgoingMessage::GameUpdate(game_update).to_message());
         }
     }
 
@@ -168,7 +176,7 @@ impl Game {
         let mut game_update = GameUpdate::empty();
         game_update.host_connected = Some(self.is_host_connected());
         self.broadcast(
-            OutgoingMessage::Update(game_update).to_message(),
+            OutgoingMessage::GameUpdate(game_update).to_message(),
             Some(&self.host_id),
         )
     }

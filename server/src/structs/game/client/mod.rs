@@ -4,12 +4,16 @@ use tokio::{sync::mpsc, time::Instant};
 use uuid::Uuid;
 
 use crate::structs::{
-    game::client::{connection::ClientConnection, session::SessionData, socket::ClientSocket},
-    protocol::message::ConnectionClose,
+    game::client::{
+        connection::ClientConnection, preferences::ClientPreferences, session::SessionData,
+        socket::ClientSocket,
+    },
+    protocol::connection::ConnectionClose,
 };
 
 pub mod connection;
 pub mod handshake;
+pub mod preferences;
 pub mod session;
 pub mod socket;
 
@@ -20,7 +24,9 @@ pub type ClientId = Uuid;
 #[derive(Clone, Serialize)]
 pub struct Client {
     pub id: ClientId,
+    pub is_host: bool,
     pub session: SessionData,
+    pub preferences: Option<ClientPreferences>,
     pub connection: ClientConnection,
     #[serde(skip)]
     pub socket: Option<ClientSocket>,
@@ -30,9 +36,11 @@ impl Client {
     pub fn new(id: ClientId, connection: ClientConnection, socket: ClientSocket) -> Self {
         Client {
             id,
+            is_host: false,
             connection,
+            preferences: None,
+            session: SessionData::default(),
             socket: Some(socket),
-            session: SessionData::new(),
         }
     }
 

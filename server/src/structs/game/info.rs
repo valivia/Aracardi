@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct GameInfo {
     pub addons: Vec<String>,
-    pub setup_time_ms: u32,
+    pub initiated_at_ms: u32,
     #[serde(skip_deserializing)]
     pub started_at_ms: i64,
     #[serde(skip_deserializing, default = "now_in_ms")]
@@ -21,9 +21,9 @@ impl Default for GameInfo {
     fn default() -> Self {
         GameInfo {
             addons: vec![],
-            started_at_ms: Utc::now().timestamp_millis(),
+            started_at_ms: 0,
             ended_at_ms: 0,
-            setup_time_ms: 0,
+            initiated_at_ms: 0,
             version: "".to_string(),
         }
     }

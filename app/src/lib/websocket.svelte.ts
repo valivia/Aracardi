@@ -8,6 +8,7 @@ import {
 } from "./protocol";
 
 const CLIENT_ID_KEY = "clientId";
+const TAG = "[ws]";
 
 export enum ConnectionStatus {
     Idle = "IDLE",
@@ -42,6 +43,7 @@ export class WebsocketClient {
     // Listeners
     private messageListeners = new Map<string, Set<(payload: unknown) => void>>();
     private closeListeners = new Set<() => void>();
+    private readyListeners = new Set<() => void>();
 
     // Connection
     public connectionStatus: ConnectionStatus = $state(ConnectionStatus.Idle);
@@ -83,11 +85,11 @@ export class WebsocketClient {
             if (!response.ok) return null;
             payload = await response.json();
         } catch (error) {
-            console.error("Failed to create session: ", error);
+            console.error(`${TAG} Failed to create session: `, error);
             return null;
         }
 
-        console.log("Created session with ID:", payload.gameId);
+        console.log(`${TAG} Created session with ID:`, payload.gameId);
 
         const client = new this(payload.gameId);
         await client.connectToSocket(payload.hostId).catch(() => null);
@@ -104,7 +106,7 @@ export class WebsocketClient {
         const clientId = requestedClientId ?? this.clientId ?? sessionStorage.getItem(CLIENT_ID_KEY) ?? undefined;
 
         const url = `${PUBLIC_SERVER_WS_URL}/lobby/${this.id}/ws`;
-        console.debug(`Connecting to WebSocket at ${url}`);
+        console.debug(`${TAG} Connecting to websocket at ${url}`);
 
         const socket = new WebSocket(url);
 
@@ -120,11 +122,11 @@ export class WebsocketClient {
             this.attachSocketListeners(socket);
         } catch (error) {
             if (error instanceof ServerConnectionError) {
-                console.info("Websocket connection refused:", error.message);
+                console.info(`${TAG} Connection refused:`, error.message);
                 this.connectionRefusedReason = this.resolveRefusalReason(error.message);
                 this.connectionStatus = ConnectionStatus.Refused;
             } else {
-                console.error("Websocket connection failed:", error);
+                console.error(`${TAG} Connection failed:`, error);
                 this.scheduleReconnect(requestedClientId);
             }
             throw error;
@@ -182,7 +184,7 @@ export class WebsocketClient {
                 const payload = JSON.parse(message.payload);
                 for (const callback of listeners) callback(payload);
             } catch {
-                console.error("Failed to parse message payload for topic:", message.topic);
+                console.error(`${TAG} Failed to parse message payload for topic:`, message.topic);
             }
         });
 
@@ -199,11 +201,13 @@ export class WebsocketClient {
             }
             this.scheduleReconnect();
         });
+
+        for (const callback of this.readyListeners) callback();
     }
 
     private scheduleReconnect(requestedClientId?: string): void {
         if (this.reconnectAttempts >= RECONNECT_MAX_ATTEMPTS) {
-            console.error("Max reconnect attempts reached.");
+            console.error(`${TAG} Max reconnect attempts reached.`);
             this.connectionStatus = ConnectionStatus.Failed;
             for (const cb of this.closeListeners) cb();
             return;
@@ -216,7 +220,7 @@ export class WebsocketClient {
         );
 
         this.reconnectAttempts++;
-        console.debug(`Reconnecting in ${Math.round(delay)}ms (attempt ${this.reconnectAttempts})`);
+        console.debug(`${TAG} Reconnecting in ${Math.round(delay)}ms (attempt ${this.reconnectAttempts})`);
 
         this.reconnectTimer = setTimeout(async () => {
             await this.connectToSocket(requestedClientId).catch(() => null);
@@ -225,6 +229,11 @@ export class WebsocketClient {
 
     //  ### API ###
     public send<Topic extends keyof OutgoingTopicMap>(topic: Topic, payload: OutgoingTopicMap[Topic]) {
+        if (this.connectionStatus !== ConnectionStatus.Connected) {
+            console.warn(`${TAG} Tried sending package before handshake completion`);
+            return;
+        }
+
         const message = `${topic}\n${typeof payload === "string" ? payload : JSON.stringify(payload)}`;
         this.socket?.send(message);
     }
@@ -240,6 +249,11 @@ export class WebsocketClient {
         listeners.add(callback as (payload: unknown) => void);
 
         return () => listeners.delete(callback as (payload: unknown) => void);
+    }
+
+    public onReady(callback: () => void): () => void {
+        this.readyListeners.add(callback);
+        return () => this.readyListeners.delete(callback);
     }
 
     public onClose(callback: () => void): () => void {
