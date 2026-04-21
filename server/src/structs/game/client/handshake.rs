@@ -110,6 +110,10 @@ impl Client {
             }
         };
 
+        if game.is_full() {
+            return Err(AuthError::GameFull);
+        }
+
         Ok(game.upsert_client(requested_id, connection, socket))
     }
 }

@@ -23,6 +23,8 @@ pub mod stats;
 
 pub type GameId = Uuid;
 
+const MAX_CLIENT_COUNT: usize = 32;
+
 #[derive(Clone)]
 pub struct Game {
     pub id: GameId,
@@ -71,6 +73,9 @@ impl Game {
     }
 
     // Clients
+    pub fn is_full(&self) -> bool {
+        return self.clients.iter().count() >= MAX_CLIENT_COUNT;
+    }
     pub fn upsert_client(
         &mut self,
         id: Option<ClientId>,
