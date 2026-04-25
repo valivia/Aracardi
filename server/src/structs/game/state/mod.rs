@@ -1,3 +1,5 @@
+use tokio::time::Instant;
+
 pub use crate::structs::game::{
     client::ClientId,
     state::{card::Card, player::Player},
@@ -8,6 +10,8 @@ pub mod player;
 
 #[derive(Clone, Debug)]
 pub struct GameState {
+    pub last_update: Instant,
+
     // Players
     pub players: Vec<Player>,
     pub current_player_id: Option<String>,
@@ -20,6 +24,8 @@ pub struct GameState {
 impl Default for GameState {
     fn default() -> Self {
         GameState {
+            last_update: Instant::now(),
+
             players: vec![],
             current_player_id: None,
             current_card: None,
@@ -28,4 +34,8 @@ impl Default for GameState {
     }
 }
 
-impl GameState {}
+impl GameState {
+    fn log_update(&mut self) {
+        self.last_update = Instant::now();
+    }
+}

@@ -11,7 +11,8 @@ use crate::structs::{
 use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
-use std::{collections::HashMap, ops::Not};
+use std::{collections::HashMap, ops::Not, time::Duration};
+use tokio::time::Instant;
 use tracing::{debug, info};
 use uuid::Uuid;
 
@@ -26,12 +27,13 @@ pub type GameId = Uuid;
 const MAX_CLIENT_COUNT: usize = 32;
 const MAX_PLAYER_COUNT: usize = 20;
 const MAX_ACTIVE_CARD_COUNT: usize = 50;
+const MAX_IDLE_DURATION: Duration = Duration::from_mins(60);
 
 #[derive(Clone)]
 pub struct Game {
     pub id: GameId,
     pub join_code: String,
-    pub created_at: std::time::Instant,
+    pub created_at: Instant,
     pub game_ended: bool,
 
     pub host_id: ClientId,
@@ -45,7 +47,7 @@ pub struct Game {
 impl Game {
     pub fn new(join_code: String) -> Self {
         Game {
-            created_at: std::time::Instant::now(),
+            created_at: Instant::now(),
             game_ended: false,
 
             id: Uuid::now_v7(),
@@ -65,6 +67,14 @@ impl Game {
         self.info.is_some()
             && self.state.current_card.is_some()
             && self.state.current_player_id.is_some()
+    }
+
+    pub fn is_idle(&self) -> bool {
+        if self.state.last_update.duration_since(Instant::now()) >= MAX_IDLE_DURATION {
+            return true;
+        }
+
+        false
     }
 
     pub fn is_host_connected(&self) -> bool {
