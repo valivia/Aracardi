@@ -320,7 +320,7 @@ export class GameController {
                 currentCard: this.currentCard?.getHostCard(),
                 info: {
                     addons: this.selectedAddons.map((addon) => addon.title),
-                    setupTimeMs: Number(this.startedAt) - Number(this.createdAt),
+                    initiatedAtMs: Number(this.createdAt),
                     version: version,
                 },
             });

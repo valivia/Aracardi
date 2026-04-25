@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct GameInfo {
     pub addons: Vec<String>,
-    pub initiated_at_ms: u32,
+    pub initiated_at_ms: i64,
     #[serde(skip_deserializing)]
     pub started_at_ms: i64,
     #[serde(skip_deserializing, default = "now_in_ms")]

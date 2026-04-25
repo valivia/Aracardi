@@ -66,7 +66,7 @@ export interface GameUpdate {
 
 export interface GameInfo {
     addons: string[];
-    setupTimeMs: number;
+    initiatedAtMs: number;
     version: string;
 }
 
