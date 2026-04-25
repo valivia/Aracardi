@@ -1,7 +1,5 @@
-use chrono::{DateTime, Utc};
-
 use crate::structs::{
-    game::{Game, GameId, state::Card},
+    game::{Game, state::Card},
     telemetry::{card::TelemetryCard, game::TelemetryGame, player::TelemetryPlayer},
 };
 
@@ -22,6 +20,7 @@ impl TelemetryEvent {
     pub fn from_game_ended(game: &Game) -> Self {
         Self(TelemetryEventType::GameEnded(TelemetryGame {
             id: game.id,
+            join_code: game.join_code.clone(),
             players: game
                 .state
                 .players
@@ -31,6 +30,11 @@ impl TelemetryEvent {
             clients: game.clients.values().cloned().collect::<Vec<_>>(),
             info: game.info.clone(),
             stats: game.stats.clone(),
+
+            game_end_reason: game
+                .game_end_reason
+                .as_ref()
+                .and_then(|reason| Some(reason.get_key())),
         }))
     }
 }

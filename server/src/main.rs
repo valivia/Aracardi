@@ -32,11 +32,9 @@ async fn main() {
         // )
         .init();
 
-    info!("Booting up...");
+    info!("[app] Booting up...");
 
     let database = Database::new().await;
-
-    info!("[db] Database connected");
 
     let shared_state = Arc::new(AppState {
         games: DashMap::new(),

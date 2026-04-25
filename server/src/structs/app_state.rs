@@ -24,14 +24,14 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn create_game(&self) -> CreatedGame {
+    pub fn create_game(&self, state: &Arc<AppState>) -> CreatedGame {
         let mut game_id = Game::generate_join_code();
 
         while self.games.contains_key(&game_id) {
             game_id = Game::generate_join_code();
         }
 
-        let game = Game::new(game_id.clone());
+        let game = Game::new(game_id.clone(), state.clone());
 
         let response = CreatedGame {
             game_id: game_id.clone(),

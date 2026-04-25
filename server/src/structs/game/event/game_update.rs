@@ -70,25 +70,6 @@ impl Game {
             game.parse_game_info(game_info.clone());
         }
 
-        // Card change
-        match (&original_state.current_card, &response.current_card) {
-            (Some(previous_card), Some(_)) => {
-                info!(
-                    "[game] {} | card ({}) played for {:.1}s",
-                    game.join_code,
-                    previous_card.id,
-                    previous_card.get_duration() as f64 / 1000.0
-                );
-
-                game.stats.card.register_card(previous_card);
-
-                state
-                    .telemetry
-                    .push(TelemetryEvent::from_card_viewed(previous_card));
-            }
-            _ => {}
-        }
-
         if !response.is_empty() {
             game.broadcast(
                 OutgoingMessage::GameUpdate(response).to_message(),
@@ -142,23 +123,10 @@ impl Game {
         response: &mut GameUpdate,
         state: &Arc<AppState>,
     ) -> bool {
-        if self
-            .state
-            .current_card
-            .as_ref()
-            .is_some_and(|c| c.id == current_card.id)
-        {
-            warn!(
-                "[game] {} | received update with unchanged card ID",
-                self.join_code
-            );
-            return false;
-        }
-
         match Card::from_update(current_card, state.clone()).await {
             Some(card) => {
                 if card.has_valid_players(&self.state.players) {
-                    self.state.current_card = Some(card);
+                    self.update_current_card(card);
                     response.current_card = self.state.current_card.clone();
                     return true;
                 } else {

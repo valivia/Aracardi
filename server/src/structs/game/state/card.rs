@@ -9,7 +9,7 @@ use crate::structs::{
 };
 
 #[skip_serializing_none]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Card {
     pub id: String,

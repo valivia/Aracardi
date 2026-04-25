@@ -9,8 +9,13 @@ use crate::structs::{
 #[serde(rename_all = "camelCase")]
 pub struct TelemetryGame {
     pub id: GameId,
-    pub players: Vec<TelemetryPlayer>,
+    pub join_code: String,
+
     pub clients: Vec<Client>,
     pub info: Option<GameInfo>,
+
+    pub players: Vec<TelemetryPlayer>,
     pub stats: GameStats,
+
+    pub game_end_reason: Option<String>,
 }

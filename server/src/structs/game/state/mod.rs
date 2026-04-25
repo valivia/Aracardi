@@ -35,7 +35,7 @@ impl Default for GameState {
 }
 
 impl GameState {
-    fn log_update(&mut self) {
+    pub fn log_update(&mut self) {
         self.last_update = Instant::now();
     }
 }

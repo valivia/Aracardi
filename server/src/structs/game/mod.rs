@@ -1,21 +1,22 @@
 use crate::structs::{
+    app_state::AppState,
     game::{
-        client::{Client, ClientId, connection::ClientConnection, socket::ClientSocket},
+        client::{Client, ClientId},
         info::GameInfo,
         state::GameState,
         stats::GameStats,
     },
     protocol::message::{game_update::GameUpdate, outgoing::OutgoingMessage},
-    telemetry::{Telemetry, event::TelemetryEvent},
+    telemetry::event::TelemetryEvent,
 };
 use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
-use std::{collections::HashMap, ops::Not, time::Duration};
+use std::{collections::HashMap, ops::Not, sync::Arc, time::Duration};
 use tokio::time::Instant;
-use tracing::{debug, info};
 use uuid::Uuid;
 
+pub mod actions;
 pub mod client;
 pub mod event;
 pub mod info;
@@ -27,14 +28,35 @@ pub type GameId = Uuid;
 const MAX_CLIENT_COUNT: usize = 32;
 const MAX_PLAYER_COUNT: usize = 20;
 const MAX_ACTIVE_CARD_COUNT: usize = 50;
-const MAX_IDLE_DURATION: Duration = Duration::from_mins(60);
+
+pub const MAX_IDLE_DURATION: Duration = Duration::from_mins(60);
+pub const MAX_SETUP_DURATION: Duration = Duration::from_secs(30);
+pub const MAX_GAME_DURATION: Duration = Duration::from_hours(12);
+
+#[derive(Clone)]
+pub enum GameEndReason {
+    HostLeft,
+    Idle,
+    MaxDurationReached,
+}
+
+impl GameEndReason {
+    pub fn get_key(&self) -> String {
+        match self {
+            Self::HostLeft => "HOST_LEFT",
+            Self::Idle => "IDLE",
+            Self::MaxDurationReached => "MAX_DURATION_REACHED",
+        }
+        .to_string()
+    }
+}
 
 #[derive(Clone)]
 pub struct Game {
     pub id: GameId,
     pub join_code: String,
     pub created_at: Instant,
-    pub game_ended: bool,
+    pub game_end_reason: Option<GameEndReason>,
 
     pub host_id: ClientId,
     pub clients: HashMap<ClientId, Client>,
@@ -42,13 +64,15 @@ pub struct Game {
     pub info: Option<GameInfo>,
     pub state: GameState,
     pub stats: GameStats,
+
+    pub app_state: Arc<AppState>,
 }
 
 impl Game {
-    pub fn new(join_code: String) -> Self {
+    pub fn new(join_code: String, app_state: Arc<AppState>) -> Self {
         Game {
             created_at: Instant::now(),
-            game_ended: false,
+            game_end_reason: None,
 
             id: Uuid::now_v7(),
             join_code,
@@ -59,6 +83,8 @@ impl Game {
             info: None,
             state: GameState::default(),
             stats: GameStats::default(),
+
+            app_state,
         }
     }
 
@@ -84,99 +110,8 @@ impl Game {
             .unwrap_or(false)
     }
 
-    // Clients
     pub fn is_full(&self) -> bool {
         return self.clients.iter().count() >= MAX_CLIENT_COUNT;
-    }
-    pub fn upsert_client(
-        &mut self,
-        id: Option<ClientId>,
-        connection: ClientConnection,
-        socket: ClientSocket,
-    ) -> ClientId {
-        let Some(id) = id else {
-            return self.new_client(connection, socket);
-        };
-
-        // Host connect
-        if !self.is_host_connected() && id == self.host_id {
-            let mut client = Client::new(id, connection, socket);
-            client.is_host = true;
-            self.clients.insert(id, client);
-            info!(
-                game = self.join_code,
-                client = id.to_string(),
-                "Host connected",
-            );
-            return id;
-        }
-
-        let Some(client) = self.clients.get_mut(&id) else {
-            return self.new_client(connection, socket);
-        };
-
-        // TODO: Handle user trying to connect to a non-dead connection
-        // TODO: Maybe also compare ip/user agent
-        client.reconnect(socket);
-        self.sync_client(&id);
-
-        info!(
-            game = self.join_code,
-            client = id.to_string(),
-            "{} reconnected",
-            if id == self.host_id { "Host" } else { "Client" },
-        );
-
-        return id;
-    }
-
-    fn new_client(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
-        let id = Client::generate_id();
-        let client = Client::new(id, connection, socket);
-        self.clients.insert(id, client);
-        self.sync_client(&id);
-
-        info!(
-            game = self.join_code,
-            client = id.to_string(),
-            "Client connected",
-        );
-
-        return id;
-    }
-
-    pub fn remove_client(&mut self, client_id: &ClientId) {
-        if let Some(client) = self.clients.get_mut(&client_id) {
-            if client.is_disconnected() {
-                debug!(
-                    client_id = client_id.to_string(),
-                    "Attempted to double disconnect"
-                );
-                return;
-            }
-
-            client.disconnect(self.game_ended);
-
-            info!(
-                game = self.join_code,
-                client = client_id.to_string(),
-                "{} disconnected",
-                if client_id == &self.host_id {
-                    "Host"
-                } else {
-                    "Client"
-                }
-            );
-        }
-    }
-
-    pub fn sync_client(&self, id: &ClientId) {
-        let client = self.clients.get(id);
-        let mut game_update = GameUpdate::from_game(self.state.clone());
-        game_update.host_connected = Some(self.is_host_connected());
-        if let Some(client) = client {
-            client.send(OutgoingMessage::GameUpdate(game_update).to_message());
-        }
     }
 
     // Communication
@@ -208,8 +143,8 @@ impl Game {
     }
 
     // Telemetry
-    pub fn close(&mut self, telemetry: &Telemetry) {
-        self.game_ended = true;
+    pub fn close(&mut self, reason: GameEndReason) {
+        self.game_end_reason = Some(reason);
         if let Some(info) = &mut self.info {
             info.ended_at_ms = Utc::now().timestamp_millis()
         }
@@ -219,9 +154,11 @@ impl Game {
         }
 
         for (_id, client) in &mut self.clients {
-            client.disconnect(self.game_ended);
+            client.disconnect(self.game_end_reason.is_some());
         }
 
-        telemetry.push(TelemetryEvent::from_game_ended(self));
+        self.app_state
+            .telemetry
+            .push(TelemetryEvent::from_game_ended(self));
     }
 }

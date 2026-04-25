@@ -20,7 +20,7 @@ use tracing::{debug, info};
 use crate::{
     AppState,
     structs::{
-        game::{Game, client::Client, state::ClientId},
+        game::{Game, GameEndReason, client::Client, state::ClientId},
         protocol::connection::ConnectionClose,
     },
 };
@@ -108,7 +108,7 @@ async fn handle_socket(
 
         match removed {
             Some((_id, mut game)) => {
-                game.close(&state.telemetry);
+                game.close(GameEndReason::HostLeft);
                 info!("[game] {game_join_id} | deleted game after host timeout");
             }
             None => {
