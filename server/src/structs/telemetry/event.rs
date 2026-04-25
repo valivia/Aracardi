@@ -8,6 +8,7 @@ use crate::structs::{
 pub enum TelemetryEventType {
     GameEnded(TelemetryGame),
     CardViewed(TelemetryCard),
+    ActiveCardDismissed(),
     SetupFailed(),
 }
 

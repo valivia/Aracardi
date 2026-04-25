@@ -24,6 +24,8 @@ pub mod stats;
 pub type GameId = Uuid;
 
 const MAX_CLIENT_COUNT: usize = 32;
+const MAX_PLAYER_COUNT: usize = 20;
+const MAX_ACTIVE_CARD_COUNT: usize = 50;
 
 #[derive(Clone)]
 pub struct Game {

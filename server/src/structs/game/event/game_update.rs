@@ -6,7 +6,7 @@ use tracing::{info, warn};
 use crate::structs::{
     app_state::AppState,
     game::{
-        Game,
+        Game, MAX_ACTIVE_CARD_COUNT, MAX_PLAYER_COUNT,
         client::ClientId,
         info::GameInfo,
         state::{Card, Player},
@@ -19,9 +19,6 @@ use crate::structs::{
     },
     telemetry::event::TelemetryEvent,
 };
-
-const MAX_ACTIVE_CARDS: usize = 50;
-const MAX_PLAYERS: usize = 20;
 
 impl Game {
     pub async fn on_game_update(
@@ -105,7 +102,7 @@ impl Game {
         let new_players: Vec<Player> = players
             .iter()
             .filter(|p| p.is_valid())
-            .take(MAX_PLAYERS)
+            .take(MAX_PLAYER_COUNT)
             .cloned()
             .collect();
 
@@ -188,12 +185,13 @@ impl Game {
         response: &mut GameUpdate,
         state: &Arc<AppState>,
     ) {
-        let mut active_cards: Vec<Card> = vec![];
-        for active_card in received_active_cards.iter().take(MAX_ACTIVE_CARDS) {
+        let mut new_active_cards: Vec<Card> = vec![];
+        for active_card in received_active_cards.iter().take(MAX_ACTIVE_CARD_COUNT) {
             match Card::from_update(active_card, state.clone()).await {
                 Some(card) => {
+                    // TODO: only run this check when adding the card
                     if card.has_valid_players(&self.state.players) {
-                        active_cards.push(card);
+                        new_active_cards.push(card);
                     }
                 }
                 None => warn!(
@@ -202,7 +200,11 @@ impl Game {
                 ),
             }
         }
-        self.state.active_cards = active_cards;
+
+        // TODO: go over cards and send telemetry event when cards get dismissed early
+        // Keeping in mind there can be multiple of the same card
+
+        self.state.active_cards = new_active_cards;
         response.active_cards = Some(self.state.active_cards.clone());
     }
 
