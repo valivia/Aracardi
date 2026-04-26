@@ -11,14 +11,38 @@ use crate::structs::{
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct CardTurns {
+    #[serde(skip)]
+    pub original_turn_count: i32,
+    #[serde(skip_serializing)]
+    pub turns_passed: i32,
+
+    pub turns_left: i32,
+}
+
+impl Default for CardTurns {
+    fn default() -> Self {
+        Self {
+            original_turn_count: 0,
+            turns_passed: 0,
+            turns_left: 0,
+        }
+    }
+}
+
+#[skip_serializing_none]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Card {
     pub id: String,
     pub title: Option<String>,
     pub text: String,
     pub image: bool,
     pub players: Vec<String>,
-    pub turns: Option<i32>,
+    #[serde(flatten)]
+    pub turns: Option<CardTurns>,
     pub time_limit: Option<u32>,
+    pub instance_id: String,
 
     #[serde(skip_serializing)]
     pub created_at: DateTime<Utc>,
@@ -29,19 +53,25 @@ impl Card {
         let cards = state.cards.read().await;
         let addon_card = cards.get(&card.id)?;
 
-        let turns = match (card.turns, addon_card.turns) {
-            (Some(turns), Some(addon_turns)) if addon_turns == -1 => Some(addon_turns),
-            (Some(turns), Some(addon_turns)) => Some(turns.clamp(1, addon_turns)),
-            _ => None,
-        };
+        let turns: Option<CardTurns>;
+        if let (Some(card_turns), Some(addon_turns)) = (&card.turns, addon_card.turns) {
+            turns = Some(CardTurns {
+                original_turn_count: addon_turns,
+                turns_left: card_turns.turns_left,
+                turns_passed: card_turns.turns_passed,
+            });
+        } else {
+            turns = None;
+        }
 
         Some(Card {
             id: addon_card.id.clone(),
+            instance_id: card.instance_id.clone(),
             title: addon_card.title.clone(),
             text: addon_card.text.clone(),
             image: addon_card.image,
             players: card.players.clone(),
-            turns: turns.or(addon_card.turns),
+            turns,
             time_limit: addon_card.time_limit,
 
             created_at: Utc::now(),

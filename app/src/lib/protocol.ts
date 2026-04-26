@@ -39,13 +39,15 @@ export interface GameCard {
     text: string;
     image: boolean;
     players: string[];
-    turns?: number;
+    turnsLeft?: number;
 }
 
 export interface HostCard {
     id: string;
+    instanceId: string;
     players: string[];
-    turns?: number;
+    turnsLeft?: number;
+    turnsPassed?: number;
 }
 
 export interface ClientUpdate {

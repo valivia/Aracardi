@@ -71,7 +71,7 @@
     </main>
 
     <aside class="active">
-        {#each game.activeCards as card (card.createdAt)}
+        {#each game.activeCards as card (card.instanceId)}
             <ActiveCard {card} onclick={() => game.deleteActiveCard(card)} />
         {/each}
     </aside>

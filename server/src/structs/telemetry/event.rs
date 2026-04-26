@@ -1,12 +1,15 @@
 use crate::structs::{
     game::{Game, state::Card},
-    telemetry::{card::TelemetryCard, game::TelemetryGame, player::TelemetryPlayer},
+    telemetry::{
+        active_card::TelemetryActiveCard, card::TelemetryCard, game::TelemetryGame,
+        player::TelemetryPlayer,
+    },
 };
 
 pub enum TelemetryEventType {
     GameEnded(TelemetryGame),
     CardViewed(TelemetryCard),
-    ActiveCardDismissed(),
+    ActiveCardDismissed(TelemetryActiveCard),
     SetupFailed(),
 }
 
@@ -15,6 +18,12 @@ pub struct TelemetryEvent(pub TelemetryEventType);
 impl TelemetryEvent {
     pub fn from_card_viewed(card: &Card) -> Self {
         Self(TelemetryEventType::CardViewed(TelemetryCard::from(card)))
+    }
+
+    pub fn from_active_card(card: &Card) -> Self {
+        Self(TelemetryEventType::ActiveCardDismissed(
+            TelemetryActiveCard::from(card),
+        ))
     }
 
     pub fn from_game_ended(game: &Game) -> Self {

@@ -1,3 +1,4 @@
+use crate::structs::telemetry::active_card::TelemetryActiveCard;
 use crate::structs::telemetry::event::{TelemetryEvent, TelemetryEventType};
 use crate::structs::telemetry::{card::TelemetryCard, game::TelemetryGame};
 use mongodb::{Client, Collection, error::Error as MongoError};
@@ -28,11 +29,13 @@ impl Database {
 
     pub async fn persist_events(&self, events: Vec<TelemetryEvent>) -> Result<(), MongoError> {
         let mut cards: Vec<TelemetryCard> = Vec::new();
+        let mut active_cards: Vec<TelemetryActiveCard> = Vec::new();
         let mut games: Vec<TelemetryGame> = Vec::new();
 
         for event in events {
             match event.0 {
                 TelemetryEventType::CardViewed(card) => cards.push(card),
+                TelemetryEventType::ActiveCardDismissed(card) => active_cards.push(card),
                 TelemetryEventType::GameEnded(game) => games.push(game),
                 _ => {}
             }
@@ -41,6 +44,12 @@ impl Database {
         if !cards.is_empty() {
             self.collection::<TelemetryCard>("card")
                 .insert_many(cards)
+                .await?;
+        }
+
+        if !active_cards.is_empty() {
+            self.collection::<TelemetryActiveCard>("active_card")
+                .insert_many(active_cards)
                 .await?;
         }
 

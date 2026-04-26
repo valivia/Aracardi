@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use tracing::{info, warn};
+use tracing::warn;
 
 use crate::structs::{
     app_state::AppState,
@@ -17,7 +17,6 @@ use crate::structs::{
         host_update::{HostCard, HostUpdate},
         outgoing::OutgoingMessage,
     },
-    telemetry::event::TelemetryEvent,
 };
 
 impl Game {
@@ -169,10 +168,7 @@ impl Game {
             }
         }
 
-        // TODO: go over cards and send telemetry event when cards get dismissed early
-        // Keeping in mind there can be multiple of the same card
-
-        self.state.active_cards = new_active_cards;
+        self.update_active_cards(new_active_cards);
         response.active_cards = Some(self.state.active_cards.clone());
     }
 

@@ -1,6 +1,7 @@
 import { Player } from "lib/player.svelte";
 import { shuffle } from "lib/helpers";
-import type { GameCard } from "./protocol";
+import type { GameCard, HostCard } from "./protocol";
+import { nanoid } from "nanoid";
 
 export const SelfRegex = /%SELF%/g;
 export const NextPlayerRegex = /%NEXT_PLAYER%/g;
@@ -24,6 +25,7 @@ export interface CardPart {
 
 export class CardController implements Card {
     public readonly createdAt: Date = new Date();
+    public readonly instanceId: string;
 
     public id;
     public title;
@@ -40,6 +42,7 @@ export class CardController implements Card {
     public formattedText: CardPart[];
 
     private constructor(card: Card) {
+        this.instanceId = nanoid(8);
         this.id = card.id;
         this.title = card.title;
         this.text = card.text;
@@ -152,17 +155,28 @@ export class CardController implements Card {
         }
     }
 
-    public getHostCard() {
+    public getHostCard(): HostCard {
         const players = this.formattedText
             .filter((part) => [CardPartType.player, CardPartType.currentPlayer].includes(part.type))
             .map((slot) => slot.value);
 
-        return { id: this.id, players, turns: this.turnsLeft };
+        return {
+            id: this.id,
+            instanceId: this.instanceId,
+            players,
+            turnsLeft: this.turnsLeft,
+            turnsPassed: this.turnsPassed,
+        };
     }
 
     // Spectator card
     static fromSpectatorCard(card: GameCard, currentPlayer: string) {
-        const cardController = new CardController({ ...card, hasWheel: undefined, isNsfw: undefined });
+        const cardController = new CardController({
+            ...card,
+            turns: card.turnsLeft,
+            hasWheel: undefined,
+            isNsfw: undefined,
+        });
         cardController.buildSpectatorCard(card.players, currentPlayer);
         return cardController;
     }

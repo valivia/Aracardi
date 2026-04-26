@@ -98,7 +98,7 @@
     </main>
 
     <aside class="active">
-        {#each activeCards as card (card.createdAt)}
+        {#each activeCards as card (card.instanceId)}
             <ActiveCard {card} />
         {/each}
     </aside>

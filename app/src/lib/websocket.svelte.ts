@@ -189,6 +189,7 @@ export class WebsocketClient {
         });
 
         socket.addEventListener("close", (event) => {
+            console.log({ event });
             if (event.code === 1000 || event.code === 4000 || this.manualClose) {
                 if (event.code === 4000) {
                     this.connectionStatus = ConnectionStatus.Refused;

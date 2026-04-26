@@ -1,13 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-use crate::structs::game::{info::GameInfo, state::Player};
+use crate::structs::game::{
+    info::GameInfo,
+    state::{Player, card::CardTurns},
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct HostCard {
     pub id: String,
+    pub instance_id: String,
     pub players: Vec<String>,
-    pub turns: Option<i32>,
+    #[serde(flatten)]
+    pub turns: Option<CardTurns>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

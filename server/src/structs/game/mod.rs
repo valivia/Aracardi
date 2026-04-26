@@ -157,8 +157,10 @@ impl Game {
             client.disconnect(self.game_end_reason.is_some());
         }
 
+        self.flush_active_cards();
+
         self.app_state
             .telemetry
-            .push(TelemetryEvent::from_game_ended(self));
+            .push(TelemetryEvent::from_game_ended(&self));
     }
 }
