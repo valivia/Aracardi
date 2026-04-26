@@ -5,7 +5,7 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct SessionData {
     pub original_connect_at: DateTime<Utc>,
-    pub is_connected: bool,
+    pub disconnected_at: Option<DateTime<Utc>>,
 
     #[serde(skip)]
     pub last_reconnect_at: Option<DateTime<Utc>>,
@@ -18,7 +18,7 @@ impl Default for SessionData {
     fn default() -> Self {
         Self {
             original_connect_at: Utc::now(),
-            is_connected: true,
+            disconnected_at: None,
 
             last_reconnect_at: None,
             reconnect_count: 0,
@@ -38,13 +38,13 @@ impl SessionData {
         }
 
         if !game_ended {
-            self.is_connected = false;
+            self.disconnected_at = Some(Utc::now());
         }
     }
 
     pub fn log_reconnect(&mut self) {
         self.reconnect_count += 1;
         self.last_reconnect_at = Some(Utc::now());
-        self.is_connected = true;
+        self.disconnected_at = None;
     }
 }

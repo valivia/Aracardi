@@ -23,6 +23,7 @@ pub type ClientId = Uuid;
 
 #[derive(Clone, Serialize)]
 pub struct Client {
+    #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
     pub id: ClientId,
     pub is_host: bool,
     pub session: SessionData,

@@ -8,6 +8,7 @@ use crate::structs::{
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TelemetryGame {
+    #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
     pub id: GameId,
     pub join_code: String,
 
