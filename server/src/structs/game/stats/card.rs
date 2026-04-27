@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use crate::structs::game::state::Card;
+use crate::structs::game::state::CurrentCard;
 
 const RUNNING_AVERAGE_SIZE: usize = 128;
 
@@ -60,10 +60,11 @@ impl GameCardStats {
         values[values.len() / 2]
     }
 
-    pub fn register_card(&mut self, card: &Card) {
+    pub fn register_card(&mut self, card: &CurrentCard) {
         let index = self.play_count as usize % RUNNING_AVERAGE_SIZE;
         self.duration_running_average_ms[index] =
-            card.get_duration()
+            card.inner
+                .get_duration()
                 .clamp(0, Duration::from_mins(60).as_millis() as i64) as u32;
         self.play_count += 1;
         self.average_duration_ms = self.get_average_card_duration_ms();

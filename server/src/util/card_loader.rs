@@ -15,7 +15,7 @@ struct Addon {
     cards: Vec<AddonCard>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AddonCard {
     pub id: String,

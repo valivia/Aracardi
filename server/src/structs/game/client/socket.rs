@@ -9,7 +9,6 @@ pub struct ClientSocket {
 
     pub last_seen_at: Instant,
     pub last_ping_at: Instant,
-    pub connected_at: Instant,
 }
 
 impl ClientSocket {
@@ -19,7 +18,6 @@ impl ClientSocket {
 
             last_ping_at: Instant::now(),
             last_seen_at: Instant::now(),
-            connected_at: Instant::now(),
         }
     }
 

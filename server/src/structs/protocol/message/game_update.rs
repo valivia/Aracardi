@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::structs::game::state::{Card, GameState, Player};
+use crate::structs::game::state::{
+    GameState, Player,
+    card::{ActiveCard, CurrentCard},
+};
 
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug)]
@@ -10,8 +13,8 @@ pub struct GameUpdate {
     pub players: Option<Vec<Player>>,
     pub current_player_id: Option<String>,
 
-    pub current_card: Option<Card>,
-    pub active_cards: Option<Vec<Card>>,
+    pub current_card: Option<CurrentCard>,
+    pub active_cards: Option<Vec<ActiveCard>>,
 
     pub host_connected: Option<bool>,
 }

@@ -2,7 +2,10 @@ use tokio::time::Instant;
 
 pub use crate::structs::game::{
     client::ClientId,
-    state::{card::Card, player::Player},
+    state::{
+        card::{ActiveCard, CurrentCard},
+        player::Player,
+    },
 };
 
 pub mod card;
@@ -17,8 +20,8 @@ pub struct GameState {
     pub current_player_id: Option<String>,
 
     // Cards
-    pub active_cards: Vec<Card>,
-    pub current_card: Option<Card>,
+    pub active_cards: Vec<ActiveCard>,
+    pub current_card: Option<CurrentCard>,
 }
 
 impl Default for GameState {

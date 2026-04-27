@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::structs::game::state::Card;
+use crate::structs::game::state::ActiveCard;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -11,14 +11,13 @@ pub struct TelemetryActiveCard {
     pub actual_turns: i32,
 }
 
-impl<'a> From<&'a Card> for TelemetryActiveCard {
-    fn from(other: &'a Card) -> Self {
-        let turns = other.turns.clone().unwrap_or_default();
+impl<'a> From<&'a ActiveCard> for TelemetryActiveCard {
+    fn from(other: &'a ActiveCard) -> Self {
         TelemetryActiveCard {
-            card_id: other.id.clone(),
-            duration_ms: other.get_duration(),
-            expected_turns: turns.original_turn_count,
-            actual_turns: turns.turns_left,
+            card_id: other.inner.id.clone(),
+            duration_ms: other.inner.get_duration(),
+            expected_turns: other.turns.original_turn_count,
+            actual_turns: other.turns.turns_left,
         }
     }
 }

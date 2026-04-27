@@ -9,7 +9,10 @@ use crate::structs::{
         Game, MAX_ACTIVE_CARD_COUNT, MAX_PLAYER_COUNT,
         client::ClientId,
         info::GameInfo,
-        state::{Card, Player},
+        state::{
+            Player,
+            card::{ActiveCard, Card, CurrentCard},
+        },
         stats::GamePlayerStats,
     },
     protocol::message::{
@@ -31,8 +34,6 @@ impl Game {
             warn!("[game] {game_id} | update for unknown game from {client_id}");
             return;
         };
-
-        let original_state = game.state.clone();
 
         // Make sure only host can update game
         if &game.host_id != client_id {
@@ -122,21 +123,13 @@ impl Game {
         response: &mut GameUpdate,
         state: &Arc<AppState>,
     ) -> bool {
-        match Card::from_update(current_card, state.clone()).await {
-            Some(card) => {
-                if card.has_valid_players(&self.state.players) {
-                    self.update_current_card(card);
-                    response.current_card = self.state.current_card.clone();
-                    return true;
-                } else {
-                    warn!(
-                        "[game] {} | current_card has invalid player",
-                        self.join_code
-                    );
-                    return false;
-                }
+        match CurrentCard::from_update(&state, &self.state, current_card).await {
+            Ok(card) => {
+                self.update_current_card(card);
+                response.current_card = self.state.current_card.clone();
+                return true;
             }
-            None => {
+            Err(_) => {
                 warn!(
                     "[game] {} | invalid card ID: {}",
                     self.join_code, current_card.id
@@ -152,16 +145,13 @@ impl Game {
         response: &mut GameUpdate,
         state: &Arc<AppState>,
     ) {
-        let mut new_active_cards: Vec<Card> = vec![];
+        let mut new_active_cards: Vec<ActiveCard> = vec![];
         for active_card in received_active_cards.iter().take(MAX_ACTIVE_CARD_COUNT) {
-            match Card::from_update(active_card, state.clone()).await {
-                Some(card) => {
-                    // TODO: only run this check when adding the card
-                    if card.has_valid_players(&self.state.players) {
-                        new_active_cards.push(card);
-                    }
+            match ActiveCard::from_update(&state, &self.state, active_card).await {
+                Ok(card) => {
+                    new_active_cards.push(card);
                 }
-                None => warn!(
+                Err(_) => warn!(
                     "[game] {} | invalid active card ID: {}",
                     self.join_code, active_card.id
                 ),
