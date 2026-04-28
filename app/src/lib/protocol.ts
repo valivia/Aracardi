@@ -2,10 +2,14 @@ import type { JsonPlayer } from "./player.svelte";
 
 // Connection
 export enum ConnectionClose {
-    NotFound = "not_found",
-    GameFull = "game_full",
-    GameEnded = "game_ended",
-    TimedOut = "timed_out",
+    GameEnded = "GAME_ENDED",
+    NotFound = "NOT_FOUND",
+
+    GameFull = "GAME_FULL",
+    TimedOut = "TIMED_OUT",
+
+    ServerError = "SERVER_ERROR",
+    ServerRestart = "SERVER_RESTART",
 }
 
 // Outgoing

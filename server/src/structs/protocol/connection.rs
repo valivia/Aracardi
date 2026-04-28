@@ -28,8 +28,8 @@ impl ConnectionClose {
             Self::NotFound => (4000, "NOT_FOUND"),
 
             Self::GameFull => (4100, "GAME_FULL"),
-
             Self::TimedOut => (3008, "TIMED_OUT"),
+
             Self::ServerError => (1011, "SERVER_ERROR"),
             Self::ServerRestart => (1012, "SERVER_RESTART"),
         };

@@ -16,6 +16,8 @@ export enum GameStage {
     game = "game",
 }
 
+const FAKE_SESSION_CREATION_TIME_MS = 3000;
+
 export class GameController {
     public readonly createdAt: Date = new Date();
     public readonly id = nanoid(32);
@@ -52,7 +54,10 @@ export class GameController {
 
     // Websocket
     public socket: WebsocketClient | null = $state(null);
-    public readonly joinCode: string | null = $derived.by(() => this.socket?.id ?? null);
+    public readonly joinCode: string | null = $derived.by(() => this.socket?.session_id ?? null);
+    public connectingTimeout?: ReturnType<typeof setTimeout>;
+    public isConnecting = $state(false);
+    public isDismissed = $state(false);
     private settingsStore: Writable<Settings>;
     private unsubscribeSocketSettings: Unsubscriber | undefined;
 
@@ -295,13 +300,25 @@ export class GameController {
     }
 
     public async initializeWebsocket() {
+        let socket;
+
+        this.isConnecting = true;
+        this.connectingTimeout = undefined;
         try {
-            const socket = await WebsocketClient.createSession();
-            this.socket = socket;
+            socket = await WebsocketClient.createSession();
         } catch (e) {
-            console.error("Failed to connect to websocket: ", e);
+            console.error("Failed to initialize websocket: ", e);
+            this.connectingTimeout = setTimeout(() => {
+                this.isConnecting = false;
+                console.log("bbbb");
+            }, FAKE_SESSION_CREATION_TIME_MS);
             return;
         }
+
+        this.isConnecting = false;
+        this.isDismissed = false;
+
+        this.socket = socket;
 
         this.socket?.send(IncomingMessageTopic.GameUpdate, {
             players: this.players.map((player) => player.getSaveable()),
@@ -314,6 +331,7 @@ export class GameController {
             },
         });
 
+        this.unsubscribeSocketSettings?.();
         this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
             this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
                 theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,

@@ -15,6 +15,7 @@ RUN rm src/main.rs
 
 # Now copy real source and do a targeted rebuild
 COPY ./src ./src
+# TODO: fix this not actually rebuilding when updated
 RUN touch src/main.rs && cargo build --release
 
 # Runner

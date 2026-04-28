@@ -11,6 +11,7 @@
     import { onDestroy } from "svelte";
     import { HAS_TRIED_THEMES_KEY } from "components/theme.js";
     import type { Unsubscriber } from "svelte/store";
+    import TextButton from "components/input/TextButton.svelte";
 
     const { data } = $props();
 
@@ -30,6 +31,8 @@
     let currentPlayer = $state<Player>();
 
     let settingUnsubscriber: Unsubscriber | undefined;
+
+    $inspect(socket.socketState);
 
     socket.onReady(() => {
         // Client settings
@@ -91,7 +94,10 @@
     </aside>
 
     <main class="game">
-        {socket.connectionStatusString}
+        {#if socket.socketState.reason?.canReconnect}
+            <TextButton onclick={() => socket.restartConnectionCycle()}>Retry</TextButton>
+        {/if}
+        {socket.statusString}
         {#if currentCard}
             <CardElement card={currentCard} loadImage={$settings.loadImages} />
         {/if}

@@ -9,6 +9,7 @@
     import JoinCode from "components/game/JoinCode.svelte";
     import { useSettings } from "lib/settingsContext";
     import { ConnectionStatus } from "lib/websocket.svelte";
+    import TextButton from "components/input/TextButton.svelte";
 
     interface Props {
         game: GameController;
@@ -59,12 +60,30 @@
     </aside>
 
     <main class="game">
-        {#if game.joinCode && game.socket?.connectionStatus == ConnectionStatus.Connected}
-            <JoinCode joinCode={game.joinCode} />
-        {:else if game.socket?.connectionStatus === ConnectionStatus.Refused || game.socket?.connectionStatus == ConnectionStatus.Failed}
-            <button onclick={() => game.initializeWebsocket()}>Recreate session</button>
+        {#if game.joinCode}
+            <JoinCode
+                joinCode={game.joinCode}
+                disabled={game.socket?.socketState.status !== ConnectionStatus.Connected}
+            />
         {/if}
-        {game.socket?.connectionStatusString}
+        <span>
+            {#if game.socket}
+                {game.socket.statusString}
+                {#if game.socket.socketState.reason?.canReconnect}
+                    <TextButton onclick={() => game.socket?.restartConnectionCycle()}>Retry</TextButton>
+                {:else if game.socket.socketState.reason?.canRecreate}
+                    <TextButton onclick={() => game.initializeWebsocket()}>recreate</TextButton>
+                {/if}
+            {:else if !game.isDismissed}
+                {#if game.isConnecting}
+                    Connecting...
+                {:else}
+                    Failed to create a multiplayer lobby,
+                    <TextButton onclick={() => game.initializeWebsocket()}>retry</TextButton> creation or
+                    <TextButton onclick={() => (game.isDismissed = true)}>dismiss</TextButton> this message
+                {/if}
+            {/if}
+        </span>
         {#if game.currentCard}
             <Card card={game.currentCard} onclick={() => game.nextTurn()} loadImage={$settings.loadImages} />
         {/if}

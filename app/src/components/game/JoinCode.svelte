@@ -4,15 +4,20 @@
 
     interface Props {
         joinCode: string;
+        disabled: boolean;
     }
 
-    let { joinCode }: Props = $props();
+    let { joinCode, disabled = false }: Props = $props();
 
     let codeVisible = $state(false);
+
+    $effect(() => {
+        if (disabled == true) codeVisible = false;
+    });
 </script>
 
-<span class="joinCode" data-visible={codeVisible}>
-    <button data-active={codeVisible} onclick={() => (codeVisible = !codeVisible)}>
+<span class="joinCode" data-visible={codeVisible} data-disabled={disabled}>
+    <button data-active={codeVisible} onclick={() => (codeVisible = !codeVisible)} {disabled}>
         {#if codeVisible}
             <VisibleIcon />
         {:else}
@@ -23,7 +28,10 @@
         <span>Join code</span>
         <span>{codeVisible ? joinCode : "------"}</span>
     </div>
-    <button onclick={async () => await navigator.clipboard.writeText(`${page.url.origin}/lobby?join_code=${joinCode}`)}>
+    <button
+        onclick={async () => await navigator.clipboard.writeText(`${page.url.origin}/lobby?join_code=${joinCode}`)}
+        {disabled}
+    >
         <CopyIcon />
     </button>
 </span>
@@ -38,6 +46,10 @@
 
         border: 2px currentColor solid;
         border-radius: 100vw;
+
+        &[data-disabled="true"] {
+            opacity: 0.5;
+        }
 
         &[data-visible="false"] > div > span:last-child {
             opacity: 0.5;
@@ -78,8 +90,8 @@
                 color: var(--theme-primary);
             }
 
-            &:hover,
-            &:focus-visible {
+            &:hover:not(:disabled),
+            &:focus-visible:not(:disabled) {
                 outline: 2px var(--theme-text) solid;
                 outline-offset: 2px;
             }
