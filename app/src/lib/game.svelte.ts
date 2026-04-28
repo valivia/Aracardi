@@ -324,6 +324,7 @@ export class GameController {
             players: this.players.map((player) => player.getSaveable()),
             currentPlayerId: this.currentPlayer.id,
             currentCard: this.currentCard?.getHostCard(),
+            activeCards: this.activeCards.map((card) => card.getHostCard()),
             info: {
                 addons: this.selectedAddons.map((addon) => addon.title),
                 initiatedAtMs: Number(this.createdAt),

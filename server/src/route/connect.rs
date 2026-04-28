@@ -20,17 +20,13 @@ use tracing::{debug, info};
 use crate::{
     AppState,
     structs::{
-        game::{Game, GameEndReason, client::Client, state::ClientId},
+        game::{Game, GameEndReason, MAX_HOST_ABSENCE, client::Client, state::ClientId},
         protocol::connection::ConnectionClose,
     },
 };
 
 const PING_INTERVAL: Duration = Duration::from_secs(5);
 const PONG_TIMEOUT: Duration = Duration::from_secs(8);
-#[cfg(debug_assertions)]
-const CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
-#[cfg(not(debug_assertions))]
-const CONNECTION_TIMEOUT: Duration = Duration::from_mins(5);
 
 pub async fn handler(
     ws: WebSocketUpgrade,
@@ -100,7 +96,7 @@ async fn handle_socket(
     };
 
     if is_host {
-        tokio::time::sleep(CONNECTION_TIMEOUT).await;
+        tokio::time::sleep(MAX_HOST_ABSENCE).await;
 
         let removed = state
             .games

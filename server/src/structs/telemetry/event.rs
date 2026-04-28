@@ -13,7 +13,6 @@ pub enum TelemetryEventType {
     GameEnded(TelemetryGame),
     CardViewed(TelemetryCard),
     ActiveCardDismissed(TelemetryActiveCard),
-    SetupFailed(),
 }
 
 pub struct TelemetryEvent(pub TelemetryEventType);

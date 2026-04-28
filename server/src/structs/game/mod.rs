@@ -29,9 +29,13 @@ const MAX_CLIENT_COUNT: usize = 32;
 const MAX_PLAYER_COUNT: usize = 20;
 const MAX_ACTIVE_CARD_COUNT: usize = 50;
 
-pub const MAX_IDLE_DURATION: Duration = Duration::from_mins(60);
 pub const MAX_SETUP_DURATION: Duration = Duration::from_secs(30);
+pub const MAX_IDLE_DURATION: Duration = Duration::from_mins(60);
 pub const MAX_GAME_DURATION: Duration = Duration::from_hours(12);
+#[cfg(debug_assertions)]
+pub const MAX_HOST_ABSENCE: Duration = Duration::from_secs(5);
+#[cfg(not(debug_assertions))]
+pub const MAX_HOST_ABSENCE: Duration = Duration::from_mins(5);
 
 #[derive(Clone)]
 pub enum GameEndReason {

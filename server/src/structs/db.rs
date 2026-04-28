@@ -37,7 +37,6 @@ impl Database {
                 TelemetryEventType::CardViewed(card) => cards.push(card),
                 TelemetryEventType::ActiveCardDismissed(card) => active_cards.push(card),
                 TelemetryEventType::GameEnded(game) => games.push(game),
-                _ => {}
             }
         }
 
