@@ -294,6 +294,35 @@ export class GameController {
         this.stage = state;
     }
 
+    public async initializeWebsocket() {
+        try {
+            const socket = await WebsocketClient.createSession();
+            this.socket = socket;
+        } catch (e) {
+            console.error("Failed to connect to websocket: ", e);
+            return;
+        }
+
+        this.socket?.send(IncomingMessageTopic.GameUpdate, {
+            players: this.players.map((player) => player.getSaveable()),
+            currentPlayerId: this.currentPlayer.id,
+            currentCard: this.currentCard?.getHostCard(),
+            info: {
+                addons: this.selectedAddons.map((addon) => addon.title),
+                initiatedAtMs: Number(this.createdAt),
+                version: version,
+            },
+        });
+
+        this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
+            this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
+                theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
+                loadImages: value.loadImages,
+                allowNsfw: value.allowNsfw,
+            });
+        });
+    }
+
     private async startGame() {
         await this.loadCards();
         if (this.cards.length < 10) {
@@ -305,36 +334,7 @@ export class GameController {
         this.setCurrentCard(0);
         this.setCurrentPlayer(0);
 
-        const initializeWebsocket = async () => {
-            try {
-                const socket = await WebsocketClient.createSession();
-                this.socket = socket;
-            } catch (e) {
-                console.error("Failed to connect to websocket: ", e);
-                return;
-            }
-
-            this.socket?.send(IncomingMessageTopic.GameUpdate, {
-                players: this.players.map((player) => player.getSaveable()),
-                currentPlayerId: this.currentPlayer.id,
-                currentCard: this.currentCard?.getHostCard(),
-                info: {
-                    addons: this.selectedAddons.map((addon) => addon.title),
-                    initiatedAtMs: Number(this.createdAt),
-                    version: version,
-                },
-            });
-
-            this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
-                this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
-                    theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
-                    loadImages: value.loadImages,
-                    allowNsfw: value.allowNsfw,
-                });
-            });
-        };
-
-        initializeWebsocket();
+        this.initializeWebsocket();
     }
 
     public async endGame() {

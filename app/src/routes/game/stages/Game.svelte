@@ -8,6 +8,7 @@
     import Button from "components/input/Button.svelte";
     import JoinCode from "components/game/JoinCode.svelte";
     import { useSettings } from "lib/settingsContext";
+    import { ConnectionStatus } from "lib/websocket.svelte";
 
     interface Props {
         game: GameController;
@@ -58,8 +59,10 @@
     </aside>
 
     <main class="game">
-        {#if game.joinCode}
+        {#if game.joinCode && game.socket?.connectionStatus == ConnectionStatus.Connected}
             <JoinCode joinCode={game.joinCode} />
+        {:else if game.socket?.connectionStatus === ConnectionStatus.Refused || game.socket?.connectionStatus == ConnectionStatus.Failed}
+            <button onclick={() => game.initializeWebsocket()}>Recreate session</button>
         {/if}
         {game.socket?.connectionStatusString}
         {#if game.currentCard}
