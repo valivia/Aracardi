@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 use crate::{
     AppState,
@@ -65,6 +65,8 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
 
             tokio::time::sleep(CHECK_INTERVAL).await;
         }
+
+        debug!("[game] {} | lifecycle thread closed", game_id)
     });
 
     Json(game_info)

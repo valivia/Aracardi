@@ -100,7 +100,7 @@ impl Game {
     }
 
     pub fn is_idle(&self) -> bool {
-        if self.state.last_update.duration_since(Instant::now()) >= MAX_IDLE_DURATION {
+        if Instant::now().duration_since(self.state.last_update) >= MAX_IDLE_DURATION {
             return true;
         }
 
@@ -158,7 +158,7 @@ impl Game {
         }
 
         for (_id, client) in &mut self.clients {
-            client.disconnect(self.game_end_reason.is_some());
+            client.disconnect(&self.game_end_reason.clone());
         }
 
         self.flush_active_cards();

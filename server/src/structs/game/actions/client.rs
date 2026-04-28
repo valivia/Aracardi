@@ -77,7 +77,7 @@ impl Game {
                 return;
             }
 
-            client.disconnect(self.game_end_reason.is_some());
+            client.disconnect(&self.game_end_reason);
 
             info!(
                 game = self.join_code,

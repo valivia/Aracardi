@@ -4,9 +4,12 @@ use tokio::{sync::mpsc, time::Instant};
 use uuid::Uuid;
 
 use crate::structs::{
-    game::client::{
-        connection::ClientConnection, preferences::ClientPreferences, session::SessionData,
-        socket::ClientSocket,
+    game::{
+        GameEndReason,
+        client::{
+            connection::ClientConnection, preferences::ClientPreferences, session::SessionData,
+            socket::ClientSocket,
+        },
     },
     protocol::connection::ConnectionClose,
 };
@@ -68,7 +71,7 @@ impl Client {
         self.socket.is_none()
     }
 
-    pub fn disconnect(&mut self, game_ended: bool) {
+    pub fn disconnect(&mut self, game_end_reason: &Option<GameEndReason>) {
         let Some(socket) = &self.socket else {
             return;
         };
@@ -76,7 +79,7 @@ impl Client {
         socket.try_send(ConnectionClose::GameEnded.to_message());
 
         self.socket = None;
-        self.session.log_disconnect(game_ended);
+        self.session.log_disconnect(game_end_reason.is_some());
     }
 
     pub fn ping(&mut self) -> Result<(), ()> {
