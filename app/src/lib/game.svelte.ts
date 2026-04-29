@@ -190,11 +190,13 @@ export class GameController {
     };
 
     // Active cards
-    public deleteActiveCard = (card: CardController) => {
+    public deleteActiveCard = (card: CardController, notifyServer = false) => {
         this.activeCards = this.activeCards.filter((c) => c !== card);
-        this.socket?.send(IncomingMessageTopic.GameUpdate, {
-            activeCards: this.activeCards.map((card) => card.getHostCard()),
-        });
+        if (notifyServer) {
+            this.socket?.send(IncomingMessageTopic.GameUpdate, {
+                activeCards: this.activeCards.map((card) => card.getHostCard()),
+            });
+        }
     };
 
     private incrementActiveCards() {
