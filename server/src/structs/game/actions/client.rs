@@ -24,7 +24,7 @@ impl Game {
         };
 
         // Host connect
-        if !self.is_host_connected() && id == self.host_id {
+        if !self.clients.contains_key(&self.host_id) && id == self.host_id {
             let mut client = Client::new(id, connection, socket);
             client.is_host = true;
             self.clients.insert(id, client);
@@ -44,7 +44,7 @@ impl Game {
         // TODO: Maybe also compare ip/user agent
         client.reconnect(socket);
 
-        if client.id == self.host_id {
+        if client.is_host {
             self.send_host_status()
         } else {
             self.sync_client(&id);
@@ -90,7 +90,7 @@ impl Game {
 
         client.disconnect(reason);
 
-        if client.id == self.host_id {
+        if client.is_host {
             self.send_host_status()
         }
 
