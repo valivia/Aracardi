@@ -49,6 +49,8 @@
     });
 </script>
 
+<svelte:document on:visibilitychange={() => game.socket?.onVisibilityChange()} />
+
 <svelte:head>
     <title>Aracardi{title}</title>
 </svelte:head>

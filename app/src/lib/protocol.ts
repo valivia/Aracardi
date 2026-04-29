@@ -14,12 +14,14 @@ export enum ConnectionClose {
 
 // Outgoing
 export enum OutgoingMessageTopic {
+    Check = "CHECK",
     Connect = "CONNECT",
     ClientUpdate = "CLIENT_UPDATE",
     GameUpdate = "GAME_UPDATE",
 }
 
 export interface OutgoingTopicMap {
+    CHECK: string;
     CONNECT: string;
     CLIENT_UPDATE: ClientUpdate;
     GAME_UPDATE: HostUpdate;

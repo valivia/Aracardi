@@ -6,7 +6,10 @@ use crate::structs::{
         client::{Client, connection::ClientConnection, socket::ClientSocket},
         state::ClientId,
     },
-    protocol::message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+    protocol::{
+        connection::DisconnectReason,
+        message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+    },
 };
 
 impl Game {
@@ -40,7 +43,12 @@ impl Game {
         // TODO: Handle user trying to connect to a non-dead connection
         // TODO: Maybe also compare ip/user agent
         client.reconnect(socket);
-        self.sync_client(&id);
+
+        if client.id == self.host_id {
+            self.send_host_status()
+        } else {
+            self.sync_client(&id);
+        }
 
         info!(
             game = self.join_code,
@@ -67,29 +75,35 @@ impl Game {
         return id;
     }
 
-    pub fn remove_client(&mut self, client_id: &ClientId) {
-        if let Some(client) = self.clients.get_mut(&client_id) {
-            if client.is_disconnected() {
-                debug!(
-                    client_id = client_id.to_string(),
-                    "Attempted to double disconnect"
-                );
-                return;
-            }
+    pub fn disconnect_client(&mut self, client_id: &ClientId, reason: DisconnectReason) {
+        let Some(client) = self.clients.get_mut(&client_id) else {
+            return;
+        };
 
-            client.disconnect(&self.game_end_reason);
-
-            info!(
-                game = self.join_code,
-                client = client_id.to_string(),
-                "{} disconnected",
-                if client_id == &self.host_id {
-                    "Host"
-                } else {
-                    "Client"
-                }
+        if client.is_disconnected() {
+            debug!(
+                client_id = client_id.to_string(),
+                "Attempted to double disconnect"
             );
+            return;
         }
+
+        client.disconnect(reason);
+
+        if client.id == self.host_id {
+            self.send_host_status()
+        }
+
+        info!(
+            game = self.join_code,
+            client = client_id.to_string(),
+            "{} disconnected",
+            if client_id == &self.host_id {
+                "Host"
+            } else {
+                "Client"
+            }
+        );
     }
 
     pub fn sync_client(&self, id: &ClientId) {

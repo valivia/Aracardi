@@ -83,6 +83,8 @@
     });
 </script>
 
+<svelte:document on:visibilitychange={() => socket.onVisibilityChange()} />
+
 <div class="layout">
     <aside class="players">
         <div class="playerList">

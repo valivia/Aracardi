@@ -341,6 +341,13 @@ export class WebsocketClient {
         this.socketState = { status: ConnectionStatus.Closed, reason: connectionCloseProtocol.GAME_ENDED };
     }
 
+    // ### Events ###
+    public onVisibilityChange() {
+        if (document.visibilityState === "visible") {
+            this.send(OutgoingMessageTopic.Check, "");
+        }
+    }
+
     // ### Helpers ###
     public static parseMessage(data: string): { topic: string; payload: string } | null {
         const newLineIndex = data.indexOf("\n");

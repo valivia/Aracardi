@@ -6,7 +6,10 @@ use crate::structs::{
         state::GameState,
         stats::GameStats,
     },
-    protocol::message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+    protocol::{
+        connection::{CloseReason, DisconnectReason},
+        message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+    },
     telemetry::event::TelemetryEvent,
 };
 use axum::extract::ws::Message;
@@ -158,7 +161,7 @@ impl Game {
         }
 
         for (_id, client) in &mut self.clients {
-            client.disconnect(&self.game_end_reason.clone());
+            client.disconnect(DisconnectReason::Close(CloseReason::GameEnded));
         }
 
         self.flush_active_cards();

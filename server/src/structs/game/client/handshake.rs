@@ -14,7 +14,7 @@ use crate::structs::{
         state::ClientId,
     },
     protocol::{
-        connection::ConnectionClose,
+        connection::CloseReason,
         message::{incoming::IncomingMessage, outgoing::OutgoingMessage},
     },
 };
@@ -29,11 +29,11 @@ pub enum AuthError {
 }
 
 impl AuthError {
-    pub fn into_connection_close(&self) -> Option<ConnectionClose> {
+    pub fn into_connection_close(&self) -> Option<CloseReason> {
         match self {
-            AuthError::GameNotFound => Some(ConnectionClose::NotFound),
-            AuthError::TimedOut => Some(ConnectionClose::TimedOut),
-            AuthError::GameFull => Some(ConnectionClose::GameFull),
+            AuthError::GameNotFound => Some(CloseReason::NotFound),
+            AuthError::TimedOut => Some(CloseReason::TimedOut),
+            AuthError::GameFull => Some(CloseReason::GameFull),
             _ => None,
         }
     }

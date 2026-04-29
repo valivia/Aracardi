@@ -7,6 +7,7 @@ use crate::structs::{
 };
 
 pub enum IncomingMessage {
+    Check,
     Connect(Option<ClientId>),
     GameUpdate(HostUpdate),
     ClientUpdate(ClientPreferences),
@@ -26,6 +27,7 @@ impl IncomingMessage {
         }
 
         let message = match topic {
+            "CHECK" => IncomingMessage::Check,
             "CONNECT" => IncomingMessage::Connect(Uuid::from_str(payload).ok()),
             "CLIENT_UPDATE" => IncomingMessage::ClientUpdate(parse_json!(ClientPreferences)?),
             "GAME_UPDATE" => IncomingMessage::GameUpdate(parse_json!(HostUpdate)?),
