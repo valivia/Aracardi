@@ -21,11 +21,11 @@
 
 <main>
     <ul class="addons">
-        {#each data.addons as addon}
+        {#each data.addons as addon (addon.id)}
             <li>
                 <h2>{addon.title}</h2>
                 <ul class="cards">
-                    {#each addon.cards as card}
+                    {#each addon.cards as card (card.id)}
                         <li class="card" class:isNsfw={card.isNsfw}>
                             <h3>{card.title}</h3>
                             <span>{card.text}</span>

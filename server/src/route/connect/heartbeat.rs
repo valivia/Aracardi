@@ -4,7 +4,7 @@ use tokio::sync::oneshot;
 use crate::{AppState, structs::game::state::ClientId};
 
 const PING_INTERVAL: Duration = Duration::from_secs(5);
-const PONG_TIMEOUT: Duration = Duration::from_secs(8);
+const PONG_TIMEOUT: Duration = Duration::from_secs(3);
 
 pub async fn ping_task(
     timeout_tx: oneshot::Sender<()>,
