@@ -15,13 +15,23 @@ services:
 
     server:
         container_name: aracardi-server
-        build: ./server
         restart: unless-stopped
+        build: ./server
         env_file: .env
         volumes:
             - ./addons:/app/addons:ro
         networks:
             - bridge
+            - nginx
+
+    client:
+        container_name: aracardi-client
+        restart: unless-stopped
+        build:
+            context: app
+            args:
+                DOMAIN: "beta.aracardi.com"
+        networks:
             - nginx
 
 networks:
