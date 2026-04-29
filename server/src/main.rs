@@ -24,7 +24,7 @@ async fn main() {
 
     tracing_subscriber::fmt()
         .with_target(false)
-        .with_max_level(Level::DEBUG)
+        .with_max_level(Level::INFO)
         // .with_env_filter(
         //     EnvFilter::try_from_default_env()
         //         .or_else(|_| EnvFilter::try_new("server=error,tower_http=warn"))
@@ -61,6 +61,6 @@ async fn main() {
 
     let address = "0.0.0.0:3000";
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
-    info!("[axum] Server running on {}", address);
+    info!("[app] Server running on {}", address);
     axum::serve(listener, app).await.unwrap();
 }

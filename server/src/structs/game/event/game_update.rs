@@ -1,6 +1,4 @@
 use std::sync::Arc;
-
-use chrono::Utc;
 use tracing::warn;
 
 use crate::structs::{
@@ -8,7 +6,6 @@ use crate::structs::{
     game::{
         Game, MAX_ACTIVE_CARD_COUNT, MAX_PLAYER_COUNT,
         client::ClientId,
-        info::GameInfo,
         state::{
             Player,
             card::{ActiveCard, Card, CurrentCard},
@@ -67,7 +64,7 @@ impl Game {
 
         // Game Info
         if let Some(game_info) = &payload.info {
-            game.parse_game_info(game_info.clone());
+            game.initialize_game(game_info.to_owned());
         }
 
         if !response.is_empty() {
@@ -160,18 +157,5 @@ impl Game {
 
         self.update_active_cards(new_active_cards);
         response.active_cards = Some(self.state.active_cards.clone());
-    }
-
-    fn parse_game_info(&mut self, mut game_info: GameInfo) {
-        if self.info.is_some() {
-            warn!(
-                "[game] {} | Attempted to update game info after game start",
-                self.join_code
-            );
-            return;
-        }
-        game_info.started_at_ms = Utc::now().timestamp_millis();
-        // TODO: validate
-        self.info = Some(game_info);
     }
 }

@@ -153,7 +153,7 @@ impl Game {
     pub fn close(&mut self, reason: GameEndReason) {
         self.game_end_reason = Some(reason);
         if let Some(info) = &mut self.info {
-            info.ended_at_ms = Utc::now().timestamp_millis()
+            info.ended_at_ms = Utc::now();
         }
 
         if self.is_initialized().not() {

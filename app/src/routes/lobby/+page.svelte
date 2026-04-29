@@ -72,11 +72,6 @@
         console.log("closed");
     });
 
-    // TODO: is redundant?
-    beforeNavigate(() => {
-        socket?.close();
-    });
-
     onDestroy(() => {
         socket?.close();
         settingUnsubscriber?.();

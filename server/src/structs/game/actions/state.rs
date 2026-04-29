@@ -30,10 +30,10 @@ impl Game {
                 .push(TelemetryEvent::from_card_viewed(&previous_card));
 
             info!(
-                "[game] {} | card ({}) played for {:.1}s",
+                "[game] {} | card played for {:.1}s ({})",
                 self.join_code,
-                previous_card.inner.id,
-                previous_card.inner.get_duration() as f64 / 1000.0
+                previous_card.inner.get_duration() as f64 / 1000.0,
+                previous_card.inner.id
             );
         }
 
@@ -49,9 +49,13 @@ impl Game {
                 .any(|c| c.inner.instance_id == card.inner.instance_id)
             {
                 info!(
-                    "[card] {} | dismissed at turn {:?} out of {:?}",
-                    card.inner.id, card.turns.turns_passed, card.turns.original_turn_count
+                    "[game] {} | Active card dismissed at turn {:?} out of {:?} ({})",
+                    self.join_code,
+                    card.turns.turns_passed,
+                    card.turns.original_turn_count,
+                    card.inner.id,
                 );
+
                 self.app_state
                     .telemetry
                     .push(TelemetryEvent::from_active_card(card));

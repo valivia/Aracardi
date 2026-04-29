@@ -17,7 +17,7 @@ serde = { version = "1", features = ["derive"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features=["env-filter", "time"] }
 thiserror = "2.0.18"
-serde_with = { version = "3.18.0", features = ["json"] }
+serde_with = { version = "3.18.0", features = ["json", "chrono_0_4"] }
 chrono = { version = "0.4.44", features = ["serde"] }
 mongodb = "3.5.2"
 dotenv = "0.15.0"

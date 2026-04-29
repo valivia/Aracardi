@@ -29,9 +29,8 @@ impl Game {
             client.is_host = true;
             self.clients.insert(id, client);
             info!(
-                game = self.join_code,
                 client = id.to_string(),
-                "Host connected",
+                "[game] {} | Host connected", self.join_code,
             );
             return id;
         }
@@ -51,9 +50,9 @@ impl Game {
         }
 
         info!(
-            game = self.join_code,
             client = id.to_string(),
-            "{} reconnected",
+            "[game] {} | {} reconnected",
+            self.join_code,
             if id == self.host_id { "Host" } else { "Client" },
         );
 
@@ -67,9 +66,8 @@ impl Game {
         self.sync_client(&id);
 
         info!(
-            game = self.join_code,
             client = id.to_string(),
-            "Client connected",
+            "[game] {} | Client connected", self.join_code
         );
 
         return id;
@@ -82,7 +80,7 @@ impl Game {
 
         if client.is_disconnected() {
             debug!(
-                client_id = client_id.to_string(),
+                client = client_id.to_string(),
                 "Attempted to double disconnect"
             );
             return;
@@ -95,9 +93,9 @@ impl Game {
         }
 
         info!(
-            game = self.join_code,
             client = client_id.to_string(),
-            "{} disconnected",
+            "[game] {} | {} disconnected",
+            self.join_code,
             if client_id == &self.host_id {
                 "Host"
             } else {

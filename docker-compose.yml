@@ -19,7 +19,7 @@ services:
         build: ./server
         env_file: .env
         volumes:
-            - ./addons:/app/addons:ro
+            - ./cards/addons:/app/addons:ro
         networks:
             - bridge
             - nginx
@@ -30,7 +30,7 @@ services:
         build:
             context: app
             args:
-                DOMAIN: "beta.aracardi.com"
+                DOMAIN: "aracardi.com"
         networks:
             - nginx
 
