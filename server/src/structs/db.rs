@@ -4,7 +4,9 @@ use crate::structs::telemetry::{card::TelemetryCard, game::TelemetryGame};
 use mongodb::{Client, Collection, error::Error as MongoError};
 use std::env;
 use tracing::info;
-
+#[cfg(debug_assertions)]
+const DATABASE_NAME: &str = "dev";
+#[cfg(not(debug_assertions))]
 const DATABASE_NAME: &str = "aracardi";
 
 pub struct Database {

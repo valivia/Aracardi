@@ -31,7 +31,7 @@ impl Game {
         let log_message = format!(
             r#"
     <====== Game started ======>
-    join_code:   {}
+    Joincode:    {}
     Setup time:  {}m
     Players:     {:?}
     Addons:      {:?}

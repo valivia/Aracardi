@@ -21,3 +21,4 @@ serde_with = { version = "3.18.0", features = ["json", "chrono_0_4"] }
 chrono = { version = "0.4.44", features = ["serde"] }
 mongodb = "3.5.2"
 dotenv = "0.15.0"
+woothee = "0.13.0"

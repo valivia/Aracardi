@@ -1,5 +1,6 @@
 use axum::http::HeaderMap;
 use serde::Serialize;
+use woothee::parser::Parser;
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,5 +25,11 @@ impl ClientConnection {
             .get(key)
             .and_then(|value| value.to_str().ok())
             .map(str::to_owned)
+    }
+
+    pub fn get_os(&self) -> Option<String> {
+        let parser = Parser::new();
+        let result = parser.parse(self.user_agent.as_deref()?)?;
+        Some(result.os.to_string())
     }
 }

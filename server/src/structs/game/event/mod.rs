@@ -28,7 +28,7 @@ impl Game {
             Ok(_) => return,
             Err(e) => {
                 warn!(
-                    client = client_id.to_string(),
+                    client = %client_id,
                     "[game] {join_code} | Parse error: {e}"
                 );
                 return;

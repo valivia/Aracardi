@@ -140,7 +140,7 @@ export class WebsocketClient {
     }
 
     public static async createSession(): Promise<WebsocketClient> {
-        let payload: { gameId: string; hostId: string };
+        let payload: { joinCode: string; hostId: string };
 
         try {
             const response = await fetch(`${PUBLIC_SERVER_HTTP_URL}/lobby`, { method: "POST" });
@@ -150,9 +150,9 @@ export class WebsocketClient {
             throw new Error(`Failed to create session: `, { cause: error });
         }
 
-        console.log(`${TAG} Created session with ID:`, payload.gameId);
+        console.log(`${TAG} Created session with ID:`, payload.joinCode);
 
-        const client = new this(payload.gameId, true);
+        const client = new this(payload.joinCode, true);
         await client.connectToSocket(payload.hostId);
         return client;
     }

@@ -1,17 +1,21 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use serde_with::{TimestampMilliSeconds, serde_as};
 
+#[serde_as]
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionData {
+    #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
     pub original_connect_at: DateTime<Utc>,
+    #[serde_as(serialize_as = "Option<TimestampMilliSeconds<i64>>")]
     pub disconnected_at: Option<DateTime<Utc>>,
 
     #[serde(skip)]
     pub last_reconnect_at: Option<DateTime<Utc>>,
     pub reconnect_count: u32,
 
-    pub total_time_connected_s: i64,
+    pub total_time_connected_ms: i64,
 }
 
 impl Default for SessionData {
@@ -23,7 +27,7 @@ impl Default for SessionData {
             last_reconnect_at: None,
             reconnect_count: 0,
 
-            total_time_connected_s: 0,
+            total_time_connected_ms: 0,
         }
     }
 }
@@ -31,10 +35,11 @@ impl Default for SessionData {
 impl SessionData {
     pub fn log_disconnect(&mut self, game_ended: bool) {
         if let Some(last_reconnect) = self.last_reconnect_at {
-            self.total_time_connected_s += (Utc::now() - last_reconnect).num_seconds();
+            self.total_time_connected_ms += (Utc::now() - last_reconnect).num_milliseconds();
             self.last_reconnect_at = None;
-        } else if self.total_time_connected_s == 0 {
-            self.total_time_connected_s += (Utc::now() - self.original_connect_at).num_seconds();
+        } else if self.total_time_connected_ms == 0 {
+            self.total_time_connected_ms +=
+                (Utc::now() - self.original_connect_at).num_milliseconds();
         }
 
         if !game_ended {

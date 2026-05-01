@@ -8,14 +8,14 @@ use serde_with::{TimestampMilliSeconds, serde_as};
 pub struct GameInfo {
     pub addons: Vec<String>,
 
-    #[serde_as(deserialize_as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub initiated_at_ms: DateTime<Utc>,
 
-    #[serde_as(deserialize_as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
     #[serde(skip_deserializing, default = "get_utc")]
     pub started_at_ms: DateTime<Utc>,
 
-    #[serde_as(deserialize_as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
     #[serde(skip_deserializing, default = "get_utc")]
     pub ended_at_ms: DateTime<Utc>,
     pub version: String,

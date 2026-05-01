@@ -15,6 +15,8 @@ use crate::{
 pub struct CreatedGame {
     pub join_code: String,
     pub host_id: String,
+    // TODO: remove this (temporary backwards compatability fix)
+    pub game_id: String,
 }
 
 pub struct AppState {
@@ -35,6 +37,7 @@ impl AppState {
 
         let response = CreatedGame {
             join_code: join_code.clone(),
+            game_id: game.host_id.to_string(),
             host_id: game.host_id.to_string(),
         };
 

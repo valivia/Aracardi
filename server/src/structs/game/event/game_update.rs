@@ -29,7 +29,7 @@ impl Game {
         // Get game
         let Some(mut game) = state.games.get_mut(join_code) else {
             warn!(
-                client = client_id.to_string(),
+                client = %client_id,
                 "[game] {join_code} | Update for unknown game"
             );
             return;
@@ -38,7 +38,7 @@ impl Game {
         // Make sure only host can update game
         if &game.host_id != client_id {
             warn!(
-                client = client_id.to_string(),
+                client = %client_id,
                 "[game] {join_code} | Non-host client tried to send game update"
             );
             return;

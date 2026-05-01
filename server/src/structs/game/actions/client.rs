@@ -23,14 +23,18 @@ impl Game {
             return self.new_client(connection, socket);
         };
 
+        let os = connection.get_os();
+
         // Host connect
         if !self.clients.contains_key(&self.host_id) && id == self.host_id {
             let mut client = Client::new(id, connection, socket);
             client.is_host = true;
             self.clients.insert(id, client);
             info!(
-                client = id.to_string(),
-                "[game] {} | Host connected", self.join_code,
+                client = %id,
+                os,
+                "[game] {} | Host connected",
+                self.join_code,
             );
             return id;
         }
@@ -50,7 +54,8 @@ impl Game {
         }
 
         info!(
-            client = id.to_string(),
+            client = %id,
+            os,
             "[game] {} | {} reconnected",
             self.join_code,
             if id == self.host_id { "Host" } else { "Client" },
@@ -61,13 +66,16 @@ impl Game {
 
     fn new_client(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
         let id = Client::generate_id();
+        let os = connection.get_os();
         let client = Client::new(id, connection, socket);
         self.clients.insert(id, client);
         self.sync_client(&id);
 
         info!(
-            client = id.to_string(),
-            "[game] {} | Client connected", self.join_code
+            client = %id,
+            os,
+            "[game] {} | Client connected",
+            self.join_code,
         );
 
         return id;
@@ -80,14 +88,15 @@ impl Game {
 
         if client.is_disconnected() {
             debug!(
-                client = client_id.to_string(),
+                client = %client_id,
                 "Attempted to double disconnect"
             );
             return;
         }
 
         info!(
-            client = client_id.to_string(),
+            client = %client_id,
+            os = client.connection.get_os(),
             "[game] {} | {} disconnected ({})",
             self.join_code,
             if client_id == &self.host_id {
