@@ -1,14 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use serde_with::{TimestampMilliSeconds, serde_as};
 
-#[serde_as]
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionData {
-    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub original_connect_at: DateTime<Utc>,
-    #[serde_as(as = "Option<TimestampMilliSeconds<i64>>")]
     pub disconnected_at: Option<DateTime<Utc>>,
 
     #[serde(skip)]

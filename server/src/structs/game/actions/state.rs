@@ -17,7 +17,7 @@ impl Game {
             .is_some_and(|card| card == &new_card)
         {
             warn!(
-                "[game] {} | received update with unchanged card ID",
+                "[game] {} | Received update with unchanged card ID",
                 self.join_code
             );
             return;
@@ -30,7 +30,7 @@ impl Game {
                 .push(TelemetryEvent::from_card_viewed(&previous_card));
 
             info!(
-                "[game] {} | card played for {:.1}s ({})",
+                "[game] {} | Card played for {:.1}s ({})",
                 self.join_code,
                 previous_card.inner.get_duration() as f64 / 1000.0,
                 previous_card.inner.id
