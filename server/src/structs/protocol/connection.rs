@@ -2,7 +2,7 @@ use std::fmt;
 
 use axum::extract::ws::{CloseFrame, Message};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CloseReason {
     GameEnded,
     NotFound,
@@ -41,7 +41,7 @@ impl fmt::Display for CloseReason {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DisconnectReason {
     Close(CloseReason),
     StreamError,

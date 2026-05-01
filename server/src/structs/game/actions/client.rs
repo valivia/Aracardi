@@ -86,22 +86,23 @@ impl Game {
             return;
         }
 
-        client.disconnect(reason);
-
-        if client.is_host {
-            self.send_host_status()
-        }
-
         info!(
             client = client_id.to_string(),
-            "[game] {} | {} disconnected",
+            "[game] {} | {} disconnected ({})",
             self.join_code,
             if client_id == &self.host_id {
                 "Host"
             } else {
                 "Client"
-            }
+            },
+            &reason
         );
+
+        client.disconnect(reason);
+
+        if client.is_host {
+            self.send_host_status()
+        }
     }
 
     pub fn sync_client(&self, id: &ClientId) {

@@ -14,7 +14,7 @@ use crate::{
     AppState,
     structs::{
         game::{GameEndReason, MAX_HOST_ABSENCE, client::Client},
-        protocol::connection::CloseReason,
+        protocol::connection::{CloseReason, DisconnectReason},
     },
 };
 
@@ -82,7 +82,7 @@ pub async fn handle_socket(
     debug!("[game] {game_join_id} | {client_id} closed ping thread");
 
     if let Some(mut game) = state.games.get_mut(&game_join_id) {
-        game.disconnect_client(&client_id, disconnect_reason);
+        game.disconnect_client(&client_id, disconnect_reason.clone());
     }
 
     drop(client_tx);
@@ -91,7 +91,9 @@ pub async fn handle_socket(
     debug!("[game] {game_join_id} | {client_id} closed send thread");
 
     if is_host {
-        tokio::time::sleep(MAX_HOST_ABSENCE).await;
+        if disconnect_reason != DisconnectReason::ClosedByClient {
+            tokio::time::sleep(MAX_HOST_ABSENCE).await;
+        }
 
         let removed = state
             .games
@@ -100,11 +102,18 @@ pub async fn handle_socket(
         match removed {
             Some((_id, mut game)) => {
                 game.close(GameEndReason::HostLeft);
-                info!("[game] {game_join_id} | deleted game after host timeout");
+                info!(
+                    "[game] {game_join_id} | Deleted game after {}",
+                    if disconnect_reason == DisconnectReason::ClosedByClient {
+                        "closed by host"
+                    } else {
+                        "host timeout"
+                    }
+                );
             }
             None => {
                 debug!(
-                    "[game] {game_join_id} | game retained (host reconnected or already removed)"
+                    "[game] {game_join_id} | Game retained (host reconnected or already removed)"
                 );
             }
         }
