@@ -22,19 +22,25 @@ use crate::structs::{
 impl Game {
     pub async fn on_game_update(
         state: &Arc<AppState>,
-        game_id: &String,
+        join_code: &String,
         client_id: &ClientId,
         payload: HostUpdate,
     ) {
         // Get game
-        let Some(mut game) = state.games.get_mut(game_id) else {
-            warn!("[game] {game_id} | update for unknown game from {client_id}");
+        let Some(mut game) = state.games.get_mut(join_code) else {
+            warn!(
+                client = client_id.to_string(),
+                "[game] {join_code} | Update for unknown game"
+            );
             return;
         };
 
         // Make sure only host can update game
         if &game.host_id != client_id {
-            warn!("[game] {game_id} | non-host client {client_id} tried to send update");
+            warn!(
+                client = client_id.to_string(),
+                "[game] {join_code} | Non-host client tried to send game update"
+            );
             return;
         }
 
@@ -107,7 +113,7 @@ impl Game {
             return true;
         } else {
             warn!(
-                "[game] {} | invalid player ID: {current_player_id}",
+                "[game] {} | Invalid player ID: {current_player_id}",
                 self.join_code
             );
             return false;
@@ -128,7 +134,7 @@ impl Game {
             }
             Err(_) => {
                 warn!(
-                    "[game] {} | invalid card ID: {}",
+                    "[game] {} | Invalid card ID: {}",
                     self.join_code, current_card.id
                 );
                 return false;
@@ -149,7 +155,7 @@ impl Game {
                     new_active_cards.push(card);
                 }
                 Err(_) => warn!(
-                    "[game] {} | invalid active card ID: {}",
+                    "[game] {} | Invalid active card ID: {}",
                     self.join_code, active_card.id
                 ),
             }

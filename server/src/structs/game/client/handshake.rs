@@ -45,11 +45,11 @@ impl Client {
         state: &Arc<AppState>,
         headers: &HeaderMap,
         tx: Tx,
-        game_id: &str,
+        join_code: &str,
     ) -> Result<ClientId, AuthError> {
         let client_id = timeout(
             Duration::from_secs(10),
-            Self::handshake(socket, state, headers, tx, game_id),
+            Self::handshake(socket, state, headers, tx, join_code),
         )
         .await
         .unwrap_or(Err(AuthError::TimedOut))?;
@@ -67,7 +67,7 @@ impl Client {
         state: &Arc<AppState>,
         headers: &HeaderMap,
         tx: Tx,
-        game_id: &str,
+        join_code: &str,
     ) -> Result<ClientId, AuthError> {
         loop {
             let msg = match socket.recv().await {
@@ -83,7 +83,7 @@ impl Client {
                 Ok(IncomingMessage::Connect(requested_id)) => {
                     return Self::resolve_client(
                         state,
-                        game_id,
+                        join_code,
                         requested_id,
                         ClientConnection::new(headers),
                         ClientSocket::new(tx),
@@ -98,12 +98,12 @@ impl Client {
 
     async fn resolve_client(
         state: &Arc<AppState>,
-        game_id: &str,
+        join_code: &str,
         requested_id: Option<ClientId>,
         connection: ClientConnection,
         socket: ClientSocket,
     ) -> Result<ClientId, AuthError> {
-        let mut game = match state.games.get_mut(game_id) {
+        let mut game = match state.games.get_mut(join_code) {
             Some(g) => g,
             None => {
                 return Err(AuthError::GameNotFound);

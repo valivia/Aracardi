@@ -17,16 +17,16 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
     let game_info = state.create_game(&state);
 
     // Check if game has been intialized within the setup_timeout
-    let game_id = game_info.game_id.clone();
+    let join_code = game_info.join_code.clone();
     tokio::spawn(async move {
         tokio::time::sleep(MAX_SETUP_DURATION).await;
 
         // Check if game is initialized
         if let Some(_deleted) = state
             .games
-            .remove_if(&game_id, |_, game| !game.is_initialized())
+            .remove_if(&join_code, |_, game| !game.is_initialized())
         {
-            warn!("[game] {} | Was not initialized", game_id);
+            warn!("[game] {} | Was not initialized", join_code);
             return;
         }
 
@@ -37,16 +37,16 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
 
             if state
                 .games
-                .remove_if_mut(&game_id, |_, game| {
+                .remove_if_mut(&join_code, |_, game| {
                     already_deleted = false;
                     if Instant::now() > deadline {
-                        warn!("[game] {} | Exceeded max lifetime", game_id);
+                        warn!("[game] {} | Exceeded max lifetime", join_code);
                         game.close(GameEndReason::MaxDurationReached);
                         return true;
                     }
 
                     if game.is_idle() {
-                        info!("[game] {} | Was idle for too long", game_id);
+                        info!("[game] {} | Was idle for too long", join_code);
                         game.close(GameEndReason::Idle);
                         return true;
                     }
@@ -66,7 +66,7 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
             tokio::time::sleep(CHECK_INTERVAL).await;
         }
 
-        debug!("[game] {} | lifecycle thread closed", game_id)
+        debug!("[game] {} | Lifecycle thread closed", join_code)
     });
 
     Json(game_info)

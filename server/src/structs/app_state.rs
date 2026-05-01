@@ -13,7 +13,7 @@ use crate::{
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatedGame {
-    pub game_id: String,
+    pub join_code: String,
     pub host_id: String,
 }
 
@@ -25,22 +25,22 @@ pub struct AppState {
 
 impl AppState {
     pub fn create_game(&self, state: &Arc<AppState>) -> CreatedGame {
-        let mut game_id = Game::generate_join_code();
+        let mut join_code = Game::generate_join_code();
 
-        while self.games.contains_key(&game_id) {
-            game_id = Game::generate_join_code();
+        while self.games.contains_key(&join_code) {
+            join_code = Game::generate_join_code();
         }
 
-        let game = Game::new(game_id.clone(), state.clone());
+        let game = Game::new(join_code.clone(), state.clone());
 
         let response = CreatedGame {
-            game_id: game_id.clone(),
+            join_code: join_code.clone(),
             host_id: game.host_id.to_string(),
         };
 
-        info!("[game] {game_id} | Creating new game");
+        info!("[game] {join_code} | Creating new game");
 
-        self.games.insert(game_id.clone(), game);
+        self.games.insert(join_code.clone(), game);
 
         return response;
     }

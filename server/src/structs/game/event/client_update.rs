@@ -10,18 +10,18 @@ use crate::structs::{
 impl Game {
     pub fn on_client_update(
         state: &Arc<AppState>,
-        game_id: &String,
+        join_code: &String,
         client_id: &ClientId,
         payload: ClientPreferences,
     ) {
         // Get game
-        let Some(mut game) = state.games.get_mut(game_id) else {
-            warn!("[game] {game_id} | update for unknown game from {client_id}");
+        let Some(mut game) = state.games.get_mut(join_code) else {
+            warn!("[game] {join_code} | Update for unknown game from {client_id}");
             return;
         };
 
         let Some(client) = game.clients.get_mut(client_id) else {
-            warn!("[game] {game_id} | update for unknown client {client_id}");
+            warn!("[game] {join_code} | Update for unknown client {client_id}");
             return;
         };
 
