@@ -17,7 +17,7 @@ impl<'a> From<&'a ActiveCard> for TelemetryActiveCard {
             card_id: other.inner.id.clone(),
             duration_ms: other.inner.get_duration(),
             expected_turns: other.turns.original_turn_count,
-            actual_turns: other.turns.turns_left,
+            actual_turns: other.turns.turns_passed,
         }
     }
 }
