@@ -37,7 +37,7 @@ impl AppState {
 
         let response = CreatedGame {
             join_code: join_code.clone(),
-            game_id: game.host_id.to_string(),
+            game_id: join_code.to_string(),
             host_id: game.host_id.to_string(),
         };
 
