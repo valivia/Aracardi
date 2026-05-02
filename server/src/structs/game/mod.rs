@@ -16,7 +16,7 @@ use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
 use std::{collections::HashMap, ops::Not, sync::Arc, time::Duration};
-use tokio::time::Instant;
+use tokio::{task::JoinHandle, time::Instant};
 use uuid::Uuid;
 
 pub mod actions;
@@ -58,7 +58,7 @@ impl GameEndReason {
     }
 }
 
-#[derive(Clone)]
+#[derive()]
 pub struct Game {
     pub id: GameId,
     pub join_code: String,
@@ -66,6 +66,7 @@ pub struct Game {
     pub game_end_reason: Option<GameEndReason>,
 
     pub host_id: ClientId,
+    pub host_timeout_task: Option<JoinHandle<()>>,
     pub clients: HashMap<ClientId, Client>,
 
     pub info: Option<GameInfo>,
@@ -85,6 +86,7 @@ impl Game {
             join_code,
 
             host_id: Client::generate_id(),
+            host_timeout_task: None,
             clients: HashMap::new(),
 
             info: None,

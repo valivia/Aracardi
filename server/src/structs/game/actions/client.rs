@@ -1,8 +1,11 @@
+use std::sync::Arc;
+
 use tracing::{debug, info};
 
 use crate::structs::{
+    app_state::AppState,
     game::{
-        Game,
+        Game, GameEndReason, MAX_HOST_ABSENCE,
         client::{Client, connection::ClientConnection, socket::ClientSocket},
         state::ClientId,
     },
@@ -20,35 +23,33 @@ impl Game {
         socket: ClientSocket,
     ) -> ClientId {
         let Some(id) = id else {
-            return self.new_client(connection, socket);
+            return self.register_client(connection, socket);
         };
 
         let os = connection.get_os();
 
-        // Host connect
-        if !self.clients.contains_key(&self.host_id) && id == self.host_id {
-            let mut client = Client::new(id, connection, socket);
-            client.is_host = true;
-            self.clients.insert(id, client);
-            info!(
-                client = %id,
-                os,
-                "[game] {} | Host connected",
-                self.join_code,
-            );
-            return id;
-        }
-
         let Some(client) = self.clients.get_mut(&id) else {
-            return self.new_client(connection, socket);
+            return match id == self.host_id {
+                // Initial host join
+                true => self.register_host(connection, socket),
+                // Client joined with invalid ID
+                false => self.register_client(connection, socket),
+            };
         };
+
+        let is_host = client.is_host;
 
         // TODO: Handle user trying to connect to a non-dead connection
         // TODO: Maybe also compare ip/user agent
         client.reconnect(socket);
 
-        if client.is_host {
-            self.send_host_status()
+        if is_host {
+            self.send_host_status();
+
+            // Cancel deletion timer
+            if let Some(old_task) = self.host_timeout_task.take() {
+                old_task.abort();
+            }
         } else {
             self.sync_client(&id);
         }
@@ -58,15 +59,32 @@ impl Game {
             os,
             "[game] {} | {} reconnected",
             self.join_code,
-            if id == self.host_id { "Host" } else { "Client" },
+            if is_host { "Host" } else { "Client" },
         );
 
         return id;
     }
 
-    fn new_client(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
-        let id = Client::generate_id();
+    fn register_host(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
         let os = connection.get_os();
+        let mut client = Client::new(self.host_id, connection, socket);
+        client.is_host = true;
+
+        self.clients.insert(self.host_id, client);
+
+        info!(
+            client = %self.host_id,
+            os,
+            "[game] {} | Host connected",
+            self.join_code,
+        );
+
+        return self.host_id;
+    }
+
+    fn register_client(&mut self, connection: ClientConnection, socket: ClientSocket) -> ClientId {
+        let os = connection.get_os();
+        let id = Client::generate_id();
         let client = Client::new(id, connection, socket);
         self.clients.insert(id, client);
         self.sync_client(&id);
@@ -107,10 +125,21 @@ impl Game {
             &reason
         );
 
-        client.disconnect(reason);
+        client.disconnect(reason.clone());
 
         if client.is_host {
-            self.send_host_status()
+            self.send_host_status();
+
+            if let Some(old_task) = self.host_timeout_task.take() {
+                old_task.abort();
+            }
+
+            if !reason.is_intentional() {
+                self.host_timeout_task = Some(tokio::spawn(Self::host_timeout(
+                    self.app_state.clone(),
+                    self.join_code.clone(),
+                )));
+            }
         }
     }
 
@@ -120,6 +149,19 @@ impl Game {
         game_update.host_connected = Some(self.is_host_connected());
         if let Some(client) = client {
             client.send(OutgoingMessage::GameUpdate(game_update).to_message());
+        }
+    }
+
+    async fn host_timeout(state: Arc<AppState>, join_code: String) {
+        tokio::time::sleep(MAX_HOST_ABSENCE).await;
+
+        let removed = state
+            .games
+            .remove_if(&join_code, |_, game| !game.is_host_connected());
+
+        if let Some((_id, mut game)) = removed {
+            game.close(GameEndReason::HostLeft);
+            info!("[game] {join_code} | Deleted game after host timeout");
         }
     }
 }

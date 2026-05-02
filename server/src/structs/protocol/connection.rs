@@ -55,6 +55,10 @@ impl DisconnectReason {
             _ => None,
         }
     }
+
+    pub fn is_intentional(&self) -> bool {
+        self == &Self::ClosedByClient
+    }
 }
 
 impl fmt::Display for DisconnectReason {
