@@ -1,10 +1,10 @@
+use crate::{AppState, structs::game::state::ClientId};
 use std::{sync::Arc, time::Duration};
 use tokio::sync::oneshot;
 
-use crate::{AppState, structs::game::state::ClientId};
-
-const PING_INTERVAL: Duration = Duration::from_secs(5);
-const PONG_TIMEOUT: Duration = Duration::from_secs(3);
+const PING_INTERVAL: Duration = Duration::from_secs(2);
+const PONG_TIMEOUT: Duration = Duration::from_secs(4);
+const MAX_MISSED_PONGS: u32 = 3;
 
 pub async fn ping_task(
     timeout_tx: oneshot::Sender<()>,
@@ -12,9 +12,12 @@ pub async fn ping_task(
     join_code: String,
     client_id: ClientId,
 ) {
+    let mut missed = 0u32;
+
     loop {
         tokio::time::sleep(PING_INTERVAL).await;
 
+        // Send ping
         match state.games.get_mut(&join_code) {
             Some(mut game) => match game.clients.get_mut(&client_id) {
                 Some(client) => {
@@ -29,16 +32,24 @@ pub async fn ping_task(
 
         tokio::time::sleep(PONG_TIMEOUT).await;
 
+        // Check pong
         let timed_out = match state.games.get(&join_code) {
             Some(game) => match game.clients.get(&client_id) {
                 Some(client) => client.is_ping_timed_out(),
-                None => true,
+                // Client removed, exit cleanly
+                None => break,
             },
-            None => true,
+            // Game removed, exit cleanly
+            None => return,
         };
 
         if timed_out {
-            break;
+            missed += 1;
+            if missed >= MAX_MISSED_PONGS {
+                break;
+            }
+        } else {
+            missed = 0;
         }
     }
 
