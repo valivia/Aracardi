@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
@@ -47,7 +47,7 @@ impl InnerCard {
         return true;
     }
 
-    pub fn get_duration(&self) -> i64 {
-        (Utc::now() - self.created_at).num_milliseconds()
+    pub fn get_duration(&self) -> TimeDelta {
+        Utc::now().signed_duration_since(self.created_at)
     }
 }

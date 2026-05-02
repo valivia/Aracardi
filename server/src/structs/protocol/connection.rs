@@ -45,6 +45,7 @@ impl fmt::Display for CloseReason {
 pub enum DisconnectReason {
     Close(CloseReason),
     StreamError,
+    StreamEnded,
     ClosedByClient,
 }
 
@@ -66,6 +67,7 @@ impl fmt::Display for DisconnectReason {
         match self {
             Self::Close(reason) => write!(f, "{reason}"),
             Self::StreamError => write!(f, "STREAM_ERROR"),
+            Self::StreamEnded => write!(f, "STREAM_ENDED"),
             Self::ClosedByClient => write!(f, "CLOSED_BY_CLIENT"),
         }
     }

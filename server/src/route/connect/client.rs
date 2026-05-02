@@ -4,20 +4,17 @@ use axum::{
 };
 use futures_util::StreamExt;
 use std::sync::Arc;
-use tokio::{
-    sync::{
-        mpsc::{self},
-        oneshot,
-    },
-    time::Instant,
+use tokio::sync::{
+    mpsc::{self},
+    oneshot,
 };
 use tracing::{debug, info};
 
 use crate::{
     AppState,
     structs::{
-        game::{GameEndReason, MAX_HOST_ABSENCE, client::Client},
-        protocol::connection::{CloseReason, DisconnectReason},
+        game::{GameEndReason, client::Client},
+        protocol::connection::CloseReason,
     },
 };
 
@@ -93,7 +90,7 @@ pub async fn handle_socket(
         let removed = state.games.remove(&join_code);
 
         if let Some((_id, mut game)) = removed {
-            game.close(GameEndReason::HostLeft);
+            game.close(GameEndReason::Closed);
             info!("[game] {join_code} | Deleted game after closed by host");
         }
     }

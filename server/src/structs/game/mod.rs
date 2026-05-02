@@ -15,7 +15,7 @@ use crate::structs::{
 use axum::extract::ws::Message;
 use chrono::Utc;
 use nanoid::nanoid;
-use std::{collections::HashMap, ops::Not, sync::Arc, time::Duration};
+use std::{collections::HashMap, fmt, ops::Not, sync::Arc, time::Duration};
 use tokio::{task::JoinHandle, time::Instant};
 use uuid::Uuid;
 
@@ -40,21 +40,28 @@ pub const MAX_HOST_ABSENCE: Duration = Duration::from_secs(20);
 #[cfg(not(debug_assertions))]
 pub const MAX_HOST_ABSENCE: Duration = Duration::from_mins(15);
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum GameEndReason {
-    HostLeft,
+    Closed,
+    HostTimeout,
     Idle,
     MaxDurationReached,
 }
 
-impl GameEndReason {
-    pub fn get_key(&self) -> String {
+impl fmt::Display for GameEndReason {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::HostLeft => "HOST_LEFT",
-            Self::Idle => "IDLE",
-            Self::MaxDurationReached => "MAX_DURATION_REACHED",
+            Self::Closed => write!(f, "HOST_LEFT"),
+            Self::HostTimeout => write!(f, "HOST_TIMEOUT"),
+            Self::Idle => write!(f, "IDLE"),
+            Self::MaxDurationReached => write!(f, "MAX_DURATION_REACHED"),
         }
-        .to_string()
+    }
+}
+
+impl GameEndReason {
+    pub fn is_intentional(&self) -> bool {
+        self == &Self::Closed
     }
 }
 
@@ -153,7 +160,8 @@ impl Game {
 
     // Telemetry
     pub fn close(&mut self, reason: GameEndReason) {
-        self.game_end_reason = Some(reason);
+        self.game_end_reason = Some(reason.clone());
+
         if let Some(info) = &mut self.info {
             info.ended_at_ms = Utc::now();
         }
@@ -166,7 +174,11 @@ impl Game {
             client.disconnect(DisconnectReason::Close(CloseReason::GameEnded));
         }
 
-        self.flush_active_cards();
+        // TODO: Implement telemetry flush in a way that accounts for the host absence timer
+        if reason.is_intentional() {
+            self.flush_active_cards();
+            self.flush_current_card();
+        }
 
         self.app_state
             .telemetry

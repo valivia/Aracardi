@@ -160,7 +160,7 @@ impl Game {
             .remove_if(&join_code, |_, game| !game.is_host_connected());
 
         if let Some((_id, mut game)) = removed {
-            game.close(GameEndReason::HostLeft);
+            game.close(GameEndReason::HostTimeout);
             info!("[game] {join_code} | Deleted game after host timeout");
         }
     }

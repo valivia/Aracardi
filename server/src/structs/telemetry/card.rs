@@ -13,7 +13,7 @@ impl<'a> From<&'a CurrentCard> for TelemetryCard {
     fn from(other: &'a CurrentCard) -> Self {
         TelemetryCard {
             card_id: other.inner.id.clone(),
-            duration_ms: other.inner.get_duration(),
+            duration_ms: other.inner.get_duration().num_milliseconds(),
         }
     }
 }

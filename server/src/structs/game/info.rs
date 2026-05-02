@@ -11,8 +11,9 @@ pub struct GameInfo {
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub initiated_at_ms: DateTime<Utc>,
 
-    #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
-    #[serde(skip_deserializing, default = "get_utc")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    // TODO: Remove default when sufficient people have updated
+    #[serde(default = "get_utc")]
     pub started_at_ms: DateTime<Utc>,
 
     #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]

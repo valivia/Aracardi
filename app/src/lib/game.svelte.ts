@@ -330,6 +330,7 @@ export class GameController {
             info: {
                 addons: this.selectedAddons.map((addon) => addon.title),
                 initiatedAtMs: Number(this.createdAt),
+                startedAtMs: Number(this.startedAt),
                 version: version,
             },
         });

@@ -45,7 +45,7 @@ impl TelemetryEvent {
             game_end_reason: game
                 .game_end_reason
                 .as_ref()
-                .and_then(|reason| Some(reason.get_key())),
+                .and_then(|reason| Some(reason.to_string())),
         }))
     }
 }

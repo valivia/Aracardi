@@ -75,6 +75,7 @@ export interface GameUpdate {
 export interface GameInfo {
     addons: string[];
     initiatedAtMs: number;
+    startedAtMs: number;
     version: string;
 }
 

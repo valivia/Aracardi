@@ -1,7 +1,10 @@
 use chrono::Utc;
 use tracing::warn;
 
-use crate::structs::game::{Game, info::GameInfo};
+use crate::{
+    structs::game::{Game, info::GameInfo},
+    util::human_readable::HumanReadable,
+};
 
 impl Game {
     pub fn initialize_game(&mut self, game_info: GameInfo) {
@@ -32,7 +35,7 @@ impl Game {
             r#"
     <====== Game started ======>
     Joincode:    {}
-    Setup time:  {}m
+    Setup time:  {}
     Players:     {:?}
     Addons:      {:?}
     Country:     {:?}
@@ -46,7 +49,7 @@ impl Game {
             game_info
                 .started_at_ms
                 .signed_duration_since(game_info.initiated_at_ms)
-                .as_seconds_f32(),
+                .human_readable(),
             self.state
                 .players
                 .iter()

@@ -1,11 +1,14 @@
 use tracing::{info, warn};
 
-use crate::structs::{
-    game::{
-        Game,
-        state::{ActiveCard, CurrentCard},
+use crate::{
+    structs::{
+        game::{
+            Game,
+            state::{ActiveCard, CurrentCard},
+        },
+        telemetry::event::TelemetryEvent,
     },
-    telemetry::event::TelemetryEvent,
+    util::human_readable::HumanReadable,
 };
 
 impl Game {
@@ -23,19 +26,7 @@ impl Game {
             return;
         }
 
-        if let Some(previous_card) = &self.state.current_card {
-            self.stats.card.register_card(&previous_card);
-            self.app_state
-                .telemetry
-                .push(TelemetryEvent::from_card_viewed(&previous_card));
-
-            info!(
-                "[game] {} | Card played for {:.1}s ({})",
-                self.join_code,
-                previous_card.inner.get_duration() as f64 / 1000.0,
-                previous_card.inner.id
-            );
-        }
+        self.flush_current_card();
 
         self.state.current_card = Some(new_card);
         self.state.log_update();
@@ -82,6 +73,22 @@ impl Game {
                 }
             })
             .collect();
+    }
+
+    pub fn flush_current_card(&mut self) {
+        if let Some(current_card) = &self.state.current_card {
+            self.stats.card.register_card(&current_card);
+            self.app_state
+                .telemetry
+                .push(TelemetryEvent::from_card_viewed(&current_card));
+
+            info!(
+                "[game] {} | Card played for {} ({})",
+                self.join_code,
+                current_card.inner.get_duration().human_readable(),
+                current_card.inner.id
+            );
+        }
     }
 
     pub fn flush_active_cards(&mut self) {

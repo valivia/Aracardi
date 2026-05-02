@@ -25,7 +25,7 @@ pub async fn receive(
                 match msg {
                     None => {
                         debug!("[game] {game_join_id} | {client_id} stream ended for");
-                        return DisconnectReason::StreamError;
+                        return DisconnectReason::StreamEnded;
                     }
                     Some(Err(e)) => {
                         debug!("[game] {game_join_id} | {client_id} received error: {e}");

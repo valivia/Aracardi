@@ -65,6 +65,7 @@ impl GameCardStats {
         self.duration_running_average_ms[index] =
             card.inner
                 .get_duration()
+                .num_milliseconds()
                 .clamp(0, Duration::from_mins(60).as_millis() as i64) as u32;
         self.play_count += 1;
         self.average_duration_ms = self.get_average_card_duration_ms();
