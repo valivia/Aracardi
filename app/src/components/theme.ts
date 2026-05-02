@@ -9,13 +9,13 @@ export function applyTheme(themeKey: keyof typeof themes) {
         return;
     }
 
-    localStorage.setItem(HAS_TRIED_THEMES_KEY, "true");
     document.body.setAttribute("data-theme", themeKey);
+    localStorage.setItem(HAS_TRIED_THEMES_KEY, "true");
 }
 
 export function getTheme(): keyof typeof themes | undefined {
     try {
-        const settings = JSON.parse(localStorage.getItem("theme") ?? "null");
+        const settings = JSON.parse(localStorage.getItem("settings") ?? "null");
         const theme = settings?.["theme"];
         return theme in themes ? theme : undefined;
     } catch {
