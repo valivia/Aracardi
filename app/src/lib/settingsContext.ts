@@ -24,6 +24,7 @@ function parseSettings(raw: unknown): Partial<Settings> {
     if (!raw || typeof raw !== "object") return {};
     const s = raw as Record<string, unknown>;
     return {
+        ...(typeof s.theme === "string" && { theme: s.theme as keyof typeof themes }),
         ...(typeof s.allowNsfw === "boolean" && { allowNsfw: s.allowNsfw }),
         ...(typeof s.loadImages === "boolean" && { loadImages: s.loadImages }),
         ...(typeof s.allowDuplicates === "boolean" && { allowDuplicates: s.allowDuplicates }),
