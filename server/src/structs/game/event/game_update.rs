@@ -10,7 +10,6 @@ use crate::structs::{
             Player,
             card::{ActiveCard, Card, CurrentCard},
         },
-        stats::GamePlayerStats,
     },
     protocol::message::{
         game_update::GameUpdate,
@@ -82,10 +81,15 @@ impl Game {
     }
 
     fn parse_players(&mut self, players: &[Player], response: &mut GameUpdate) {
-        let old_players = self.state.players.clone();
         let new_players: Vec<Player> = players
             .iter()
-            .filter(|p| p.is_valid())
+            .filter(|p| {
+                let is_valid = p.is_valid();
+                if !is_valid {
+                    warn!("[game] {} | Invalid player\n{:?}", self.join_code, &p);
+                }
+                is_valid
+            })
             .take(MAX_PLAYER_COUNT)
             .cloned()
             .collect();
@@ -97,26 +101,19 @@ impl Game {
             )
         }
 
-        self.stats.player += GamePlayerStats::calculate_changes(&old_players, &new_players);
-        self.stats
-            .used_avatars
-            .extend(new_players.iter().map(|p| p.avatar.clone()));
-
-        self.state.players = new_players;
+        Self::update_players(self, new_players);
         response.players = Some(self.state.players.clone());
     }
 
-    fn parse_current_player(&mut self, current_player_id: &str, response: &mut GameUpdate) -> bool {
+    fn parse_current_player(&mut self, current_player_id: &str, response: &mut GameUpdate) {
         if self.state.players.iter().any(|p| p.id == current_player_id) {
             self.state.current_player_id = Some(current_player_id.to_string());
             response.current_player_id = self.state.current_player_id.clone();
-            return true;
         } else {
             warn!(
-                "[game] {} | Invalid player ID: {current_player_id}",
+                "[game] {} | Invalid current player ({current_player_id})",
                 self.join_code
             );
-            return false;
         }
     }
 
@@ -125,19 +122,17 @@ impl Game {
         current_card: &HostCard,
         response: &mut GameUpdate,
         state: &Arc<AppState>,
-    ) -> bool {
+    ) {
         match CurrentCard::from_update(&state, &self.state, current_card).await {
             Ok(card) => {
                 self.update_current_card(card);
                 response.current_card = self.state.current_card.clone();
-                return true;
             }
-            Err(_) => {
+            Err(err) => {
                 warn!(
-                    "[game] {} | Invalid card ID: {}",
-                    self.join_code, current_card.id
+                    "[game] {} | Invalid card ({:?})\n{:?}",
+                    self.join_code, err, current_card
                 );
-                return false;
             }
         }
     }
@@ -154,9 +149,9 @@ impl Game {
                 Ok(card) => {
                     new_active_cards.push(card);
                 }
-                Err(_) => warn!(
-                    "[game] {} | Invalid active card ID: {}",
-                    self.join_code, active_card.id
+                Err(err) => warn!(
+                    "[game] {} | Invalid active card ({:?})\n{:?}",
+                    self.join_code, err, active_card
                 ),
             }
         }

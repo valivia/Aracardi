@@ -4,7 +4,8 @@ use crate::{
     structs::{
         game::{
             Game,
-            state::{ActiveCard, CurrentCard},
+            state::{ActiveCard, CurrentCard, Player},
+            stats::GamePlayerStats,
         },
         telemetry::event::TelemetryEvent,
     },
@@ -73,6 +74,15 @@ impl Game {
                 }
             })
             .collect();
+    }
+
+    pub fn update_players(&mut self, new_players: Vec<Player>) {
+        self.stats.player += GamePlayerStats::calculate_changes(&self.state.players, &new_players);
+        self.stats
+            .used_avatars
+            .extend(new_players.iter().map(|p| p.avatar.clone()));
+
+        self.state.players = new_players;
     }
 
     pub fn flush_current_card(&mut self) {

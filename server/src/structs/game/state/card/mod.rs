@@ -15,6 +15,7 @@ pub use self::current::CurrentCard;
 pub use self::inner::InnerCard;
 pub use self::turns::CardTurns;
 
+#[derive(Debug)]
 pub enum CardParseError {
     NotFound,
     InvalidPlayers,
