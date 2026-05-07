@@ -18,6 +18,7 @@ use nanoid::nanoid;
 use serde::Serialize;
 use std::{collections::HashMap, fmt, ops::Not, sync::Arc, time::Duration};
 use tokio::{task::JoinHandle, time::Instant};
+use tracing::warn;
 use uuid::Uuid;
 
 pub mod actions;
@@ -46,6 +47,17 @@ pub enum GameExclusionReason {
     GameDurationTooShort,
     TooFewCardsPlayed,
     PlayedCardsTooFast,
+}
+
+impl fmt::Display for GameExclusionReason {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidState => write!(f, "INVALID_STATE"),
+            Self::GameDurationTooShort => write!(f, "GAME_DURATION_TOO_SHORT"),
+            Self::TooFewCardsPlayed => write!(f, "TOO_FEW_CARDS_PLAYED"),
+            Self::PlayedCardsTooFast => write!(f, "PLAYED_CARDS_TOO_FAST"),
+        }
+    }
 }
 
 #[derive(Clone, Serialize, PartialEq)]
@@ -177,7 +189,7 @@ impl Game {
 
         // Game duration
         if let Some(info) = &self.info {
-            if Utc::now().signed_duration_since(info.started_at_ms) < TimeDelta::minutes(1) {
+            if Utc::now().signed_duration_since(info.started_at) < TimeDelta::minutes(1) {
                 reasons.push(GameExclusionReason::GameDurationTooShort);
             }
         }
@@ -199,7 +211,7 @@ impl Game {
         self.game_end_reason = Some(reason.clone());
 
         if let Some(info) = &mut self.info {
-            info.ended_at_ms = Utc::now();
+            info.ended_at = Utc::now();
         }
 
         if self.is_initialized().not() {
@@ -216,8 +228,13 @@ impl Game {
             self.flush_current_card();
         }
 
-        self.app_state
-            .telemetry
-            .push(TelemetryEvent::from_game_ended(&self));
+        if let Ok(event) = TelemetryEvent::from_game_ended(&self) {
+            self.app_state.telemetry.push(event);
+        } else {
+            warn!(
+                "[game] {} | tried to push telemetry for unitialized game",
+                &self.join_code
+            );
+        }
     }
 }

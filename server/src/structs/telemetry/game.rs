@@ -16,13 +16,12 @@ pub struct TelemetryGame {
     pub join_code: String,
 
     pub clients: Vec<Client>,
-    pub info: Option<GameInfo>,
+    pub info: GameInfo,
 
     pub players: Vec<TelemetryPlayer>,
     pub stats: GameStats,
 
-    pub should_exclude: bool,
     #[serde(skip_serializing_if = "<[_]>::is_empty")]
     pub exclusion_reasons: Vec<GameExclusionReason>,
-    pub game_end_reason: Option<GameEndReason>,
+    pub game_end_reason: GameEndReason,
 }

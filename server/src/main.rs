@@ -41,7 +41,7 @@ async fn main() {
 
     init_metrics();
 
-    let database = Database::new().await;
+    let database = Database::new().await.unwrap();
 
     let shared_state = Arc::new(AppState {
         games: DashMap::new(),

@@ -9,16 +9,18 @@ pub struct GameInfo {
     pub addons: Vec<String>,
 
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
-    pub initiated_at_ms: DateTime<Utc>,
+    #[serde(rename = "initiatedAtMs")]
+    pub initiated_at: DateTime<Utc>,
 
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde(rename = "startedAtMs")]
     // TODO: Remove default when sufficient people have updated
     #[serde(default = "get_utc")]
-    pub started_at_ms: DateTime<Utc>,
+    pub started_at: DateTime<Utc>,
 
     #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
     #[serde(skip_deserializing, default = "get_utc")]
-    pub ended_at_ms: DateTime<Utc>,
+    pub ended_at: DateTime<Utc>,
     pub version: String,
 }
 
@@ -30,9 +32,9 @@ impl Default for GameInfo {
     fn default() -> Self {
         GameInfo {
             addons: vec![],
-            started_at_ms: Utc::now(),
-            ended_at_ms: Utc::now(),
-            initiated_at_ms: Utc::now(),
+            started_at: Utc::now(),
+            ended_at: Utc::now(),
+            initiated_at: Utc::now(),
             version: "".to_string(),
         }
     }

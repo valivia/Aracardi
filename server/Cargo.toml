@@ -19,8 +19,8 @@ tracing-subscriber = { version = "0.3.22", features=["env-filter", "time"] }
 thiserror = "2.0.18"
 serde_with = { version = "3.18.0", features = ["json", "chrono_0_4"] }
 chrono = { version = "0.4.44", features = ["serde"] }
-mongodb = "3.5.2"
 dotenv = "0.15.0"
 woothee = "0.13.0"
 prometheus = "0.14.0"
 lazy_static = "1.5.0"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "json", "chrono", "uuid"] }

@@ -47,8 +47,8 @@ impl Game {
     "#,
             self.join_code,
             game_info
-                .started_at_ms
-                .signed_duration_since(game_info.initiated_at_ms)
+                .started_at
+                .signed_duration_since(game_info.initiated_at)
                 .human_readable(),
             self.state
                 .players

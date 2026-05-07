@@ -8,7 +8,7 @@ use tokio::sync::{
     mpsc::{self},
     oneshot,
 };
-use tracing::{debug, info};
+use tracing::debug;
 
 use crate::{
     AppState, CONNECTED_CLIENTS,

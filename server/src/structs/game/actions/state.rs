@@ -50,7 +50,7 @@ impl Game {
 
                 self.app_state
                     .telemetry
-                    .push(TelemetryEvent::from_active_card(card));
+                    .push(TelemetryEvent::from_active_card(card, &self.id));
             }
         }
 
@@ -90,7 +90,7 @@ impl Game {
             self.stats.card.register_card(&current_card);
             self.app_state
                 .telemetry
-                .push(TelemetryEvent::from_card_viewed(&current_card));
+                .push(TelemetryEvent::from_card_viewed(&current_card, &self.id));
 
             info!(
                 "[game] {} | Card played for {} ({})",
@@ -105,7 +105,7 @@ impl Game {
         for card in &self.state.active_cards {
             self.app_state
                 .telemetry
-                .push(TelemetryEvent::from_active_card(&card));
+                .push(TelemetryEvent::from_active_card(&card, &self.id));
         }
 
         self.state.active_cards = Vec::new()

@@ -1,6 +1,6 @@
 use crate::structs::{
     game::{
-        Game,
+        Game, GameId,
         state::{ActiveCard, CurrentCard},
     },
     telemetry::{
@@ -18,35 +18,36 @@ pub enum TelemetryEventType {
 pub struct TelemetryEvent(pub TelemetryEventType);
 
 impl TelemetryEvent {
-    pub fn from_card_viewed(card: &CurrentCard) -> Self {
-        Self(TelemetryEventType::CardViewed(TelemetryCard::from(card)))
+    pub fn from_card_viewed(card: &CurrentCard, game_id: &GameId) -> Self {
+        Self(TelemetryEventType::CardViewed(TelemetryCard::from_card(
+            card, game_id,
+        )))
     }
 
-    pub fn from_active_card(card: &ActiveCard) -> Self {
+    pub fn from_active_card(card: &ActiveCard, game_id: &GameId) -> Self {
         Self(TelemetryEventType::ActiveCardDismissed(
-            TelemetryActiveCard::from(card),
+            TelemetryActiveCard::from_card(card, game_id),
         ))
     }
 
-    pub fn from_game_ended(game: &Game) -> Self {
-        let exclusion_reasons = game.get_exclusion_reasons();
+    pub fn from_game_ended(game: &Game) -> Result<Self, ()> {
+        let info = game.info.clone().ok_or(())?;
+        let game_end_reason = game.game_end_reason.clone().ok_or(())?;
 
-        Self(TelemetryEventType::GameEnded(TelemetryGame {
+        Ok(Self(TelemetryEventType::GameEnded(TelemetryGame {
             id: game.id,
             join_code: game.join_code.clone(),
             players: game
                 .state
                 .players
                 .iter()
-                .map(|player| TelemetryPlayer::from(player))
+                .map(TelemetryPlayer::from)
                 .collect(),
-            clients: game.clients.values().cloned().collect::<Vec<_>>(),
-            info: game.info.clone(),
+            clients: game.clients.values().cloned().collect(),
+            info,
             stats: game.stats.clone(),
-
-            should_exclude: !exclusion_reasons.is_empty(),
-            exclusion_reasons,
-            game_end_reason: game.game_end_reason.to_owned(),
-        }))
+            exclusion_reasons: game.get_exclusion_reasons(),
+            game_end_reason,
+        })))
     }
 }
