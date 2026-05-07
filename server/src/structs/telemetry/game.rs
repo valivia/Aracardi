@@ -1,7 +1,10 @@
 use serde::Serialize;
 
 use crate::structs::{
-    game::{GameId, client::Client, info::GameInfo, stats::GameStats},
+    game::{
+        GameEndReason, GameExclusionReason, GameId, client::Client, info::GameInfo,
+        stats::GameStats,
+    },
     telemetry::player::TelemetryPlayer,
 };
 
@@ -18,5 +21,8 @@ pub struct TelemetryGame {
     pub players: Vec<TelemetryPlayer>,
     pub stats: GameStats,
 
-    pub game_end_reason: Option<String>,
+    pub should_exclude: bool,
+    #[serde(skip_serializing_if = "<[_]>::is_empty")]
+    pub exclusion_reasons: Vec<GameExclusionReason>,
+    pub game_end_reason: Option<GameEndReason>,
 }

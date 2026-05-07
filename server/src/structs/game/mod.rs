@@ -13,8 +13,9 @@ use crate::structs::{
     telemetry::event::TelemetryEvent,
 };
 use axum::extract::ws::Message;
-use chrono::Utc;
+use chrono::{TimeDelta, Utc};
 use nanoid::nanoid;
+use serde::Serialize;
 use std::{collections::HashMap, fmt, ops::Not, sync::Arc, time::Duration};
 use tokio::{task::JoinHandle, time::Instant};
 use uuid::Uuid;
@@ -29,7 +30,6 @@ pub mod stats;
 pub type GameId = Uuid;
 
 const MAX_CLIENT_COUNT: usize = 32;
-const MAX_PLAYER_COUNT: usize = 20;
 const MAX_ACTIVE_CARD_COUNT: usize = 50;
 
 pub const MAX_SETUP_DURATION: Duration = Duration::from_secs(30);
@@ -40,7 +40,15 @@ pub const MAX_HOST_ABSENCE: Duration = Duration::from_secs(20);
 #[cfg(not(debug_assertions))]
 pub const MAX_HOST_ABSENCE: Duration = Duration::from_mins(15);
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Serialize)]
+pub enum GameExclusionReason {
+    InvalidState,
+    GameDurationTooShort,
+    TooFewCardsPlayed,
+    PlayedCardsTooFast,
+}
+
+#[derive(Clone, Serialize, PartialEq)]
 pub enum GameEndReason {
     Closed,
     HostTimeout,
@@ -159,6 +167,34 @@ impl Game {
     }
 
     // Telemetry
+    pub fn get_exclusion_reasons(&self) -> Vec<GameExclusionReason> {
+        let mut reasons = Vec::new();
+
+        // Invalid state
+        if !self.state.is_valid() {
+            reasons.push(GameExclusionReason::InvalidState);
+        }
+
+        // Game duration
+        if let Some(info) = &self.info {
+            if Utc::now().signed_duration_since(info.started_at_ms) < TimeDelta::minutes(1) {
+                reasons.push(GameExclusionReason::GameDurationTooShort);
+            }
+        }
+
+        // Cards played
+        if self.stats.card.play_count < 3 {
+            reasons.push(GameExclusionReason::TooFewCardsPlayed);
+        }
+
+        // Card play speed
+        if self.stats.card.median_duration_ms < 3_000 {
+            reasons.push(GameExclusionReason::PlayedCardsTooFast);
+        }
+
+        reasons
+    }
+
     pub fn close(&mut self, reason: GameEndReason) {
         self.game_end_reason = Some(reason.clone());
 

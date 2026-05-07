@@ -29,6 +29,8 @@ impl TelemetryEvent {
     }
 
     pub fn from_game_ended(game: &Game) -> Self {
+        let exclusion_reasons = game.get_exclusion_reasons();
+
         Self(TelemetryEventType::GameEnded(TelemetryGame {
             id: game.id,
             join_code: game.join_code.clone(),
@@ -42,10 +44,9 @@ impl TelemetryEvent {
             info: game.info.clone(),
             stats: game.stats.clone(),
 
-            game_end_reason: game
-                .game_end_reason
-                .as_ref()
-                .and_then(|reason| Some(reason.to_string())),
+            should_exclude: !exclusion_reasons.is_empty(),
+            exclusion_reasons,
+            game_end_reason: game.game_end_reason.to_owned(),
         }))
     }
 }

@@ -11,6 +11,9 @@ pub use crate::structs::game::{
 pub mod card;
 pub mod player;
 
+pub const MIN_PLAYER_COUNT: usize = 2;
+pub const MAX_PLAYER_COUNT: usize = 20;
+
 #[derive(Clone, Debug)]
 pub struct GameState {
     pub last_update: Instant,
@@ -40,5 +43,19 @@ impl Default for GameState {
 impl GameState {
     pub fn log_update(&mut self) {
         self.last_update = Instant::now();
+    }
+
+    pub fn is_valid(&self) -> bool {
+        // Invalid turn
+        if self.current_card.is_none() || self.current_player_id.is_none() {
+            return false;
+        }
+
+        // Invalid player count
+        if !(MIN_PLAYER_COUNT..MAX_PLAYER_COUNT).contains(&self.players.len()) {
+            return false;
+        }
+
+        return true;
     }
 }

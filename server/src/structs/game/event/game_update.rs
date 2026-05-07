@@ -4,10 +4,10 @@ use tracing::warn;
 use crate::structs::{
     app_state::AppState,
     game::{
-        Game, MAX_ACTIVE_CARD_COUNT, MAX_PLAYER_COUNT,
+        Game, MAX_ACTIVE_CARD_COUNT,
         client::ClientId,
         state::{
-            Player,
+            MAX_PLAYER_COUNT, Player,
             card::{ActiveCard, Card, CurrentCard},
         },
     },
