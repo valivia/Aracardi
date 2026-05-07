@@ -1,5 +1,10 @@
 use crate::{
-    structs::{app_state::AppState, db::Database, telemetry::Telemetry},
+    structs::{
+        app_state::AppState,
+        db::Database,
+        prometheus::{ACTIVE_GAME_COUNTER, CONNECTED_CLIENTS, init_metrics},
+        telemetry::Telemetry,
+    },
     util::card_loader::load_cards,
 };
 use axum::{
@@ -34,6 +39,8 @@ async fn main() {
 
     info!("[app] Booting up...");
 
+    init_metrics();
+
     let database = Database::new().await;
 
     let shared_state = Arc::new(AppState {
@@ -46,7 +53,7 @@ async fn main() {
         .route("/lobby/{join_code}", get(route::check::handler))
         .route("/lobby/{join_code}/ws", any(route::connect::handler))
         .route("/lobby", post(route::create::handler))
-        .route("/lobby", get(route::list::handler))
+        .route("/metrics", get(route::metrics::handler))
         .with_state(shared_state)
         .layer(TraceLayer::new_for_http());
 

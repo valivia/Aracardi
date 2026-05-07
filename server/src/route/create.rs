@@ -4,7 +4,7 @@ use tokio::time::Instant;
 use tracing::{debug, info, warn};
 
 use crate::{
-    AppState,
+    ACTIVE_GAME_COUNTER, AppState,
     structs::{
         app_state::CreatedGame,
         game::{GameEndReason, MAX_GAME_DURATION, MAX_SETUP_DURATION},
@@ -18,6 +18,7 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
 
     // Check if game has been intialized within the setup_timeout
     let join_code = game_info.join_code.clone();
+
     tokio::spawn(async move {
         tokio::time::sleep(MAX_SETUP_DURATION).await;
 
@@ -26,7 +27,8 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
             .games
             .remove_if(&join_code, |_, game| !game.is_initialized())
         {
-            warn!("[game] {} | Was not initialized", join_code);
+            ACTIVE_GAME_COUNTER.dec();
+            warn!("[game] {join_code} | deleted game (NOT_INITIALIZED)");
             return;
         }
 

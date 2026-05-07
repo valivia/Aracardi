@@ -11,7 +11,7 @@ use tokio::sync::{
 use tracing::{debug, info};
 
 use crate::{
-    AppState,
+    AppState, CONNECTED_CLIENTS,
     structs::{
         game::{GameEndReason, client::Client},
         protocol::connection::CloseReason,
@@ -22,12 +22,23 @@ use super::heartbeat::ping_task;
 use super::receive::receive;
 use super::send::send_task;
 
+struct ClientGuard();
+
+impl Drop for ClientGuard {
+    fn drop(&mut self) {
+        CONNECTED_CLIENTS.dec();
+    }
+}
+
 pub async fn handle_socket(
     mut socket: WebSocket,
     state: Arc<AppState>,
     join_code: String,
     headers: HeaderMap,
 ) {
+    CONNECTED_CLIENTS.inc();
+    let _guard = ClientGuard();
+
     if !state.games.contains_key(&join_code) {
         let _ = socket.send(CloseReason::NotFound.to_message()).await;
         return;
@@ -87,11 +98,6 @@ pub async fn handle_socket(
 
     // Delete immediately if graceful shutdown
     if is_host && disconnect_reason.is_intentional() {
-        let removed = state.games.remove(&join_code);
-
-        if let Some((_id, mut game)) = removed {
-            game.close(GameEndReason::Closed);
-            info!("[game] {join_code} | Deleted game after closed by host");
-        }
+        state.remove_game(&join_code, GameEndReason::Closed);
     }
 }

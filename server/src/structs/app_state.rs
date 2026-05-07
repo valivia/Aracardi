@@ -6,7 +6,12 @@ use tokio::sync::RwLock;
 use tracing::info;
 
 use crate::{
-    structs::{game::Game, telemetry::Telemetry},
+    ACTIVE_GAME_COUNTER,
+    structs::{
+        game::{Game, GameEndReason},
+        prometheus::TOTAL_GAMES,
+        telemetry::Telemetry,
+    },
     util::card_loader::AddonCard,
 };
 
@@ -45,6 +50,21 @@ impl AppState {
 
         self.games.insert(join_code.clone(), game);
 
+        ACTIVE_GAME_COUNTER.inc();
+        TOTAL_GAMES.inc();
+
         return response;
+    }
+
+    pub fn remove_game(&self, join_code: &String, reason: GameEndReason) {
+        let Some((_id, mut game)) = self.games.remove(join_code) else {
+            return;
+        };
+
+        game.close(reason.clone());
+
+        ACTIVE_GAME_COUNTER.dec();
+
+        info!("[game] {join_code} | Deleted game ({})", reason);
     }
 }

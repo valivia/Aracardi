@@ -2,16 +2,19 @@ use std::sync::Arc;
 
 use tracing::{debug, info};
 
-use crate::structs::{
-    app_state::AppState,
-    game::{
-        Game, GameEndReason, MAX_HOST_ABSENCE,
-        client::{Client, connection::ClientConnection, socket::ClientSocket},
-        state::ClientId,
-    },
-    protocol::{
-        connection::DisconnectReason,
-        message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+use crate::{
+    ACTIVE_GAME_COUNTER,
+    structs::{
+        app_state::AppState,
+        game::{
+            Game, GameEndReason, MAX_HOST_ABSENCE,
+            client::{Client, connection::ClientConnection, socket::ClientSocket},
+            state::ClientId,
+        },
+        protocol::{
+            connection::DisconnectReason,
+            message::{game_update::GameUpdate, outgoing::OutgoingMessage},
+        },
     },
 };
 
@@ -161,7 +164,11 @@ impl Game {
 
         if let Some((_id, mut game)) = removed {
             game.close(GameEndReason::HostTimeout);
-            info!("[game] {join_code} | Deleted game after host timeout");
+            ACTIVE_GAME_COUNTER.dec();
+            info!(
+                "[game] {join_code} | Deleted game ({})",
+                GameEndReason::HostTimeout
+            );
         }
     }
 }
