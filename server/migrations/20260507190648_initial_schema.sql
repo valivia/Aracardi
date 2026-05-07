@@ -1,10 +1,6 @@
--- DROP SCHEMA public;
+-- active_card definition
 
-CREATE SCHEMA public AUTHORIZATION pg_database_owner;
-
--- public.active_card definition
-
-CREATE TABLE public.active_card (
+CREATE TABLE active_card (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
 	game_id uuid NOT NULL,
 	card_id varchar NOT NULL,
@@ -16,9 +12,9 @@ CREATE TABLE public.active_card (
 );
 
 
--- public.card definition
+-- card definition
 
-CREATE TABLE public.card (
+CREATE TABLE card (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
 	game_id uuid NOT NULL,
 	card_id varchar NOT NULL,
@@ -28,9 +24,9 @@ CREATE TABLE public.card (
 );
 
 
--- public.game definition
+-- game definition
 
-CREATE TABLE public.game (
+CREATE TABLE game (
 	id uuid NOT NULL,
 	join_code varchar NOT NULL,
 	addons _text NOT NULL,
@@ -54,9 +50,9 @@ CREATE TABLE public.game (
 );
 
 
--- public.client definition
+-- client definition
 
-CREATE TABLE public.client (
+CREATE TABLE client (
 	id uuid NOT NULL,
 	game_id uuid NOT NULL,
 	is_host bool NOT NULL,
@@ -71,13 +67,13 @@ CREATE TABLE public.client (
 	allow_nsfw bool NULL,
 	created_at timestamptz DEFAULT now() NOT NULL,
 	CONSTRAINT client_pkey PRIMARY KEY (id),
-	CONSTRAINT client_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.game(id) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT client_game_id_fkey FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
--- public.player definition
+-- player definition
 
-CREATE TABLE public.player (
+CREATE TABLE player (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
 	game_id uuid NOT NULL,
 	"name" text NOT NULL,
@@ -86,5 +82,5 @@ CREATE TABLE public.player (
 	was_loaded bool NOT NULL,
 	created_at timestamptz DEFAULT now() NOT NULL,
 	CONSTRAINT player_pkey PRIMARY KEY (id),
-	CONSTRAINT player_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.game(id) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT player_game_id_fkey FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
