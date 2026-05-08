@@ -11,3 +11,5 @@ export { default as SuccessIcon } from "virtual:icons/carbon/checkmark";
 export { default as VisibleIcon } from "virtual:icons/carbon/view";
 export { default as InvisibleIcon } from "virtual:icons/carbon/view-off";
 export { default as GithubLogo } from "virtual:icons/carbon/LogoGithub";
+export { default as WifiLogo } from "virtual:icons/carbon/wifi";
+export { default as WifiOffLogo } from "virtual:icons/carbon/wifi-off";

@@ -12,6 +12,7 @@
     import { HAS_TRIED_THEMES_KEY } from "components/theme.js";
     import type { Unsubscriber } from "svelte/store";
     import TextButton from "components/input/TextButton.svelte";
+    import Status from "components/game/Status.svelte";
 
     const { data } = $props();
 
@@ -79,6 +80,8 @@
 </script>
 
 <svelte:document on:visibilitychange={() => socket.onVisibilityChange()} />
+
+<Status socketState={socket.socketState} />
 
 <div class="layout">
     <aside class="players">

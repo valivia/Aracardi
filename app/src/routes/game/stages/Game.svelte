@@ -10,6 +10,7 @@
     import { useSettings } from "lib/settingsContext";
     import { ConnectionStatus } from "lib/websocket.svelte";
     import TextButton from "components/input/TextButton.svelte";
+    import Status from "components/game/Status.svelte";
 
     interface Props {
         game: GameController;
@@ -28,6 +29,10 @@
         }
     });
 </script>
+
+{#if game.socket}
+    <Status socketState={game.socket?.socketState} />
+{/if}
 
 <div class="layout">
     <aside class="players">
@@ -67,18 +72,20 @@
             />
         {/if}
         <span>
-            {#if game.socket}
+            {#if game.socket && game.socket.socketState.reason?.canRecreate !== true}
                 {game.socket.statusString}
                 {#if game.socket.socketState.reason?.canReconnect}
                     <TextButton onclick={() => game.socket?.restartConnectionCycle()}>Retry</TextButton>
-                {:else if game.socket.socketState.reason?.canRecreate}
-                    <TextButton onclick={() => game.initializeWebsocket()}>recreate</TextButton>
                 {/if}
             {:else if !game.isDismissed}
                 {#if game.isConnecting}
                     Connecting...
                 {:else}
-                    Failed to create a multiplayer lobby,
+                    {#if game.socket?.socketState.reason}
+                        {game.socket.socketState.reason.message},
+                    {:else}
+                        Failed to create a multiplayer lobby,
+                    {/if}
                     <TextButton onclick={() => game.initializeWebsocket()}>retry</TextButton> creation or
                     <TextButton onclick={() => (game.isDismissed = true)}>dismiss</TextButton> this message
                 {/if}

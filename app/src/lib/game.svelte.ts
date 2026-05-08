@@ -301,50 +301,6 @@ export class GameController {
         this.stage = state;
     }
 
-    public async initializeWebsocket() {
-        let socket;
-
-        this.isConnecting = true;
-        this.connectingTimeout = undefined;
-        try {
-            socket = await WebsocketClient.createSession();
-        } catch (e) {
-            console.error("Failed to initialize websocket: ", e);
-            this.connectingTimeout = setTimeout(() => {
-                this.isConnecting = false;
-                console.log("bbbb");
-            }, FAKE_SESSION_CREATION_TIME_MS);
-            return;
-        }
-
-        this.isConnecting = false;
-        this.isDismissed = false;
-
-        this.socket = socket;
-
-        this.socket?.send(IncomingMessageTopic.GameUpdate, {
-            players: this.players.map((player) => player.getSaveable()),
-            currentPlayerId: this.currentPlayer.id,
-            currentCard: this.currentCard?.getHostCard(),
-            activeCards: this.activeCards.map((card) => card.getHostCard()),
-            info: {
-                addons: this.selectedAddons.map((addon) => addon.title),
-                initiatedAtMs: Number(this.createdAt),
-                startedAtMs: Number(this.startedAt),
-                version: version,
-            },
-        });
-
-        this.unsubscribeSocketSettings?.();
-        this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
-            this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
-                theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
-                loadImages: value.loadImages,
-                allowNsfw: value.allowNsfw,
-            });
-        });
-    }
-
     private async startGame() {
         await this.loadCards();
         if (this.cards.length < 10) {
@@ -368,5 +324,57 @@ export class GameController {
         this.socket?.close();
 
         console.info("game ended");
+    }
+
+    // Socket
+    private syncState() {
+        this.socket?.send(IncomingMessageTopic.GameUpdate, {
+            players: this.players.map((player) => player.getSaveable()),
+            currentPlayerId: this.currentPlayer.id,
+            currentCard: this.currentCard?.getHostCard(),
+            activeCards: this.activeCards.map((card) => card.getHostCard()),
+            info: {
+                addons: this.selectedAddons.map((addon) => addon.title),
+                initiatedAtMs: Number(this.createdAt),
+                startedAtMs: Number(this.startedAt),
+                version: version,
+            },
+        });
+    }
+
+    public async initializeWebsocket() {
+        let socket;
+
+        this.socket = null;
+        this.isConnecting = true;
+        this.connectingTimeout = undefined;
+
+        try {
+            socket = await WebsocketClient.createSession();
+        } catch (e) {
+            console.error("Failed to initialize websocket: ", e);
+            this.connectingTimeout = setTimeout(() => {
+                this.isConnecting = false;
+                console.log("bbbb");
+            }, FAKE_SESSION_CREATION_TIME_MS);
+            return;
+        }
+
+        this.isConnecting = false;
+        this.isDismissed = false;
+
+        this.socket = socket;
+
+        this.syncState();
+        this.socket.onReady(this.syncState);
+
+        this.unsubscribeSocketSettings?.();
+        this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {
+            this.socket?.send(OutgoingMessageTopic.ClientUpdate, {
+                theme: localStorage.getItem(HAS_TRIED_THEMES_KEY) === "true" ? value.theme : undefined,
+                loadImages: value.loadImages,
+                allowNsfw: value.allowNsfw,
+            });
+        });
     }
 }

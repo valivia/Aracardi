@@ -29,7 +29,7 @@ const connectionCloseProtocol: Record<ConnectionClose, ConnectionCloseProtocol> 
         canRecreate: true,
     },
     NOT_FOUND: {
-        message: "This session no longer exists",
+        message: "Could not find game lobby",
         canRecreate: true,
     },
     GAME_FULL: {
@@ -84,7 +84,7 @@ class SocketError extends Error {
     }
 }
 
-type SocketState =
+export type SocketState =
     | {
           status: ConnectionStatus.Closed;
           reason: ConnectionCloseProtocol;
@@ -94,10 +94,11 @@ type SocketState =
           reason?: never;
       };
 
-const HANDSHAKE_TIMEOUT_MS = 5000;
-const RECONNECT_BASE_DELAY_MS = 1000;
-const RECONNECT_MAX_DELAY_MS = 30_000;
-const RECONNECT_MAX_ATTEMPTS = 10;
+const HANDSHAKE_TIMEOUT_MS = 5_000;
+
+const RECONNECT_DELAY = 6_000;
+const RECONNECT_TIMEOUT = 1_000 * 60 * 15;
+const RECONNECT_MAX_ATTEMPTS = RECONNECT_TIMEOUT / RECONNECT_DELAY;
 
 export class WebsocketClient {
     public readonly session_id: string;
@@ -119,14 +120,6 @@ export class WebsocketClient {
 
     public statusString = $derived.by(() => {
         switch (this.socketState.status) {
-            case ConnectionStatus.Connecting: {
-                let output = `Connecting..`;
-
-                if (this.reconnectAttempts) {
-                    output += ` (attempt ${this.reconnectAttempts}/${RECONNECT_MAX_ATTEMPTS})`;
-                }
-                return output;
-            }
             case ConnectionStatus.Closed:
                 return this.socketState.reason.message;
         }
@@ -286,14 +279,10 @@ export class WebsocketClient {
             return;
         }
 
-        // Exponential backoff with jitter
-        const delay = Math.min(
-            RECONNECT_BASE_DELAY_MS * 2 ** this.reconnectAttempts + Math.random() * 500,
-            RECONNECT_MAX_DELAY_MS,
-        );
+        let delay = this.reconnectAttempts < 3 ? 2_000 : RECONNECT_DELAY;
 
         this.reconnectAttempts++;
-        console.debug(`${TAG} Reconnecting in ${Math.round(delay)}ms (attempt ${this.reconnectAttempts})`);
+        console.debug(`${TAG} Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
         this.reconnectTimer = setTimeout(async () => {
             await this.connectToSocket(requestedClientId).catch(() => null);
