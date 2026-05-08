@@ -41,7 +41,7 @@ impl Game {
                 .any(|c| c.inner.instance_id == card.inner.instance_id)
             {
                 info!(
-                    "[game] {} | Active card dismissed at turn {:?} out of {:?} ({})",
+                    "[game] {} | 📤 Active card dismissed at turn {:?} out of {:?} ({})",
                     self.join_code,
                     card.turns.turns_passed,
                     card.turns.original_turn_count,
@@ -93,7 +93,7 @@ impl Game {
                 .push(TelemetryEvent::from_card_viewed(&current_card, &self.id));
 
             info!(
-                "[game] {} | Card played for {} ({})",
+                "[game] {} | 🔷 Card played for {} ({})",
                 self.join_code,
                 current_card.inner.get_duration().human_readable(),
                 current_card.inner.id

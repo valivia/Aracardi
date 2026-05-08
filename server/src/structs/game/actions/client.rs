@@ -60,7 +60,7 @@ impl Game {
         info!(
             client = %id,
             os,
-            "[game] {} | {} reconnected",
+            "[game] {} | 🟡 {} reconnected",
             self.join_code,
             if is_host { "Host" } else { "Client" },
         );
@@ -78,7 +78,7 @@ impl Game {
         info!(
             client = %self.host_id,
             os,
-            "[game] {} | Host connected",
+            "[game] {} | 🔌 Host connected",
             self.join_code,
         );
 
@@ -95,7 +95,7 @@ impl Game {
         info!(
             client = %id,
             os,
-            "[game] {} | Client connected",
+            "[game] {} | 🟢 Client connected",
             self.join_code,
         );
 
@@ -118,7 +118,7 @@ impl Game {
         info!(
             client = %client_id,
             os = client.connection.get_os(),
-            "[game] {} | {} disconnected ({})",
+            "[game] {} | 🔴 {} disconnected ({})",
             self.join_code,
             if client_id == &self.host_id {
                 "Host"
@@ -166,7 +166,7 @@ impl Game {
             game.close(GameEndReason::HostTimeout);
             ACTIVE_GAME_COUNTER.dec();
             info!(
-                "[game] {join_code} | Deleted game ({})",
+                "[game] {join_code} | 🗑️  Deleted game ({})",
                 GameEndReason::HostTimeout
             );
         }

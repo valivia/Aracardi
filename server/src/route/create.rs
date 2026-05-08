@@ -42,13 +42,19 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
                 .remove_if_mut(&join_code, |_, game| {
                     already_deleted = false;
                     if Instant::now() > deadline {
-                        warn!("[game] {} | Exceeded max lifetime", join_code);
+                        warn!(
+                            "[game] {join_code} |🗑️  Deleted game ({})",
+                            GameEndReason::MaxDurationReached
+                        );
                         game.close(GameEndReason::MaxDurationReached);
                         return true;
                     }
 
                     if game.is_idle() {
-                        info!("[game] {} | Was idle for too long", join_code);
+                        info!(
+                            "[game] {join_code} |🗑️  Deleted game ({})",
+                            GameEndReason::Idle
+                        );
                         game.close(GameEndReason::Idle);
                         return true;
                     }
@@ -57,6 +63,7 @@ pub async fn handler(State(state): State<Arc<AppState>>) -> Json<CreatedGame> {
                 })
                 .is_some()
             {
+                ACTIVE_GAME_COUNTER.dec();
                 break;
             }
 

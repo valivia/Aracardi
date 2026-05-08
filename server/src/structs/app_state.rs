@@ -46,7 +46,7 @@ impl AppState {
             host_id: game.host_id.to_string(),
         };
 
-        info!("[game] {join_code} | Creating new game");
+        info!("[game] {join_code} | 🎮 Game created");
 
         self.games.insert(join_code.clone(), game);
 
@@ -65,6 +65,6 @@ impl AppState {
 
         ACTIVE_GAME_COUNTER.dec();
 
-        info!("[game] {join_code} | Deleted game ({})", reason);
+        info!("[game] {join_code} | 🗑️  Deleted game ({})", reason);
     }
 }
