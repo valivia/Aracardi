@@ -7,6 +7,7 @@ use crate::{
             state::{ActiveCard, CurrentCard, Player},
             stats::GamePlayerStats,
         },
+        prometheus::CARDS_PLAYED_SUM,
         telemetry::event::TelemetryEvent,
     },
     util::human_readable::HumanReadable,
@@ -91,6 +92,8 @@ impl Game {
             self.app_state
                 .telemetry
                 .push(TelemetryEvent::from_card_viewed(&current_card, &self.id));
+
+            CARDS_PLAYED_SUM.inc();
 
             info!(
                 "[game] {} | 🔷 Card played for {} ({})",

@@ -9,7 +9,7 @@ use crate::{
     ACTIVE_GAME_COUNTER,
     structs::{
         game::{Game, GameEndReason},
-        prometheus::TOTAL_GAMES,
+        prometheus::GAMES_CREATED_SUM,
         telemetry::Telemetry,
     },
     util::card_loader::AddonCard,
@@ -51,7 +51,7 @@ impl AppState {
         self.games.insert(join_code.clone(), game);
 
         ACTIVE_GAME_COUNTER.inc();
-        TOTAL_GAMES.inc();
+        GAMES_CREATED_SUM.inc();
 
         return response;
     }

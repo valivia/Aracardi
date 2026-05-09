@@ -2,8 +2,13 @@ use lazy_static::lazy_static;
 use prometheus::{IntCounter, IntGauge, register_int_counter, register_int_gauge};
 
 lazy_static! {
-    pub static ref TOTAL_GAMES: IntCounter =
-        register_int_counter!("total_games", "Total number of games").unwrap();
+    pub static ref GAMES_CREATED_SUM: IntCounter =
+        register_int_counter!("games_created_sum", "Total number of games created").unwrap();
+}
+
+lazy_static! {
+    pub static ref CARDS_PLAYED_SUM: IntCounter =
+        register_int_counter!("cards_played_sum", "Total number of cards played").unwrap();
 }
 
 lazy_static! {
@@ -17,7 +22,8 @@ lazy_static! {
 }
 
 pub fn init_metrics() {
-    TOTAL_GAMES.reset();
+    GAMES_CREATED_SUM.reset();
+    CARDS_PLAYED_SUM.reset();
     ACTIVE_GAME_COUNTER.set(0);
     CONNECTED_CLIENTS.set(0);
 }
