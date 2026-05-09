@@ -8,7 +8,10 @@ use crate::{
         app_state::AppState,
         game::{
             Game, GameEndReason, MAX_HOST_ABSENCE,
-            client::{Client, connection::ClientConnection, socket::ClientSocket},
+            client::{
+                Client, ClientDisconnectError, Tx, connection::ClientConnection,
+                socket::ClientSocket,
+            },
             state::ClientId,
         },
         protocol::{
@@ -102,17 +105,30 @@ impl Game {
         return id;
     }
 
-    pub fn disconnect_client(&mut self, client_id: &ClientId, reason: DisconnectReason) {
+    pub fn disconnect_client(
+        &mut self,
+        client_id: &ClientId,
+        reason: DisconnectReason,
+        tx: &Tx,
+    ) -> Result<(), ClientDisconnectError> {
         let Some(client) = self.clients.get_mut(&client_id) else {
-            return;
+            return Err(ClientDisconnectError::NotFound);
         };
 
-        if client.is_disconnected() {
+        if let Some(socket) = &client.socket {
+            if !socket.tx.same_channel(tx) {
+                debug!(
+                    client = %client_id,
+                    "Old connection tried to disconnect new session"
+                );
+                return Err(ClientDisconnectError::AlreadyDisconnected);
+            }
+        } else {
             debug!(
                 client = %client_id,
                 "Attempted to double disconnect"
             );
-            return;
+            return Err(ClientDisconnectError::AlreadyDisconnected);
         }
 
         info!(
@@ -144,6 +160,8 @@ impl Game {
                 )));
             }
         }
+
+        return Ok(());
     }
 
     pub fn sync_client(&self, id: &ClientId) {

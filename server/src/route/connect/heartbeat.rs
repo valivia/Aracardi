@@ -1,4 +1,7 @@
-use crate::{AppState, structs::game::state::ClientId};
+use crate::{
+    AppState,
+    structs::game::{client::Tx, state::ClientId},
+};
 use std::{sync::Arc, time::Duration};
 use tokio::sync::oneshot;
 
@@ -11,6 +14,7 @@ pub async fn ping_task(
     state: Arc<AppState>,
     join_code: String,
     client_id: ClientId,
+    tx: Tx,
 ) {
     let mut missed = 0u32;
 
@@ -21,7 +25,7 @@ pub async fn ping_task(
         match state.games.get_mut(&join_code) {
             Some(mut game) => match game.clients.get_mut(&client_id) {
                 Some(client) => {
-                    if client.ping().is_err() {
+                    if client.ping(&tx).is_err() {
                         break;
                     }
                 }

@@ -153,12 +153,13 @@ export class WebsocketClient {
     // ### Socket ###
     public async restartConnectionCycle() {
         this.reconnectAttempts = 0;
-        clearTimeout(this.reconnectTimer);
         await this.connectToSocket();
     }
 
     public async connectToSocket(requestedClientId?: string): Promise<void> {
         clearTimeout(this.reconnectTimer);
+
+        if (this.socket) this.detachSocketListeners(this.socket);
 
         this.socketState = { status: ConnectionStatus.Connecting };
         this.manualClose = false;
@@ -168,6 +169,7 @@ export class WebsocketClient {
         const url = `${PUBLIC_SERVER_WS_URL}/lobby/${this.session_id}/ws`;
         console.debug(`${TAG} Connecting to websocket at ${url}`);
 
+        this.socket = undefined;
         const socket = new WebSocket(url);
 
         try {
@@ -233,36 +235,44 @@ export class WebsocketClient {
         });
     }
 
+    private socketOnMessage = (event: any) => {
+        const data: string = event.data;
+        const message = WebsocketClient.parseMessage(data);
+        if (message === null) return;
+
+        const listeners = this.messageListeners.get(message.topic);
+        if (!listeners) return;
+
+        try {
+            const payload = JSON.parse(message.payload);
+            for (const callback of listeners) callback(payload);
+        } catch {
+            console.error(`${TAG} Failed to parse message payload for topic:`, message.topic);
+        }
+    };
+
+    private socketOnClose = (event: any) => {
+        let error = new SocketError(event.code, event.reason);
+        console.log({ event, protocol: error.get_protocol() });
+
+        if (!error.get_protocol().canReconnect || this.manualClose) {
+            this.socketState = { status: ConnectionStatus.Closed, reason: error.get_protocol() };
+
+            for (const callback of this.closeListeners) callback();
+            return;
+        }
+
+        this.scheduleReconnect();
+    };
+
+    private detachSocketListeners(socket: WebSocket): void {
+        socket.removeEventListener("message", this.socketOnMessage);
+        socket.removeEventListener("close", this.socketOnClose);
+    }
+
     private attachSocketListeners(socket: WebSocket): void {
-        socket.addEventListener("message", (event) => {
-            const data: string = event.data;
-            const message = WebsocketClient.parseMessage(data);
-            if (message === null) return;
-
-            const listeners = this.messageListeners.get(message.topic);
-            if (!listeners) return;
-
-            try {
-                const payload = JSON.parse(message.payload);
-                for (const callback of listeners) callback(payload);
-            } catch {
-                console.error(`${TAG} Failed to parse message payload for topic:`, message.topic);
-            }
-        });
-
-        socket.addEventListener("close", (event) => {
-            let error = new SocketError(event.code, event.reason);
-            console.log({ event, protocol: error.get_protocol() });
-
-            if (!error.get_protocol().canReconnect || this.manualClose) {
-                this.socketState = { status: ConnectionStatus.Closed, reason: error.get_protocol() };
-
-                for (const callback of this.closeListeners) callback();
-                return;
-            }
-
-            this.scheduleReconnect();
-        });
+        socket.addEventListener("message", this.socketOnMessage);
+        socket.addEventListener("close", this.socketOnClose);
 
         for (const callback of this.readyListeners) callback();
     }

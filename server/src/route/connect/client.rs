@@ -73,6 +73,7 @@ pub async fn handle_socket(
         state.clone(),
         join_code.clone(),
         client_id.clone(),
+        client_tx.clone(),
     ));
 
     // Send loop
@@ -88,7 +89,12 @@ pub async fn handle_socket(
     debug!("[game] {join_code} | {client_id} closed ping thread");
 
     if let Some(mut game) = state.games.get_mut(&join_code) {
-        game.disconnect_client(&client_id, disconnect_reason.clone());
+        if game
+            .disconnect_client(&client_id, disconnect_reason.clone(), &client_tx)
+            .is_err()
+        {
+            return;
+        }
     }
 
     drop(client_tx);

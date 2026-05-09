@@ -69,7 +69,7 @@ impl Game {
 
         // Game Info
         if let Some(game_info) = &payload.info {
-            game.initialize_game(game_info.to_owned());
+            game.update_info(game_info.to_owned());
         }
 
         if !response.is_empty() {

@@ -64,10 +64,6 @@ impl Client {
         self.session.log_reconnect();
     }
 
-    pub fn is_disconnected(&self) -> bool {
-        self.socket.is_none()
-    }
-
     pub fn disconnect(&mut self, reason: DisconnectReason) {
         let Some(socket) = &self.socket else {
             return;
@@ -82,10 +78,14 @@ impl Client {
             .log_disconnect(reason != DisconnectReason::Close(CloseReason::GameEnded));
     }
 
-    pub fn ping(&mut self) -> Result<(), ()> {
+    pub fn ping(&mut self, session_tx: &Tx) -> Result<(), ()> {
         let Some(socket) = &mut self.socket else {
             return Err(());
         };
+
+        if !socket.tx.same_channel(session_tx) {
+            return Err(());
+        }
 
         socket.last_ping_at = Instant::now();
         socket
@@ -109,4 +109,9 @@ impl Client {
 
         return socket.last_seen_at < socket.last_ping_at;
     }
+}
+
+pub enum ClientDisconnectError {
+    NotFound,
+    AlreadyDisconnected,
 }

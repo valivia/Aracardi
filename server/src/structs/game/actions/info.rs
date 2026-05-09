@@ -1,5 +1,4 @@
 use chrono::Utc;
-use tracing::warn;
 
 use crate::{
     structs::game::{Game, info::GameInfo},
@@ -7,18 +6,16 @@ use crate::{
 };
 
 impl Game {
-    pub fn initialize_game(&mut self, game_info: GameInfo) {
-        if self.info.is_some() {
-            warn!(
-                "[game] {} | Attempted to update game info after game start",
-                self.join_code
-            );
-            return;
-        }
-
+    pub fn update_info(&mut self, game_info: GameInfo) {
         // TODO: validate
         self.info = Some(game_info.clone());
 
+        if self.info.is_none() {
+            self.initialize_game(game_info);
+        }
+    }
+
+    fn initialize_game(&mut self, game_info: GameInfo) {
         let (country, ip, user_agent) = self
             .clients
             .get(&self.host_id)

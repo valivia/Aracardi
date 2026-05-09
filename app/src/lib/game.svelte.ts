@@ -345,6 +345,7 @@ export class GameController {
     public async initializeWebsocket() {
         let socket;
 
+        this.socket?.close();
         this.socket = null;
         this.isConnecting = true;
         this.connectingTimeout = undefined;
@@ -366,7 +367,7 @@ export class GameController {
         this.socket = socket;
 
         this.syncState();
-        this.socket.onReady(this.syncState);
+        this.socket.onReady(this.syncState.bind(this));
 
         this.unsubscribeSocketSettings?.();
         this.unsubscribeSocketSettings = this.settingsStore.subscribe((value) => {

@@ -1,4 +1,4 @@
-use tracing::{info, warn};
+use tracing::{debug, info};
 
 use crate::{
     structs::{
@@ -19,9 +19,9 @@ impl Game {
             .state
             .current_card
             .as_ref()
-            .is_some_and(|card| card == &new_card)
+            .is_some_and(|card| card.inner.id == new_card.inner.id)
         {
-            warn!(
+            debug!(
                 "[game] {} | Received update with unchanged card ID",
                 self.join_code
             );
