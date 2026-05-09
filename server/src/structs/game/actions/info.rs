@@ -7,10 +7,12 @@ use crate::{
 
 impl Game {
     pub fn update_info(&mut self, game_info: GameInfo) {
+        let is_first_time = self.info.is_none();
+        
         // TODO: validate
         self.info = Some(game_info.clone());
 
-        if self.info.is_none() {
+        if is_first_time {
             self.initialize_game(game_info);
         }
     }

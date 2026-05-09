@@ -65,7 +65,6 @@
     </aside>
 
     <main class="game">
-        <TextButton onclick={() => game.socket?.restartConnectionCycle()}>Retry</TextButton>
         {#if game.joinCode}
             <JoinCode
                 joinCode={game.joinCode}
