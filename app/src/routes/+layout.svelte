@@ -9,7 +9,7 @@
     import { version } from "$app/environment";
     import { createSettingsContext } from "lib/settingsContext";
     import SettingsButton from "components/layout/SettingsButton.svelte";
-    import { onNavigate } from "$app/navigation";
+    import { afterNavigate, onNavigate } from "$app/navigation";
     import { resolve } from "$app/paths";
     import Settings from "components/Settings.svelte";
 
@@ -21,6 +21,7 @@
 
     // Setting menu
     const { isOpen, close } = createSettingsContext();
+
     // Close settings menu when navigating to different page.
     onNavigate(() => close());
 
@@ -32,56 +33,7 @@
     // Theme
     if (typeof window !== "undefined") syncTheme();
 
-    // SW update state
-    let newWorker: ServiceWorker | null;
-    let updateReady = $state(false);
-
-    async function prepareUpdate() {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (!reg) return;
-
-        // Ensure browser checks for new SW
-        await reg.update();
-
-        if (reg.waiting) {
-            // Case 1: already waiting
-            newWorker = reg.waiting;
-            updateReady = true;
-            return;
-        } else if (reg.installing) {
-            // Case 2: installing now
-            trackInstalling(reg.installing);
-        } else {
-            // Case 3: will install soon
-            reg.addEventListener("updatefound", () => {
-                if (reg.installing) {
-                    trackInstalling(reg.installing);
-                }
-            });
-        }
-    }
-
-    function trackInstalling(worker: ServiceWorker) {
-        worker.addEventListener("statechange", () => {
-            if (worker.state === "installed") {
-                if (navigator.serviceWorker.controller) {
-                    // New version ready
-                    newWorker = worker;
-                    updateReady = true;
-                }
-            }
-        });
-    }
-
-    // Prompt for update
-    $effect(() => {
-        if (updateReady && newWorker) {
-            const confirmed = confirm("A new version is available. Update now?");
-            if (confirmed && newWorker) {
-                newWorker.postMessage("SKIP_WAITING");
-            }
-        }
-    });
+    let swRegistration: ServiceWorkerRegistration | undefined;
 
     onMount(async () => {
         const consoleStyle = "background: black;color: gold;";
@@ -90,21 +42,39 @@
         console.info("%c##### Made by Owlive #####", consoleStyle);
         console.info("%c##########################", consoleStyle);
 
+        let [semver, build] = version.split("+");
+        console.info(`Version: ${semver} (${build})`);
+
         await updated.check();
+        swRegistration = await navigator.serviceWorker?.getRegistration();
+    });
 
-        let versionDate = new Date(Number(version));
-        console.info(`Version: ${versionDate.toLocaleDateString()} ${versionDate.toLocaleTimeString()} (${version})`);
+    async function checkUpdate() {
+        if (!swRegistration) return;
+        console.log("[sw] Fetching update");
+        swRegistration = await swRegistration.update();
+    }
 
-        if (updated.current) {
-            console.info("Updated detected");
+    $effect(() => {
+        if (updated.current) checkUpdate();
+    });
 
-            // Reload if sw changed
-            navigator.serviceWorker?.addEventListener("controllerchange", () => {
+    afterNavigate(async () => {
+        if (!swRegistration?.waiting) return;
+        console.log("[sw] Forcing activation");
+
+        const waiting = swRegistration.waiting;
+
+        function onStateChange(this: ServiceWorker) {
+            if (this.state === "activated") {
+                console.log("[sw] Forcing reload");
+                waiting.removeEventListener("statechange", onStateChange);
                 window.location.reload();
-            });
-
-            prepareUpdate();
+            }
         }
+
+        waiting.addEventListener("statechange", onStateChange);
+        waiting.postMessage("SKIP_WAITING");
     });
 </script>
 
@@ -135,6 +105,7 @@
 {#if $isOpen}
     <Settings />
 {/if}
+
 <SettingsButton />
 
 <Nav />
