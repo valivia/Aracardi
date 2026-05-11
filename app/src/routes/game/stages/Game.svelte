@@ -83,11 +83,15 @@
                 {:else}
                     {#if game.socket?.socketState.reason}
                         {game.socket.socketState.reason.message},
+                    {:else if game.creationError}
+                        Error occurred: "{game.creationError.message}"
                     {:else}
                         Failed to create a multiplayer lobby,
                     {/if}
-                    <TextButton onclick={() => game.initializeWebsocket()}>retry</TextButton> creation or
-                    <TextButton onclick={() => (game.isDismissed = true)}>dismiss</TextButton> this message
+                    {#if game.creationError?.canRecreate !== false}
+                        <TextButton onclick={() => game.initializeWebsocket()}>retry</TextButton> creation or
+                        <TextButton onclick={() => (game.isDismissed = true)}>dismiss</TextButton> this message
+                    {/if}
                 {/if}
             {/if}
         </span>

@@ -1,14 +1,11 @@
-use std::str::FromStr;
-use uuid::Uuid;
-
 use crate::structs::{
-    game::{client::preferences::ClientPreferences, state::ClientId},
-    protocol::message::{ParseError, host_update::HostUpdate},
+    game::client::preferences::ClientPreferences,
+    protocol::message::{ParseError, connect::Connect, host_update::HostUpdate},
 };
 
 pub enum IncomingMessage {
-    Check,
-    Connect(Option<ClientId>),
+    Pong,
+    Connect(Connect),
     GameUpdate(HostUpdate),
     ClientUpdate(ClientPreferences),
 }
@@ -27,8 +24,8 @@ impl IncomingMessage {
         }
 
         let message = match topic {
-            "CHECK" => IncomingMessage::Check,
-            "CONNECT" => IncomingMessage::Connect(Uuid::from_str(payload).ok()),
+            "PONG" => IncomingMessage::Pong,
+            "CONNECT" => IncomingMessage::Connect(parse_json!(Connect)?),
             "CLIENT_UPDATE" => IncomingMessage::ClientUpdate(parse_json!(ClientPreferences)?),
             "GAME_UPDATE" => IncomingMessage::GameUpdate(parse_json!(HostUpdate)?),
             other => return Err(ParseError::UnknownTopic(other.to_string())),

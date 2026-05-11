@@ -62,10 +62,7 @@ impl GamePlayerStats {
         for (id, new_player) in &new_by_id {
             if !old_by_id.contains_key(id) {
                 if players_old.is_empty() {
-                    if new_player
-                        .was_loaded
-                        .is_some_and(|was_loaded| was_loaded == true)
-                    {
+                    if new_player.was_loaded {
                         stats.loaded += 1
                     } else {
                         stats.initial += 1;

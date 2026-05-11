@@ -13,6 +13,7 @@ use axum::{
 };
 use dashmap::DashMap;
 use dotenv::dotenv;
+use semver::Version;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
@@ -22,6 +23,8 @@ use tracing::{Level, info};
 mod route;
 mod structs;
 mod util;
+
+pub const SERVER_VERSION: Version = Version::new(2, 0, 0);
 
 #[tokio::main]
 async fn main() {

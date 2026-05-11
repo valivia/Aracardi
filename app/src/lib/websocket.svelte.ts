@@ -1,3 +1,4 @@
+import { version } from "$app/environment";
 import { PUBLIC_SERVER_HTTP_URL, PUBLIC_SERVER_WS_URL } from "$env/static/public";
 import {
     ConnectionClose,
@@ -17,17 +18,20 @@ export enum ConnectionStatus {
     Closed = "CLOSED",
 }
 
-interface ConnectionCloseProtocol {
+export interface ConnectionCloseProtocol {
     message: string;
     canRecreate?: boolean;
     canReconnect?: boolean;
 }
 
-const connectionCloseProtocol: Record<ConnectionClose, ConnectionCloseProtocol> = {
+const connectionCloseProtocol = {
+    // Normal
     GAME_ENDED: {
         message: "This session no longer exists",
         canRecreate: true,
     },
+
+    //
     NOT_FOUND: {
         message: "Could not find game lobby",
         canRecreate: true,
@@ -35,10 +39,15 @@ const connectionCloseProtocol: Record<ConnectionClose, ConnectionCloseProtocol> 
     GAME_FULL: {
         message: "This session is full",
     },
+
+    // Network / timeout
     TIMED_OUT: {
         message: "Session timed out",
         canReconnect: true,
+        canRecreate: true,
     },
+
+    // Server issues
     SERVER_ERROR: {
         message: "An error occurred",
         canReconnect: true,
@@ -48,17 +57,32 @@ const connectionCloseProtocol: Record<ConnectionClose, ConnectionCloseProtocol> 
         message: "Session lost due to server maintenance",
         canRecreate: true,
     },
-};
 
-const connectionCloseProtocolDefaults: Record<string, ConnectionCloseProtocol> = {
-    connectionFailed: {
-        message: "Failed to connect.",
-        canReconnect: true,
+    RATE_LIMITED: {
+        message: "Too many connection attempts — please wait a moment",
+        canRecreate: true,
     },
-    abnormalClosure: {
-        message: "Connection lost",
-        canReconnect: true,
+
+    // Protocol / version errors
+    INVALID_HANDSHAKE: {
+        message: "Connection rejected (invalid handshake)",
     },
+    VERSION_MISMATCH: {
+        message: "A newer version is available, please recreate the game",
+        canRecreate: false,
+    },
+} as const satisfies Record<ConnectionClose, ConnectionCloseProtocol>;
+
+const connectionLost = { message: "Connection lost", canReconnect: true };
+
+const closeCodeFallbacks: Partial<Record<number, ConnectionCloseProtocol>> = {
+    1000: { message: "Session ended" },
+    // 1001 — endpoint going away (e.g. page navigation); treat like a drop
+    1001: { message: "Connection closed", canReconnect: true },
+    1011: { message: "Server error", canReconnect: true, canRecreate: true },
+    1012: { message: "Server restarting", canReconnect: true, canRecreate: true },
+    // 1006 — abnormal closure: no close frame received (network drop, crash)
+    1006: connectionLost,
 };
 
 class SocketError extends Error {
@@ -72,15 +96,16 @@ class SocketError extends Error {
     }
 
     public get_protocol(): ConnectionCloseProtocol {
-        let serverError = connectionCloseProtocol[this.message as ConnectionClose];
-        if (serverError) return serverError;
+        // Known server reason token
+        const serverReason = connectionCloseProtocol[this.message as ConnectionClose];
+        if (serverReason) return serverReason;
 
-        // Abnormal closure
-        if (this.code === 1006) {
-            return connectionCloseProtocolDefaults.abnormalClosure;
-        }
+        // Code-based fallback
+        const codeFallback = closeCodeFallbacks[this.code];
+        if (codeFallback) return codeFallback;
 
-        return { message: "Unknown error", canReconnect: true };
+        //  Last resort — surface the raw message so it's at least visible
+        return { message: this.message || "Connection closed unexpectedly", canReconnect: false };
     }
 }
 
@@ -96,9 +121,9 @@ export type SocketState =
 
 const HANDSHAKE_TIMEOUT_MS = 5_000;
 
-const RECONNECT_DELAY = 6_000;
-const RECONNECT_TIMEOUT = 1_000 * 60 * 15;
-const RECONNECT_MAX_ATTEMPTS = RECONNECT_TIMEOUT / RECONNECT_DELAY;
+const RECONNECT_DELAY = 2_000;
+const MAX_RECONNECT_DELAY = 20_000;
+const MAX_RECONNECT_ATTEMPTS = Math.ceil((1000 * 60 * 15) / MAX_RECONNECT_DELAY);
 
 export class WebsocketClient {
     public readonly session_id: string;
@@ -140,13 +165,18 @@ export class WebsocketClient {
             if (!response.ok) throw new Error("Non 200 response");
             payload = await response.json();
         } catch (error) {
-            throw new Error(`Failed to create session: `, { cause: error });
+            throw { message: "Couldn't reach server" };
         }
 
         console.log(`${TAG} Created session with ID:`, payload.joinCode);
 
         const client = new this(payload.joinCode, true);
-        await client.connectToSocket(payload.hostId);
+        try {
+            await client.connectToSocket(payload.hostId);
+        } catch {
+            throw client.socketState.reason;
+        }
+
         return client;
     }
 
@@ -229,8 +259,13 @@ export class WebsocketClient {
             socket.addEventListener("error", onError);
             socket.addEventListener("close", onClose);
 
+            let connect_message: OutgoingTopicMap[OutgoingMessageTopic.Connect] = {
+                clientId: requestedClientId,
+                version,
+            };
+
             socket.addEventListener("open", () => {
-                socket.send(`${OutgoingMessageTopic.Connect}\n${requestedClientId ?? ""}`);
+                socket.send(`${OutgoingMessageTopic.Connect}\n${JSON.stringify(connect_message)}`);
             });
         });
     }
@@ -278,21 +313,23 @@ export class WebsocketClient {
     }
 
     private scheduleReconnect(requestedClientId?: string): void {
-        if (this.reconnectAttempts >= RECONNECT_MAX_ATTEMPTS) {
+        if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
             console.error(`${TAG} Max reconnect attempts reached.`);
             this.socketState = {
                 status: ConnectionStatus.Closed,
-                reason: connectionCloseProtocolDefaults.connectionFailed,
+                reason: { message: "Failed to connect.", canReconnect: false },
             };
 
             for (const cb of this.closeListeners) cb();
             return;
         }
 
-        let delay = this.reconnectAttempts < 3 ? 2_000 : RECONNECT_DELAY;
-
+        const delay = this.getReconnectDelay();
         this.reconnectAttempts++;
-        console.debug(`${TAG} Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+
+        console.debug(
+            `${TAG} Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts} / ${MAX_RECONNECT_ATTEMPTS})`,
+        );
 
         this.reconnectTimer = setTimeout(async () => {
             await this.connectToSocket(requestedClientId).catch(() => null);
@@ -343,7 +380,7 @@ export class WebsocketClient {
     // ### Events ###
     public onVisibilityChange() {
         if (document.visibilityState === "visible") {
-            this.send(OutgoingMessageTopic.Check, "");
+            this.send(OutgoingMessageTopic.Pong, "");
         }
     }
 
@@ -356,5 +393,11 @@ export class WebsocketClient {
             topic: data.slice(0, newLineIndex),
             payload: data.slice(newLineIndex + 1),
         };
+    }
+
+    private getReconnectDelay(): number {
+        const base = Math.min(RECONNECT_DELAY * this.reconnectAttempts, MAX_RECONNECT_DELAY);
+        const jitter = Math.random() * 1000;
+        return Math.round(base + jitter);
     }
 }

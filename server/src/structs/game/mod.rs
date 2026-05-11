@@ -44,18 +44,12 @@ pub const MAX_HOST_ABSENCE: Duration = Duration::from_mins(15);
 #[derive(Clone, Serialize)]
 pub enum GameExclusionReason {
     InvalidState,
-    GameDurationTooShort,
-    TooFewCardsPlayed,
-    PlayedCardsTooFast,
 }
 
 impl fmt::Display for GameExclusionReason {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidState => write!(f, "INVALID_STATE"),
-            Self::GameDurationTooShort => write!(f, "GAME_DURATION_TOO_SHORT"),
-            Self::TooFewCardsPlayed => write!(f, "TOO_FEW_CARDS_PLAYED"),
-            Self::PlayedCardsTooFast => write!(f, "PLAYED_CARDS_TOO_FAST"),
         }
     }
 }
@@ -124,6 +118,11 @@ impl Game {
         }
     }
 
+    // Helpers
+    fn get_host(&self) -> Option<&Client> {
+        self.clients.get(&self.host_id)
+    }
+
     // Game
     pub fn is_initialized(&self) -> bool {
         self.info.is_some()
@@ -185,23 +184,6 @@ impl Game {
         // Invalid state
         if !self.state.is_valid() {
             reasons.push(GameExclusionReason::InvalidState);
-        }
-
-        // Game duration
-        if let Some(info) = &self.info {
-            if Utc::now().signed_duration_since(info.started_at) < TimeDelta::minutes(1) {
-                reasons.push(GameExclusionReason::GameDurationTooShort);
-            }
-        }
-
-        // Cards played
-        if self.stats.card.play_count < 3 {
-            reasons.push(GameExclusionReason::TooFewCardsPlayed);
-        }
-
-        // Card play speed
-        if self.stats.card.median_duration_ms < 3_000 {
-            reasons.push(GameExclusionReason::PlayedCardsTooFast);
         }
 
         reasons

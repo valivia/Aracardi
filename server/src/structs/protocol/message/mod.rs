@@ -1,5 +1,6 @@
 use thiserror::Error;
 
+pub mod connect;
 pub mod game_update;
 pub mod host_update;
 pub mod incoming;

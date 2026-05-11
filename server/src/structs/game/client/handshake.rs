@@ -7,15 +7,18 @@ use axum::{
 use tokio::time::timeout;
 use tracing::warn;
 
-use crate::structs::{
-    app_state::AppState,
-    game::{
-        client::{Client, Tx, connection::ClientConnection, socket::ClientSocket},
-        state::ClientId,
-    },
-    protocol::{
-        connection::CloseReason,
-        message::{incoming::IncomingMessage, outgoing::OutgoingMessage},
+use crate::{
+    SERVER_VERSION,
+    structs::{
+        app_state::AppState,
+        game::{
+            client::{Client, Tx, connection::ClientConnection, socket::ClientSocket},
+            state::ClientId,
+        },
+        protocol::{
+            connection::CloseReason,
+            message::{incoming::IncomingMessage, outgoing::OutgoingMessage},
+        },
     },
 };
 
@@ -23,6 +26,9 @@ pub enum AuthError {
     GameNotFound,
     GameFull,
     TimedOut,
+
+    VersionMismatch,
+    ProtocolError,
 
     SendFailed,
     ClientDisconnected,
@@ -34,6 +40,8 @@ impl AuthError {
             AuthError::GameNotFound => Some(CloseReason::NotFound),
             AuthError::TimedOut => Some(CloseReason::TimedOut),
             AuthError::GameFull => Some(CloseReason::GameFull),
+            AuthError::VersionMismatch => Some(CloseReason::VersionMismatch),
+            AuthError::ProtocolError => Some(CloseReason::InvalidHandshake),
             _ => None,
         }
     }
@@ -80,17 +88,20 @@ impl Client {
             };
 
             match IncomingMessage::parse_message(&text) {
-                Ok(IncomingMessage::Connect(requested_id)) => {
+                Ok(IncomingMessage::Connect(data)) => {
                     return Self::resolve_client(
                         state,
                         join_code,
-                        requested_id,
-                        ClientConnection::new(headers),
+                        data.client_id,
+                        ClientConnection::new(data.version, headers),
                         ClientSocket::new(tx),
                     )
                     .await;
                 }
-                Err(e) => warn!("Parse error: {e}"),
+                Err(e) => {
+                    warn!("Parse error: {e}");
+                    return Err(AuthError::ProtocolError);
+                }
                 _ => warn!("Unexpected message type during connect"),
             }
         }
@@ -103,6 +114,12 @@ impl Client {
         connection: ClientConnection,
         socket: ClientSocket,
     ) -> Result<ClientId, AuthError> {
+        // Check version
+        if connection.version.major != SERVER_VERSION.major {
+            return Err(AuthError::VersionMismatch);
+        }
+
+        // Get game
         let mut game = match state.games.get_mut(join_code) {
             Some(g) => g,
             None => {
@@ -110,6 +127,7 @@ impl Client {
             }
         };
 
+        // Game state
         if game.is_full() {
             return Err(AuthError::GameFull);
         }

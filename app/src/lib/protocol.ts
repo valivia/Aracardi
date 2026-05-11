@@ -3,26 +3,31 @@ import type { JsonPlayer } from "./player.svelte";
 // Connection
 export enum ConnectionClose {
     GameEnded = "GAME_ENDED",
-    NotFound = "NOT_FOUND",
-
-    GameFull = "GAME_FULL",
-    TimedOut = "TIMED_OUT",
-
     ServerError = "SERVER_ERROR",
     ServerRestart = "SERVER_RESTART",
+
+    NotFound = "NOT_FOUND",
+    RateLimited = "RATE_LIMITED",
+
+    GameFull = "GAME_FULL",
+
+    InvalidHandshake = "INVALID_HANDSHAKE",
+    VersionMismatch = "VERSION_MISMATCH",
+
+    TimedOut = "TIMED_OUT",
 }
 
 // Outgoing
 export enum OutgoingMessageTopic {
-    Check = "CHECK",
+    Pong = "PONG",
     Connect = "CONNECT",
     ClientUpdate = "CLIENT_UPDATE",
     GameUpdate = "GAME_UPDATE",
 }
 
 export interface OutgoingTopicMap {
-    CHECK: string;
-    CONNECT: string;
+    PONG: string;
+    CONNECT: Connect;
     CLIENT_UPDATE: ClientUpdate;
     GAME_UPDATE: HostUpdate;
 }
@@ -38,22 +43,10 @@ export interface IncomingTopicMap {
     CLIENT_ID: string;
 }
 
-// Data structs
-export interface GameCard {
-    id: string;
-    title: string;
-    text: string;
-    image: boolean;
-    players: string[];
-    turnsLeft?: number;
-}
-
-export interface HostCard {
-    id: string;
-    instanceId: string;
-    players: string[];
-    turnsLeft?: number;
-    turnsPassed?: number;
+// Message structs
+export interface Connect {
+    clientId?: string;
+    version: string;
 }
 
 export interface ClientUpdate {
@@ -72,13 +65,6 @@ export interface GameUpdate {
     hostConnected?: boolean;
 }
 
-export interface GameInfo {
-    addons: string[];
-    initiatedAtMs: number;
-    startedAtMs: number;
-    version: string;
-}
-
 export interface HostUpdate {
     players?: JsonPlayer[];
     currentPlayerId?: string;
@@ -87,4 +73,28 @@ export interface HostUpdate {
     activeCards?: HostCard[];
 
     info?: GameInfo;
+}
+
+// Data structs
+export interface GameInfo {
+    addons: string[];
+    initiatedAtMs: number;
+    startedAtMs: number;
+}
+
+export interface GameCard {
+    id: string;
+    title: string;
+    text: string;
+    image: boolean;
+    players: string[];
+    turnsLeft?: number;
+}
+
+export interface HostCard {
+    id: string;
+    instanceId: string;
+    players: string[];
+    turnsLeft?: number;
+    turnsPassed?: number;
 }

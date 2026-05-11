@@ -8,7 +8,7 @@ use crate::{
 impl Game {
     pub fn update_info(&mut self, game_info: GameInfo) {
         let is_first_time = self.info.is_none();
-        
+
         // TODO: validate
         self.info = Some(game_info.clone());
 
@@ -59,7 +59,9 @@ impl Game {
             country.unwrap_or("unknown".to_string()),
             ip.unwrap_or("unknown".to_string()),
             user_agent.unwrap_or("unknown".to_string()),
-            game_info.version,
+            self.get_host()
+                .and_then(|host| Some(host.connection.version.to_string()))
+                .unwrap_or("unknown".to_string()),
             Utc::now().format("%Y-%m-%d %H:%M:%S"),
         );
 

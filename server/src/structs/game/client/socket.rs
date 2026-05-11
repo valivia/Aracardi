@@ -1,5 +1,6 @@
 use axum::extract::ws::Message;
 use tokio::time::Instant;
+use uuid::Uuid;
 
 use crate::structs::game::client::Tx;
 
@@ -9,6 +10,8 @@ pub struct ClientSocket {
 
     pub last_seen_at: Instant,
     pub last_ping_at: Instant,
+
+    pub session_id: Uuid,
 }
 
 impl ClientSocket {
@@ -18,6 +21,8 @@ impl ClientSocket {
 
             last_ping_at: Instant::now(),
             last_seen_at: Instant::now(),
+
+            session_id: Uuid::now_v7(),
         }
     }
 

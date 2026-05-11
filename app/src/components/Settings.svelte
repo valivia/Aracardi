@@ -5,6 +5,7 @@
     import { useSettings } from "lib/settingsContext";
     import Toggle from "components/input/Toggle.svelte";
     import { themes } from "../lib/themes";
+    import { version } from "$app/environment";
 
     const { close, extras, settings } = useSettings();
 </script>
@@ -26,6 +27,7 @@
         <Toggle bind:checked={$settings.allowDuplicates}>Allow duplicates</Toggle>
         {@render $extras?.()}
         <Links extended />
+        <span class="version">version: {version.split("+")[0]}</span>
     </main>
 
     <nav>
@@ -70,5 +72,11 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+    }
+
+    .version {
+        font-size: 0.8rem;
+        text-align: center;
+        opacity: 0.75;
     }
 </style>

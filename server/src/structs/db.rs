@@ -99,17 +99,16 @@ impl Database {
                 "
             INSERT INTO game \
             (id, join_code,
-            version, initiated_at, started_at, ended_at, addons,
+            initiated_at, started_at, ended_at, addons,
             card_play_count, card_avg_duration_ms, card_median_duration_ms,
             players_initial, players_loaded, players_added, players_renamed, players_removed,
             used_avatars, exclusion_reasons, game_end_reason) \
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
             ",
             )
             .bind(game.id)
             .bind(game.join_code)
             // Info
-            .bind(game.info.version)
             .bind(game.info.initiated_at)
             .bind(game.info.started_at)
             .bind(game.info.ended_at)
@@ -145,15 +144,16 @@ impl Database {
                 sqlx::query(
                     "
             INSERT INTO client \
-            (id, game_id, is_host, user_agent, country_code,
+            (id, game_id, is_host, version, user_agent, country_code,
             connected_at, disconnected_at, reconnect_count, total_connected_ms,
             theme, load_images, allow_nsfw)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ",
                 )
                 .bind(client.id)
                 .bind(game.id)
                 .bind(client.is_host)
+                .bind(client.connection.version.to_string())
                 .bind(client.connection.user_agent)
                 .bind(client.connection.country_code)
                 .bind(client.session.original_connect_at)

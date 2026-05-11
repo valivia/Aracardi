@@ -4,40 +4,70 @@ use axum::extract::ws::{CloseFrame, Message};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CloseReason {
+    // 1xxx — standard WebSocket codes
     GameEnded,
-    NotFound,
-    GameFull,
-    TimedOut,
     ServerError,
     ServerRestart,
+    // 40xx — connection / session
+    NotFound,
+    RateLimited,
+    // 41xx — game state
+    GameFull,
+    // 42xx — protocol
+    InvalidHandshake,
+    VersionMismatch,
+    // 43xx — timeout / network
+    TimedOut,
 }
 
-// Spec:
-// https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
 impl CloseReason {
-    pub fn get(&self) -> (u16, &'static str) {
+    pub fn code(&self) -> u16 {
         match self {
-            Self::GameEnded => (1000, "GAME_ENDED"),
-            Self::NotFound => (4000, "NOT_FOUND"),
-            Self::GameFull => (4100, "GAME_FULL"),
-            Self::TimedOut => (3008, "TIMED_OUT"),
-            Self::ServerError => (1011, "SERVER_ERROR"),
-            Self::ServerRestart => (1012, "SERVER_RESTART"),
+            Self::GameEnded => 1000,
+            Self::ServerError => 1011,
+            Self::ServerRestart => 1012,
+
+            Self::NotFound => 4000,
+            Self::RateLimited => 4001,
+
+            Self::GameFull => 4100,
+
+            Self::InvalidHandshake => 4200,
+            Self::VersionMismatch => 4201,
+
+            Self::TimedOut => 4300,
+        }
+    }
+
+    pub fn reason(&self) -> &'static str {
+        match self {
+            Self::GameEnded => "GAME_ENDED",
+            Self::ServerError => "SERVER_ERROR",
+            Self::ServerRestart => "SERVER_RESTART",
+
+            Self::NotFound => "NOT_FOUND",
+            Self::RateLimited => "RATE_LIMITED",
+
+            Self::GameFull => "GAME_FULL",
+
+            Self::InvalidHandshake => "INVALID_HANDSHAKE",
+            Self::VersionMismatch => "VERSION_MISMATCH",
+
+            Self::TimedOut => "TIMED_OUT",
         }
     }
 
     pub fn to_message(&self) -> Message {
-        let (code, reason) = self.get();
         Message::Close(Some(CloseFrame {
-            code,
-            reason: reason.into(),
+            code: self.code(),
+            reason: self.reason().into(),
         }))
     }
 }
 
 impl fmt::Display for CloseReason {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.get().1)
+        write!(f, "{}", self.reason())
     }
 }
 

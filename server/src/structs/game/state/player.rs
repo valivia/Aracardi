@@ -19,9 +19,11 @@ pub struct Player {
     pub avatar: String,
 
     #[serde(skip_serializing)]
-    pub is_hand_picked: Option<bool>,
+    #[serde(default)]
+    pub is_hand_picked: bool,
     #[serde(skip_serializing)]
-    pub was_loaded: Option<bool>,
+    #[serde(default)]
+    pub was_loaded: bool,
 }
 
 impl Player {

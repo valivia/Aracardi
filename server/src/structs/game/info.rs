@@ -14,14 +14,11 @@ pub struct GameInfo {
 
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
     #[serde(rename = "startedAtMs")]
-    // TODO: Remove default when sufficient people have updated
-    #[serde(default = "get_utc")]
     pub started_at: DateTime<Utc>,
 
     #[serde_as(serialize_as = "TimestampMilliSeconds<i64>")]
     #[serde(skip_deserializing, default = "get_utc")]
     pub ended_at: DateTime<Utc>,
-    pub version: String,
 }
 
 fn get_utc() -> DateTime<Utc> {
@@ -35,7 +32,6 @@ impl Default for GameInfo {
             started_at: Utc::now(),
             ended_at: Utc::now(),
             initiated_at: Utc::now(),
-            version: "".to_string(),
         }
     }
 }

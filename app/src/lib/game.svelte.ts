@@ -3,8 +3,7 @@ import { CardController, type Card } from "./card.svelte";
 import { shuffle } from "./helpers";
 import { Player } from "./player.svelte";
 import { nanoid } from "nanoid";
-import { WebsocketClient } from "./websocket.svelte";
-import { version } from "$app/environment";
+import { WebsocketClient, type ConnectionCloseProtocol } from "./websocket.svelte";
 import { defaultSettings, type Settings } from "./settingsContext";
 import type { Unsubscriber, Writable } from "svelte/store";
 import { IncomingMessageTopic, OutgoingMessageTopic } from "./protocol";
@@ -58,6 +57,7 @@ export class GameController {
     public connectingTimeout?: ReturnType<typeof setTimeout>;
     public isConnecting = $state(false);
     public isDismissed = $state(false);
+    public creationError: null | ConnectionCloseProtocol = $state(null);
     private settingsStore: Writable<Settings>;
     private unsubscribeSocketSettings: Unsubscriber | undefined;
 
@@ -337,7 +337,6 @@ export class GameController {
                 addons: this.selectedAddons.map((addon) => addon.title),
                 initiatedAtMs: Number(this.createdAt),
                 startedAtMs: Number(this.startedAt),
-                version: version,
             },
         });
     }
@@ -348,6 +347,7 @@ export class GameController {
         this.socket?.close();
         this.socket = null;
         this.isConnecting = true;
+        this.creationError = null;
         this.connectingTimeout = undefined;
 
         try {
@@ -356,7 +356,12 @@ export class GameController {
             console.error("Failed to initialize websocket: ", e);
             this.connectingTimeout = setTimeout(() => {
                 this.isConnecting = false;
-                console.log("bbbb");
+                if (typeof e == "object" && e != null && "message" in e && typeof e.message == "string") {
+                    this.creationError = {
+                        message: e.message,
+                        canRecreate: (e as unknown as { canRecreate: undefined | boolean }).canRecreate == true,
+                    };
+                }
             }, FAKE_SESSION_CREATION_TIME_MS);
             return;
         }

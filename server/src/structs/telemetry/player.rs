@@ -10,8 +10,8 @@ pub struct TelemetryPlayer {
     pub name: String,
     pub avatar: String,
 
-    pub is_hand_picked: Option<bool>,
-    pub was_loaded: Option<bool>,
+    pub is_hand_picked: bool,
+    pub was_loaded: bool,
 }
 
 impl<'a> From<&'a Player> for TelemetryPlayer {
