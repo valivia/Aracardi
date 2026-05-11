@@ -12,6 +12,11 @@ lazy_static! {
 }
 
 lazy_static! {
+    pub static ref CONNECTIONS_REFUSED_SUM: IntCounter =
+        register_int_counter!("connections_refused_sum", "Number of connections refused").unwrap();
+}
+
+lazy_static! {
     pub static ref ACTIVE_GAME_COUNTER: IntGauge =
         register_int_gauge!("active_games", "Number of active games").unwrap();
 }
@@ -24,6 +29,7 @@ lazy_static! {
 pub fn init_metrics() {
     GAMES_CREATED_SUM.reset();
     CARDS_PLAYED_SUM.reset();
+    CONNECTIONS_REFUSED_SUM.reset();
     ACTIVE_GAME_COUNTER.set(0);
     CONNECTED_CLIENTS.set(0);
 }

@@ -14,6 +14,7 @@ use crate::{
     AppState, CONNECTED_CLIENTS,
     structs::{
         game::{GameEndReason, client::Client},
+        prometheus::CONNECTIONS_REFUSED_SUM,
         protocol::connection::CloseReason,
     },
 };
@@ -53,6 +54,9 @@ pub async fn handle_socket(
             Ok(id) => id,
             Err(auth_error) => {
                 if let Some(close_message) = auth_error.into_connection_close() {
+                    if close_message.is_refusal() {
+                        CONNECTIONS_REFUSED_SUM.inc();
+                    }
                     let _ = socket.send(close_message.to_message()).await;
                 }
                 return;

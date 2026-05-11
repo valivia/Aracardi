@@ -63,6 +63,13 @@ impl CloseReason {
             reason: self.reason().into(),
         }))
     }
+
+    pub fn is_refusal(&self) -> bool {
+        match self {
+            Self::InvalidHandshake | Self::VersionMismatch => true,
+            _ => false,
+        }
+    }
 }
 
 impl fmt::Display for CloseReason {
