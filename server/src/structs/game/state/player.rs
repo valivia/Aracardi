@@ -28,8 +28,8 @@ pub struct Player {
 
 impl Player {
     pub fn is_valid(&self) -> bool {
-        let valid_name =
-            (MIN_PLAYER_NAME_LENGTH..MAX_PLAYER_NAME_LENGTH).contains(&self.name.len());
+        let valid_name = (MIN_PLAYER_NAME_LENGTH..MAX_PLAYER_NAME_LENGTH)
+            .contains(&self.name.encode_utf16().count());
 
         let valid_avatar =
             (MIN_PLAYER_AVATAR_LENGTH..MAX_PLAYER_AVATAR_LENGTH).contains(&self.avatar.len());
