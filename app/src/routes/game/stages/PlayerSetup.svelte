@@ -50,7 +50,7 @@
     function onSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
         event.preventDefault();
 
-        const name = value.trim();
+        const name = value.trim().slice(0, MAX_PLAYER_NAME_LENGTH);
 
         const avatar = avatars.find((avatar) => avatar.name === selectedAvatar.name);
         if (!avatar) return;
