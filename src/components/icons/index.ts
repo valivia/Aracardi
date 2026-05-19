@@ -1,9 +1,0 @@
-export { default as CardsIcon } from "virtual:icons/carbon/Layers";
-export { default as PlusIcon } from "virtual:icons/carbon/Add";
-export { default as ShuffleIcon } from "virtual:icons/carbon/Shuffle";
-export { default as DeleteIcon } from "virtual:icons/carbon/TrashCan";
-export { default as SettingsIcon } from "virtual:icons/carbon/Settings";
-export { default as UserIcon } from "virtual:icons/carbon/User";
-export { default as CoffeeIcon } from "virtual:icons/carbon/cafe";
-export { default as CopyIcon } from "virtual:icons/carbon/Copy";
-export { default as GithubLogo } from "virtual:icons/carbon/LogoGithub";

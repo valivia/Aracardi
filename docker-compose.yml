@@ -1,0 +1,49 @@
+services:
+    postgres:
+        image: postgres:18
+        container_name: aracardi-database
+        restart: always
+        ports:
+            - "127.0.0.1:9045:5432"
+        volumes:
+            - ./database:/var/lib/postgresql
+        environment:
+            POSTGRES_PASSWORD: password
+        networks:
+            - bridge
+            - analytics
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    server:
+        container_name: aracardi-server
+        restart: unless-stopped
+        build: ./server
+        env_file: .env
+        volumes:
+            - ./cards/addons:/app/addons:ro
+        networks:
+            - bridge
+            - nginx
+
+    client:
+        container_name: aracardi-client
+        restart: unless-stopped
+        build:
+            context: client
+            args:
+                DOMAIN: "aracardi.com"
+        networks:
+            - nginx
+
+networks:
+    bridge:
+    analytics:
+        external: true
+        name: analytics
+    nginx:
+        external: true
+        name: nginx

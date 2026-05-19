@@ -1,0 +1,27 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8.8", features = ["ws"] }
+dashmap = "6.1.0"
+futures-util = "0.3.32"
+nanoid = "0.4.0"
+rand = "0.10.0"
+tokio = { version = "1.50.0", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }
+tower-http = { version = "0.6.8", features = ["cors", "trace"] }
+serde_json = "1.0.149"
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features=["env-filter", "time"] }
+thiserror = "2.0.18"
+serde_with = { version = "3.18.0", features = ["json", "chrono_0_4"] }
+chrono = { version = "0.4.44", features = ["serde"] }
+dotenv = "0.15.0"
+woothee = "0.13.0"
+prometheus = "0.14.0"
+lazy_static = "1.5.0"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "json", "chrono", "uuid"] }
+semver = { version = "1.0.28", features = ["serde"] }

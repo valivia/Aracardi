@@ -1,0 +1,22 @@
+@mixin noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@mixin boxShadow($color: rgb(6, 6, 6)) {
+    box-shadow: 0 0.2em 0.5em rgba($color, 1);
+}
+
+@mixin animatedNumber {
+    transition: --animatedNumber 0.5s;
+    --int: max(var(--animatedNumber) - 0.5, 0);
+    counter-set: num var(--int);
+
+    &::before {
+        content: counter(num);
+    }
+}
