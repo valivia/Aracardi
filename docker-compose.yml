@@ -33,7 +33,7 @@ services:
         container_name: aracardi-client
         restart: unless-stopped
         build:
-            context: app
+            context: client
             args:
                 DOMAIN: "aracardi.com"
         networks:
