@@ -2,7 +2,7 @@ use std::time::Duration;
 use tokio::{sync::mpsc, time::interval};
 use tracing::{debug, error};
 
-use crate::structs::{db::Database, telemetry::event::TelemetryEvent};
+use crate::structs::{database::Database, telemetry::event::TelemetryEvent};
 
 pub mod active_card;
 pub mod card;
