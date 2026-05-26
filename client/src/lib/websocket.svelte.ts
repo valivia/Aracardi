@@ -138,6 +138,7 @@ export class WebsocketClient {
     private readyListeners = new Set<() => void>();
 
     // Connection
+    private isConnecting = false;
     public socketState: SocketState = $state({ status: ConnectionStatus.Idle });
     private reconnectAttempts = $state(0);
     private reconnectTimer?: ReturnType<typeof setTimeout>;
@@ -182,11 +183,21 @@ export class WebsocketClient {
 
     // ### Socket ###
     public async restartConnectionCycle() {
+        clearTimeout(this.reconnectTimer);
         this.reconnectAttempts = 0;
         await this.connectToSocket();
     }
 
     public async connectToSocket(requestedClientId?: string): Promise<void> {
+        if (this.isConnecting) {
+            console.warn(`${TAG} double reconnect`, this.session_id);
+            return;
+        }
+
+        console.debug(`${TAG} Connecting`);
+
+        this.isConnecting = true;
+
         clearTimeout(this.reconnectTimer);
 
         if (this.socket) this.detachSocketListeners(this.socket);
@@ -197,7 +208,6 @@ export class WebsocketClient {
         const clientId = requestedClientId ?? this.clientId ?? sessionStorage.getItem(CLIENT_ID_KEY) ?? undefined;
 
         const url = `${PUBLIC_SERVER_WS_URL}/lobby/${this.session_id}/ws`;
-        console.debug(`${TAG} Connecting to websocket at ${url}`);
 
         this.socket = undefined;
         const socket = new WebSocket(url);
@@ -206,12 +216,16 @@ export class WebsocketClient {
             const assignedClientId = await WebsocketClient.connectionHandshake(socket, clientId);
 
             sessionStorage.setItem(CLIENT_ID_KEY, assignedClientId);
+
+            // Set state
             this.clientId = assignedClientId;
             this.socket = socket;
             this.socketState = { status: ConnectionStatus.Connected };
             this.reconnectAttempts = 0;
-
             this.attachSocketListeners(socket);
+            this.isConnecting = false;
+
+            console.log(`${TAG} Connected! `);
         } catch (error) {
             if (error instanceof SocketError && !error.get_protocol().canReconnect) {
                 console.info(`${TAG} Connection refused:`, error.message);
@@ -223,6 +237,8 @@ export class WebsocketClient {
                 console.error(`${TAG} Connection failed:`, error);
                 this.scheduleReconnect(requestedClientId);
             }
+
+            this.isConnecting = false;
             throw error;
         }
     }
@@ -288,7 +304,7 @@ export class WebsocketClient {
 
     private socketOnClose = (event: any) => {
         let error = new SocketError(event.code, event.reason);
-        console.log({ event, protocol: error.get_protocol() });
+        console.debug(`${TAG} Socket closed`, { event, protocol: error.get_protocol() });
 
         if (!error.get_protocol().canReconnect || this.manualClose) {
             this.socketState = { status: ConnectionStatus.Closed, reason: error.get_protocol() };
@@ -313,6 +329,9 @@ export class WebsocketClient {
     }
 
     private scheduleReconnect(requestedClientId?: string): void {
+        // Don't reconnect if tab is not active
+        if (document.visibilityState === "hidden") return;
+
         if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
             console.error(`${TAG} Max reconnect attempts reached.`);
             this.socketState = {
@@ -379,8 +398,29 @@ export class WebsocketClient {
 
     // ### Events ###
     public onVisibilityChange() {
-        if (document.visibilityState === "visible") {
+        // Going to sleep, cancel queued reconnects
+        if (document.visibilityState === "hidden") {
+            clearTimeout(this.reconnectTimer);
+            return;
+        }
+
+        // Currently reconnecting, ignore
+        if (this.isConnecting) {
+            return; // Already in progress, do nothing
+        }
+
+        // Reconnect if the socket is dead
+        const isSocketClosed = this.socket === undefined || this.socket.readyState === WebSocket.CLOSED;
+        if (isSocketClosed && this.socketState.status !== ConnectionStatus.Closed) {
+            console.debug(`${TAG} Woke up with dead socket, triggering reconnect`);
+            this.restartConnectionCycle();
+            return;
+        }
+
+        // Send pong to confirm state
+        if (this.socketState.status === ConnectionStatus.Connected) {
             this.send(OutgoingMessageTopic.Pong, "");
+            return;
         }
     }
 
