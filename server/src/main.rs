@@ -1,7 +1,7 @@
 use crate::{
     structs::{
         app_state::AppState,
-        db::Database,
+        database::Database,
         prometheus::{ACTIVE_GAME_COUNTER, CONNECTED_CLIENTS, init_metrics},
         telemetry::Telemetry,
     },

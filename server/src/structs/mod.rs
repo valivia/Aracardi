@@ -1,5 +1,5 @@
 pub mod app_state;
-pub mod db;
+pub mod database;
 pub mod game;
 pub mod prometheus;
 pub mod protocol;

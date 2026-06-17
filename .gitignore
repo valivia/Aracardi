@@ -1,4 +1,6 @@
 addons
 import
-database
+./database
 *.env
+migrate
+cards
